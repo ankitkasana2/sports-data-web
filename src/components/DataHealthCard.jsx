@@ -1,9 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 import { Badge } from "../components/ui/badge"
 import { Progress } from "../components/ui/progress"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Separator } from "../components/ui/separator"
 import {
     CalendarDays,
@@ -21,6 +22,16 @@ import {
 } from "lucide-react"
 
 export default function DataHealthCard() {
+
+    const [isLoading, setIsLoading] = useState(true)
+
+     useEffect(() => {
+          setTimeout(() => {
+            setIsLoading(false)
+          }, 2000);
+        }, [])
+
+
     return (
         <Card className="mb-8">
             <CardHeader>
@@ -31,7 +42,53 @@ export default function DataHealthCard() {
                 <CardDescription>Monitor data quality and completion status</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {isLoading? (
+                    (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Skeleton for Coverage */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                    <Skeleton className="h-8 w-12" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-2 w-full" />
+                  </div>
+
+                  {/* Skeleton for Missing Data */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-4 w-28" />
+                  </div>
+
+                  {/* Skeleton for Quality Checks */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                    <Skeleton className="h-8 w-12" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+
+                  {/* Skeleton for Backlog */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-16" />
+                    </div>
+                    <Skeleton className="h-8 w-8" />
+                    <Skeleton className="h-4 w-24" />
+                  </div>
+                </div>
+              )
+                ):
+                (<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500" />
@@ -68,7 +125,7 @@ export default function DataHealthCard() {
                         <div className="text-2xl font-bold">3</div>
                         <p className="text-sm text-muted-foreground">Items need attention</p>
                     </div>
-                </div>
+                </div>)}
             </CardContent>
         </Card>
     )

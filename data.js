@@ -5,8 +5,14 @@ const data = {
         {
             "match_id": "M2025-001",
             "season": 2025,
-            "competition": "Wexford Senior Hurling Championship",
-            "round": "Quarter Final",
+            "competition": {
+                "name": "Wexford Senior Hurling Championship",
+                "code": "WSHC"
+            },
+            "round": {
+                "name" : "Quarter Final",
+                "code" : "QF",
+            },
             "date": "2025-07-15",
             "time": "19:30",
             "venue_id": "V001",
@@ -27,8 +33,14 @@ const data = {
         {
             "match_id": "M2025-002",
             "season": 2025,
-            "competition": "Leinster Football Championship",
-            "round": "Semi Final",
+            "competition": {
+                "name": "Leinster Football Championship",
+                "code": "LFC"
+            },
+            "round": {
+                "name":  "Semi Final",
+                "code": "SF",
+            },
             "date": "2025-06-05",
             "time": "14:00",
             "venue_id": "V002",
@@ -49,8 +61,14 @@ const data = {
         {
             "match_id": "M2024-015",
             "season": 2024,
-            "competition": "All-Ireland Hurling Championship",
-            "round": "Final",
+            "competition": {
+                "name": "All-Ireland Hurling Championship",
+                "code": "AIHC",
+            },
+            "round": {
+                "name": "Final",
+                "code": "F",
+            },
             "date": "2024-08-18",
             "time": "16:00",
             "venue_id": "V002",
@@ -71,8 +89,14 @@ const data = {
         {
             "match_id": "M2023-022",
             "season": 2023,
-            "competition": "National Football League",
-            "round": "Group Stage - Round 5",
+            "competition": {
+                "name": "National Football League",
+                "code": "NFL",
+            },
+            "round": {
+                "name": "Group Stage - Round 5",
+                "code": "GSR5",
+            },
             "date": "2023-03-11",
             "time": "19:00",
             "venue_id": "V003",
@@ -93,8 +117,14 @@ const data = {
         {
             "match_id": "M2025-010",
             "season": 2025,
-            "competition": "Wexford Minor Hurling Championship",
-            "round": "Group Stage - Round 2",
+            "competition": {
+                "name": "Wexford Senior Football Championship",
+                "code": "WSFC"
+            },
+            "round": {
+                "name": "Group Stage - Round 2",
+                "code": "GSR2",
+            },
             "date": "2025-05-10",
             "time": "12:30",
             "venue_id": "V004",
@@ -102,7 +132,7 @@ const data = {
             "venue_type": "club",
             "referee_id": "R105",
             "referee_name": "David Byrne",
-            "game_code": "Hurling",
+            "game_code": "Football",
             "ruleset": "Minor",
             "half_length_sec": 1500,
             "extra_time_possible": false,

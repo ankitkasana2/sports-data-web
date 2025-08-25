@@ -1,26 +1,8 @@
 import React, { useState } from "react"
-import { Button } from "../components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
-import { Badge } from "../components/ui/badge"
-import { Progress } from "../components/ui/progress"
-import { Separator } from "../components/ui/separator"
+
 import QuickActionCard from "../components/QuickActionCard"
 import MatchStatusCard from "../components/MatchStatuscard"
-import {
-  CalendarDays,
-  Clock,
-  MapPin,
-  User,
-  TrendingUp,
-  AlertTriangle,
-  CheckCircle,
-  Play,
-  RotateCcw,
-  FileText,
-  Download,
-  Eye,
-} from "lucide-react"
+
 import EdgeDashboard from "../components/EdgeDashboard"
 import DataHealthCard from "../components/DataHealthCard"
 import RecentActivityCard from "../components/RecentActivityCard"
@@ -42,29 +24,35 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Filter Bar */}
-      <HomeNavbar/>
+      <HomeNavbar />
 
       <div className="container mx-auto px-4 py-6">
         {/* Primary Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Quick Actions */}
-          <QuickActionCard />
+          <div>
+            <QuickActionCard />
+          </div>
 
           {/* Next Matches & Continue Tagging */}
-          <MatchStatusCard/>
+          <div>
+            <MatchStatusCard />
+          </div>
 
           {/* Edge Dashboard */}
-          <EdgeDashboard/>
+          <div>
+            <EdgeDashboard />
+          </div>
         </div>
 
         {/* Data Health & Backlog */}
-        <DataHealthCard/>
+        <DataHealthCard />
 
         {/* Recent Activity & Exports */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <RecentActivityCard/>
+          <RecentActivityCard />
 
-          <RecentExportCard/>
+          <RecentExportCard />
         </div>
       </div>
     </div>
