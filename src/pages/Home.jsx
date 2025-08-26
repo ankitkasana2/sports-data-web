@@ -8,7 +8,7 @@ import DataHealthCard from "../components/DataHealthCard"
 import RecentActivityCard from "../components/RecentActivityCard"
 import RecentExport from "../components/RecentExport"
 import RecentExportCard from "../components/RecentExport"
-import HomeNavbar from "../components/HomeNavbar"
+import HomeFilterbar from "../components/HomeFilterbar"
 
 
 
@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Filter Bar */}
-      <HomeNavbar />
+      <HomeFilterbar />
 
       <div className="container mx-auto px-4 py-6">
         {/* Primary Grid Layout */}

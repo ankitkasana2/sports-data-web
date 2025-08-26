@@ -13,7 +13,7 @@ const data = {
                 "name" : "Quarter Final",
                 "code" : "QF",
             },
-            "date": "2025-07-15",
+            "date": "2025-08-27",
             "time": "19:30",
             "venue_id": "V001",
             "venue_name": "Innovate Wexford Park",
@@ -41,7 +41,7 @@ const data = {
                 "name":  "Semi Final",
                 "code": "SF",
             },
-            "date": "2025-06-05",
+            "date": "2025-08-28",
             "time": "14:00",
             "venue_id": "V002",
             "venue_name": "Croke Park",
@@ -118,8 +118,8 @@ const data = {
             "match_id": "M2025-010",
             "season": 2025,
             "competition": {
-                "name": "Wexford Senior Football Championship",
-                "code": "WSFC"
+                "name": "Wexford Senior Hurling Championship",
+                "code": "WSHC"
             },
             "round": {
                 "name": "Group Stage - Round 2",
@@ -132,7 +132,7 @@ const data = {
             "venue_type": "club",
             "referee_id": "R105",
             "referee_name": "David Byrne",
-            "game_code": "Football",
+            "game_code": "Hurling",
             "ruleset": "Minor",
             "half_length_sec": 1500,
             "extra_time_possible": false,

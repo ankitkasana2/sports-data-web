@@ -4,12 +4,15 @@ import './index.css'
 import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom';
 import { Navigation } from './components/Navigation.jsx'
+import { StoresProvider } from "./stores/StoresProvider.jsx"
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Navigation />
-      <App />
+      <StoresProvider>
+        <App />
+      </StoresProvider>
     </BrowserRouter>
   </StrictMode>,
 )
