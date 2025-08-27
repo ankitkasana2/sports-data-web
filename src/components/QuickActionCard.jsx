@@ -3,12 +3,9 @@ import { Button } from "../components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
 import {
     CalendarDays,
-    Clock,
-    MapPin,
+    Users,
     User,
-    TrendingUp,
-    AlertTriangle,
-    CheckCircle,
+    BarChart3,
     Play,
     RotateCcw,
     FileText,
@@ -19,7 +16,7 @@ import {
 export default function QuickActionCard() {
     return (
 
-        <Card>
+        <Card className="max-h-[420px] h-auto">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Play className="h-5 w-5" />
@@ -28,12 +25,20 @@ export default function QuickActionCard() {
             </CardHeader>
             <CardContent className="space-y-3">
                 <Button className="w-full justify-start bg-transparent" variant="outline">
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Continue Tagging
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
                     <CalendarDays className="h-4 w-4 mr-2" />
                     Schedule New Match
                 </Button>
                 <Button className="w-full justify-start bg-transparent" variant="outline">
+                    <Users className="h-4 w-4 mr-2" />
+                    Add Team
+                </Button>
+                <Button className="w-full justify-start bg-transparent" variant="outline">
                     <User className="h-4 w-4 mr-2" />
-                    Add Team/Player
+                    Add Player
                 </Button>
                 <Button className="w-full justify-start bg-transparent" variant="outline">
                     <FileText className="h-4 w-4 mr-2" />

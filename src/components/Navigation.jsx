@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom"
-import { Home, Users, Trophy, BarChart3, Target, UserCheck } from "lucide-react"
+import { Home, Users, Trophy, BarChart3, Target, UserCheck, RotateCcw } from "lucide-react"
+import { Button } from "./ui/button"
 
 export function Navigation() {
   const location = useLocation()
@@ -25,16 +26,19 @@ export function Navigation() {
               <Link
                 key={path}
                 to={path}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  location.pathname === path
-                    ? "text-emerald-600 bg-emerald-50"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-                }`}
+                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${location.pathname === path
+                  ? "text-emerald-600 bg-emerald-50"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{label}</span>
               </Link>
             ))}
+            <Button size="sm">
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Resume
+            </Button>
           </div>
         </div>
       </div>
