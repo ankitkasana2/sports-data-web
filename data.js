@@ -4,7 +4,7 @@ const data = {
     matchData: [
         {
             "match_id": "M2025-001",
-            "season": 2025,
+            "season": "2025",
             "competition": {
                 "name": "Wexford Senior Hurling Championship",
                 "code": "WSHC"
@@ -32,7 +32,7 @@ const data = {
         },
         {
             "match_id": "M2025-002",
-            "season": 2025,
+            "season": "2025",
             "competition": {
                 "name": "Leinster Football Championship",
                 "code": "LFC"
@@ -60,7 +60,7 @@ const data = {
         },
         {
             "match_id": "M2024-015",
-            "season": 2024,
+            "season": "2024",
             "competition": {
                 "name": "All-Ireland Hurling Championship",
                 "code": "AIHC",
@@ -88,7 +88,7 @@ const data = {
         },
         {
             "match_id": "M2023-022",
-            "season": 2023,
+            "season": "2023",
             "competition": {
                 "name": "National Football League",
                 "code": "NFL",
@@ -116,7 +116,7 @@ const data = {
         },
         {
             "match_id": "M2025-010",
-            "season": 2025,
+            "season": "2025",
             "competition": {
                 "name": "Wexford Senior Hurling Championship",
                 "code": "WSHC"

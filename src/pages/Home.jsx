@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import QuickActionCard from "../components/QuickActionCard"
 import MatchStatusCard from "../components/MatchStatuscard"
 import InProgressBanner from "../components/InProgressBanner"
@@ -8,16 +8,11 @@ import RecentActivityCard from "../components/RecentActivityCard"
 import RecentExport from "../components/RecentExport"
 import RecentExportCard from "../components/RecentExport"
 import HomeFilterbar from "../components/HomeFilterbar"
+import axios from "axios"
 
 
 export default function Home() {
-  const [filters, setFilters] = useState({
-    season: "2025",
-    competition: "Wexford SHC",
-    code: "Hurling",
-    grade: "Senior",
-    group: "Group A",
-  })
+
 
   return (
     <div className="min-h-screen bg-background">

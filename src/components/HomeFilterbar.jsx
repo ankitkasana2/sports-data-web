@@ -4,12 +4,13 @@ import data from "../../data"
 import { useSearchParams } from "react-router-dom"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../stores/StoresProvider"
+import { toJS } from "mobx"
 
 
 function HomeFilterbar() {
 
     const { homeFilterbarStore } = useStores()
-    const { filters, years, competitions, grades, groups } = homeFilterbarStore
+    const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -17,9 +18,16 @@ function HomeFilterbar() {
       if(searchParams.size!=0){
         if(searchParams.get("season")){
           homeFilterbarStore.setFilter("season", searchParams.get("season"))
+        }else{
+          homeFilterbarStore.setFilter("season", new Date().getFullYear())
         }
       }
+
+      homeFilterbarStore.getMatches()
     }, [])
+
+
+    
     
 
     useEffect(() => {
@@ -29,6 +37,9 @@ function HomeFilterbar() {
       searchParams.set("grade",filters.grade)
       searchParams.set("group", filters.group)
       setSearchParams(searchParams)
+
+      homeFilterbarStore.getMatches()
+
     }, [filters.season,filters.competition,filters, filters.code, filters.grade, filters.group])
     
 
@@ -43,7 +54,7 @@ function HomeFilterbar() {
           {/* season */}
           <Select 
             value={String(filters.season)} 
-            onValueChange={(val) => homeFilterbarStore.setFilter("season", Number(val))}
+            onValueChange={(val) => homeFilterbarStore.setFilter("season", val)}
           >
             <SelectTrigger className="w-24">
               <SelectValue />
@@ -58,15 +69,15 @@ function HomeFilterbar() {
           {/* competition */}
           <Select
             value={filters.competition?.name || ""}
-            onValueChange={(val) => homeFilterbarStore.setFilter("competition", competitions.find(c => c.name === val))}
+            onValueChange={(val) => homeFilterbarStore.setFilter("competition", competitions.find(c => c == val))}
           >
             <SelectTrigger className="w-auto">
               <SelectValue placeholder="Select a competition" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All</SelectItem>
-              {competitions.map(c => (
-                <SelectItem key={c.code} value={c.name}>{c.name}</SelectItem>
+              {competitions?.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
               ))}
             </SelectContent>
           </Select>

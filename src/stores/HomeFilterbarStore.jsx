@@ -1,10 +1,12 @@
 import { makeAutoObservable } from "mobx"
 import data from "../../data"
-import { useSearchParams } from "react-router-dom"
+import axios from "axios"
+import { toJS } from "mobx"
+
 
 class HomeFilterbarStore {
     filters = {
-        season: new Date().getFullYear(),
+        season: "",
         competition: "",
         code: "",
         grade: "",
@@ -20,6 +22,8 @@ class HomeFilterbarStore {
     groups = [
         "All", "Group A", "Group B", "Quarter Final", "Semi Final", "Final"
     ]
+
+    matches = []
 
     constructor() {
         makeAutoObservable(this)
@@ -38,15 +42,26 @@ class HomeFilterbarStore {
         this.years = years.reverse()
     }
 
+    // fetch all matches 
+    getMatches() {
+        setTimeout(() => {
+            axios.get(`https://readyforyourreview.com/KevinR123/public/matches/season/${this.filters.season}`)
+                .then(response => {
+                    this.matches = response.data;
+                    this.loadCompetitions(response.data)
+                })
+                .catch(error => {
+                    console.error("There was an error fetching users!", error);
+                });
+        }, 500);
+
+    }
+
     // Load competitions for selected season
-    loadCompetitions(year) {
-        this.competitions = [
-            ...new Map(
-                data.matchData
-                    .filter(match => match.season === Number(year))
-                    .map(match => [match.competition.code, match.competition])
-            ).values()
-        ]
+    loadCompetitions(value) {
+
+        value ? this.competitions = [...new Set(value.map(match => match.competition_name))] : this.competitions = []
+
     }
 
     // Handle filter updates
@@ -55,7 +70,7 @@ class HomeFilterbarStore {
 
         // When season changes → reload competitions
         if (key === "season") {
-            this.loadCompetitions(value)
+            // this.loadCompetitions(value)
             this.filters.competition = ""
             this.filters.code = ""
         }

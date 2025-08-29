@@ -12,51 +12,64 @@ import {
 } from "lucide-react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../stores/StoresProvider"
-import data from "../../data"
+import { toJS } from "mobx"
 
 function MatchStatusCard() {
 
   const { homeFilterbarStore } = useStores()
-  const { filters, years, competitions, grades, groups } = homeFilterbarStore
+  const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
 
   const [isLoading, setIsLoading] = useState(true)
-  const [matches, setmatches] = useState([])
+  const [matchesData, setMatchesData] = useState([])
   const date = new Date()
   const formattedToday = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`
 
   useEffect(() => {
-    let today = new Date()
-    today.setHours(0, 0, 0, 0)
-    let nextWeek = new Date()
-    nextWeek.setDate(today.getDate() + 7)
-    setIsLoading(true)
-
-    // fetch match here 
-    let match = data.matchData.filter((match) => {
-      const seasonMatch = match.season === filters.season
-      const competitionMatch = !filters.competition || match.competition?.name === filters.competition.name
-
-      const matchDate = new Date(match.date) // assumes match.date is "YYYY-MM-DD" or ISO string
-      matchDate.setHours(0, 0, 0, 0)
-      const next7DaysMatch = matchDate >= today && matchDate <= nextWeek
-
-
-      return seasonMatch && competitionMatch && next7DaysMatch
-    })
-
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1000);
-
-    setmatches(match)
-  }, [filters.season, filters.competition])
+    fetchMatches()
+  }, [filters.season, filters.competition, matches])
 
 
   useEffect(() => {
     setTimeout(() => {
       setIsLoading(false)
     }, 2000);
+
+    fetchMatches()
   }, [])
+
+  // fetch matches 
+  const fetchMatches = () => {
+    let today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    let nextWeek = new Date(today)
+    nextWeek.setDate(today.getDate() + 7)
+
+    setIsLoading(true)
+
+    let filteredMatches = matches.filter((match) => {
+      const matchDate = new Date(match.match_date)
+      matchDate.setHours(0, 0, 0, 0)
+
+      // ✅ check if match is within the next 7 days
+      const isWithin7Days = matchDate >= today && matchDate <= nextWeek
+
+      // ✅ check if competition matches (or no filter applied)
+      const isCompetitionMatch =
+        !filters.competition || match.competition_name === filters.competition
+
+      return isWithin7Days && isCompetitionMatch
+    })
+
+    setMatchesData(filteredMatches)
+
+    setTimeout(() => setIsLoading(false), 1000)
+  }
+
+  useEffect(() => {
+    console.log(matchesData)
+  }, [matchesData])
+
 
 
 
@@ -105,7 +118,7 @@ function MatchStatusCard() {
         )
           : (<>
             {/* Upcoming Match */}
-            {matches.length!=0 ? (matches.map((match, index) => {
+            {matchesData.length != 0 ? (matchesData.map((match, index) => {
               return <div key={index} className="border rounded-lg p-4 space-y-2">
                 <div className="flex justify-between items-start">
                   <div>
@@ -125,7 +138,7 @@ function MatchStatusCard() {
                   </Button>
                 </div>
               </div>
-            })):<div className="text-sm flex items-center justify-center h-[250px] text-muted-foreground">No matches available</div>}
+            })) : <div className="text-sm flex items-center justify-center h-[250px] text-muted-foreground">No matches available</div>}
           </>)}
       </CardContent>
     </Card>

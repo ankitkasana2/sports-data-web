@@ -7,12 +7,11 @@ import { Navigation } from './components/Navigation.jsx'
 import { StoresProvider } from "./stores/StoresProvider.jsx"
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <BrowserRouter>
-      <Navigation />
-      <StoresProvider>
-        <App />
-      </StoresProvider>
-    </BrowserRouter>
-  </StrictMode>,
+  <BrowserRouter>
+    <Navigation />
+    <StoresProvider>
+      <App />
+    </StoresProvider>
+  </BrowserRouter>
+
 )
