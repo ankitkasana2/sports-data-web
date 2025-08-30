@@ -12,8 +12,13 @@ import {
     Download,
     Eye,
 } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 export default function QuickActionCard() {
+
+    const navigate = useNavigate()
+
+
     return (
 
         <Card className="max-h-[420px] h-auto">
@@ -36,7 +41,7 @@ export default function QuickActionCard() {
                     <Users className="h-4 w-4 mr-2" />
                     Add Team
                 </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Button className="w-full justify-start bg-transparent" variant="outline" onClick={() => navigate("/players")}>
                     <User className="h-4 w-4 mr-2" />
                     Add Player
                 </Button>

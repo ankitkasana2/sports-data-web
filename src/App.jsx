@@ -2,23 +2,22 @@ import { Routes, Route } from "react-router-dom"
 import { Navigation } from "./components/Navigation"
 import Home from "./pages/Home"
 import HomePage from "./pages/Home"
-import Teams from "./pages/teams/Teams"
 import Players from "./pages/players/Players"
-// import Matches from "./pages/matches/Matches"
-// import MatchSetup from "./pages/matches/MatchSetup"
-// import LivePage from "./pages/LivePage"
-// import AnalyticsPage from "./pages/AnalyticsPage"
-// import PlayersPage from "./pages/PlayersPage"
+import TeamsPage from "./pages/teams/Teams"
+import Matches from "./pages/matches/Matches"
+import LiveMatchesList from "./pages/live/LiveMatchesList"
+import MatchTagging from "./pages/live/MatchTagging"
+
 
 function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50">
-      {/* <Navigation /> */}
+    <div className="min-h-screen ">
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/teams" element={<Teams />} />
-        {/* <Route path="/matches" element={<MatchesPage />} /> */}
-        {/* <Route path="/live" element={<LivePage />} /> */}
+        <Route path="/teams" element={<TeamsPage />} />
+        <Route path="/matches" element={<Matches />} />
+        <Route path="/live" element={<LiveMatchesList />} />
+        <Route path="/live/:matchId" element={<MatchTagging />} />
         {/* <Route path="/analytics" element={<AnalyticsPage />} /> */}
         <Route path="/players" element={<Players />} />
       </Routes>

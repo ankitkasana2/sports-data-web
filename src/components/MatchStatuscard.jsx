@@ -13,11 +13,14 @@ import {
 import { observer } from "mobx-react-lite"
 import { useStores } from "../stores/StoresProvider"
 import { toJS } from "mobx"
+import { useNavigate } from "react-router-dom"
 
 function MatchStatusCard() {
 
   const { homeFilterbarStore } = useStores()
   const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
+
+  const navigate = useNavigate()
 
   const [isLoading, setIsLoading] = useState(true)
   const [matchesData, setMatchesData] = useState([])
@@ -26,13 +29,13 @@ function MatchStatusCard() {
 
   useEffect(() => {
     fetchMatches()
+    setIsLoading(true)
   }, [filters.season, filters.competition, matches])
 
 
   useEffect(() => {
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 2000);
+
+    setIsLoading(true)
 
     fetchMatches()
   }, [])
@@ -58,17 +61,19 @@ function MatchStatusCard() {
       const isCompetitionMatch =
         !filters.competition || match.competition_name === filters.competition
 
-      return isWithin7Days && isCompetitionMatch
+      // check match ststus 
+      const isNotPused = match.match_status != "paused"
+      return isWithin7Days && isCompetitionMatch && isNotPused
     })
 
     setMatchesData(filteredMatches)
 
-    setTimeout(() => setIsLoading(false), 1000)
+
   }
 
   useEffect(() => {
-    console.log(matchesData)
-  }, [matchesData])
+    setIsLoading(false)
+  }, [matches])
 
 
 
@@ -132,7 +137,7 @@ function MatchStatusCard() {
                       {match.date == formattedToday ? "Today" : match.date}, {match.time}
                     </div>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" onClick={()=>{navigate(`live/${match.match_id}`)}}>
                     <Play className="h-3 w-3 mr-1" />
                     Start
                   </Button>

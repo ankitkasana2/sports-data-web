@@ -9,51 +9,51 @@ import { toJS } from "mobx"
 
 function HomeFilterbar() {
 
-    const { homeFilterbarStore } = useStores()
-    const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
+  const { homeFilterbarStore } = useStores()
+  const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
 
-    const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-    useEffect(() => {
-      if(searchParams.size!=0){
-        if(searchParams.get("season")){
-          homeFilterbarStore.setFilter("season", searchParams.get("season"))
-        }else{
-          homeFilterbarStore.setFilter("season", new Date().getFullYear())
-        }
+  useEffect(() => {
+    if (searchParams.size != 0) {
+      if (searchParams.get("season")) {
+        homeFilterbarStore.setFilter("season", searchParams.get("season"))
       }
-
-      homeFilterbarStore.getMatches()
-    }, [])
-
-
+    } else {
+      homeFilterbarStore.setFilter("season", new Date().getFullYear())
+    }
     
-    
-
-    useEffect(() => {
-      searchParams.set("season", filters.season)
-      searchParams.set("competition", filters.competition.code?filters.competition.code:"")
-      searchParams.set("code", filters.code)
-      searchParams.set("grade",filters.grade)
-      searchParams.set("group", filters.group)
-      setSearchParams(searchParams)
-
-      homeFilterbarStore.getMatches()
-
-    }, [filters.season,filters.competition,filters, filters.code, filters.grade, filters.group])
-    
+    homeFilterbarStore.getMatches()
+  }, [])
 
 
 
 
-     return (
+
+  useEffect(() => {
+    searchParams.set("season", filters.season)
+    searchParams.set("competition", filters.competition.code ? filters.competition.code : "")
+    searchParams.set("code", filters.code)
+    searchParams.set("grade", filters.grade)
+    searchParams.set("group", filters.group)
+    setSearchParams(searchParams)
+
+    homeFilterbarStore.getMatches()
+
+  }, [filters.season, filters.competition, filters, filters.code, filters.grade, filters.group])
+
+
+
+
+
+  return (
     <div className="sticky top-14 z-50 bg-card border-b border-border">
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-wrap gap-4 items-center">
 
           {/* season */}
-          <Select 
-            value={String(filters.season)} 
+          <Select
+            value={String(filters.season)}
             onValueChange={(val) => homeFilterbarStore.setFilter("season", val)}
           >
             <SelectTrigger className="w-24">
@@ -83,8 +83,8 @@ function HomeFilterbar() {
           </Select>
 
           {/* code */}
-          <Select 
-            value={filters.code} 
+          <Select
+            value={filters.code}
             onValueChange={(val) => homeFilterbarStore.setFilter("code", val)}
           >
             <SelectTrigger className="w-auto">
@@ -97,8 +97,8 @@ function HomeFilterbar() {
           </Select>
 
           {/* grade */}
-          <Select 
-            value={filters.grade} 
+          <Select
+            value={filters.grade}
             onValueChange={(val) => homeFilterbarStore.setFilter("grade", val)}
           >
             <SelectTrigger className="w-auto">
@@ -110,8 +110,8 @@ function HomeFilterbar() {
           </Select>
 
           {/* group */}
-          <Select 
-            value={filters.group} 
+          <Select
+            value={filters.group}
             onValueChange={(val) => homeFilterbarStore.setFilter("group", val)}
           >
             <SelectTrigger className="w-auto">

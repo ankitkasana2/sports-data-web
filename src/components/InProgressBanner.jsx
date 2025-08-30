@@ -1,15 +1,36 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 import { Card, CardContent } from "..//components/ui/card"
 import { Button } from "../components/ui/button"
 import { Play, Clock, RotateCcw } from "lucide-react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../stores/StoresProvider"
-import data from "../../data"
 import { Progress } from "../components/ui/progress"
+import { toJS } from "mobx"
+import { useNavigate } from "react-router-dom"
 
 function InProgressBanner() {
 
-  const match = data.matchData[0]
+  const { homeFilterbarStore } = useStores()
+  const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
+
+  const navigate = useNavigate()
+
+  const [match, setMatch] = useState([])
+
+
+
+  useEffect(() => {
+    if (matches.length != 0) {
+      const fetchMetch = matches.find((m) => m.match_status == "paused");
+      if (fetchMetch) {
+        setMatch(() => fetchMetch)
+      }
+    }
+  }, [matches])
+
+
+
+
 
 
   return (
@@ -24,7 +45,7 @@ function InProgressBanner() {
               </span>
             </div>
             <div className="text-sm text-muted-foreground">
-              {match.team_a_id} vs {match.team_b_id} • {match.venue_name}
+              {match.team_a_id} vs {match.team_a_id} • {match.venue_name}
             </div>
           </div>
 
@@ -37,7 +58,7 @@ function InProgressBanner() {
               </div>
               <Progress value={67} className="w-full mt-2" />
             </div>
-            <Button size="sm">
+            <Button size="sm" onClick={()=>navigate(`live/${match.match_id}`)}>
               <RotateCcw className="h-3 w-3 mr-1" />
               Resume
             </Button>

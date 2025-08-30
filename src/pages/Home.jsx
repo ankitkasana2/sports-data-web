@@ -8,10 +8,31 @@ import RecentActivityCard from "../components/RecentActivityCard"
 import RecentExport from "../components/RecentExport"
 import RecentExportCard from "../components/RecentExport"
 import HomeFilterbar from "../components/HomeFilterbar"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../stores/StoresProvider"
 import axios from "axios"
+import { override, toJS } from "mobx"
 
 
-export default function Home() {
+function Home() {
+
+  const { homeFilterbarStore } = useStores()
+  const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
+  const [isBannerShow, setIsBannerShow] = useState(false)
+
+ 
+
+  useEffect(() => {
+    if (matches.length!=0) {
+      const fetchMatch = matches.find((m) => m.match_status == "paused");
+      if (fetchMatch) {
+        setIsBannerShow(!!fetchMatch); 
+      }
+    }
+  }, [toJS(matches)])
+
+
+
 
 
   return (
@@ -20,9 +41,9 @@ export default function Home() {
       <HomeFilterbar />
 
       <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
+        {isBannerShow&&<div className="mb-6">
           <InProgressBanner />
-        </div>
+        </div>}
         {/* Primary Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Quick Actions */}
@@ -54,3 +75,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default observer(Home)

@@ -42,7 +42,7 @@ class HomeFilterbarStore {
         this.years = years.reverse()
     }
 
-    // fetch all matches 
+    // fetch all matches by season
     getMatches() {
         setTimeout(() => {
             axios.get(`https://readyforyourreview.com/KevinR123/public/matches/season/${this.filters.season}`)
