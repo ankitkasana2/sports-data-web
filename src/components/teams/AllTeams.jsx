@@ -492,9 +492,9 @@ export default function TeamsPage() {
                 </div>
               </TableHead>
               <TableHead>Team name</TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead className="text-right">Players</TableHead>
-              <TableHead className="text-right">Matches (season)</TableHead>
+              <TableHead className="text-left">Code</TableHead>
+              <TableHead className="text-left">Players</TableHead>
+              <TableHead className="text-left">Matches (season)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -531,11 +531,11 @@ export default function TeamsPage() {
                   </TableCell>
 
                   <TableCell className="font-medium">{team.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{team.code}</Badge>
+                  <TableCell className="text-left ">
+                    <Badge variant="bg-emerald-600">{team.code}</Badge>
                   </TableCell>
-                  <TableCell className="text-right">{team.playerCount}</TableCell>
-                  <TableCell className="text-right">{team.matchesPlayedThisSeason}</TableCell>
+                  <TableCell className="text-left">{team.playerCount}</TableCell>
+                  <TableCell className="text-left">{team.matchesPlayedThisSeason}</TableCell>
                 </TableRow>
               ))
             )}

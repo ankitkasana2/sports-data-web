@@ -26,10 +26,12 @@ function Home() {
     if (matches.length!=0) {
       const fetchMatch = matches.find((m) => m.match_status == "paused");
       if (fetchMatch) {
-        setIsBannerShow(!!fetchMatch); 
+        setIsBannerShow(true); 
+      }else{
+        setIsBannerShow(false)
       }
     }
-  }, [toJS(matches)])
+  }, [toJS(matches), toJS(filters.season)])
 
 
 

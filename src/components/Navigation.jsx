@@ -1,9 +1,29 @@
 import { Link, useLocation } from "react-router-dom"
 import { Home, Users, Trophy, BarChart3, Target, UserCheck, RotateCcw } from "lucide-react"
 import { Button } from "./ui/button"
+import { useNavigate } from "react-router-dom"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../stores/StoresProvider"
+import { useEffect,useState } from "react"
 
-export function Navigation() {
+function Navigation() {
   const location = useLocation()
+  const navigate = useNavigate()
+
+  const { homeFilterbarStore } = useStores()
+  const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
+
+  const [match, setMatch] = useState([])
+
+
+  useEffect(() => {
+    if (matches.length != 0) {
+      const fetchMetch = matches.find((m) => m.match_status == "paused");
+      if (fetchMetch) {
+        setMatch(() => fetchMetch)
+      }
+    }
+  }, [matches])
 
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
@@ -35,7 +55,7 @@ export function Navigation() {
                 <span>{label}</span>
               </Link>
             ))}
-            <Button size="sm">
+            <Button size="sm" onClick={()=>navigate(`live/${match.match_id}`)}>
               <RotateCcw className="h-3 w-3 mr-1" />
               Resume
             </Button>
@@ -45,3 +65,5 @@ export function Navigation() {
     </nav>
   )
 }
+
+export default observer(Navigation)

@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/ta
 import { Badge } from "../../components/ui/badge"
 import { Textarea } from "../../components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../components/ui/tooltip"
+import { Separator } from "@/components/ui/separator"
 
 // Utility helpers
 const nowMs = () => Date.now()
@@ -92,6 +94,7 @@ export default function LiveMatchPage({ matchId }) {
   const [possessions, setPossessions] = useState([])
   const [openPossession, setOpenPossession] = useState(null) // { id, team }
   const [subs, setSubs] = useState([]) // { id, team, offId, onId, timeMs }
+  const [timeopen, setTimeOpen] = useState(true)
 
   // UI states
   const [showPreMatch, setShowPreMatch] = useState(true)
@@ -335,6 +338,23 @@ export default function LiveMatchPage({ matchId }) {
     setOpenPossession(open)
   }, [events, recomputePossessions])
 
+  // clock rewind 
+  const rewind5 = () => {
+    setClock((c) => {
+      // Don’t allow going below 0
+      const newElapsed = Math.max(0, c.elapsedMs - 5000)
+      return { ...c, elapsedMs: newElapsed, startedAt: c.isRunning ? nowMs() - newElapsed : c.startedAt }
+    })
+  }
+
+  // clock froward 
+  const forward5 = () => {
+    setClock((c) => {
+      const newElapsed = c.elapsedMs + 5000
+      return { ...c, elapsedMs: newElapsed, startedAt: c.isRunning ? nowMs() - newElapsed : c.startedAt }
+    })
+  }
+
   // Hotkeys
   useEffect(() => {
     const onKey = (e) => {
@@ -359,11 +379,18 @@ export default function LiveMatchPage({ matchId }) {
         openTurnover("home")
       } else if (k === "?") {
         setShowHotkeys((v) => !v)
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "ArrowLeft") {
+        e.preventDefault()
+        rewind5()
+      }
+      else if ((e.ctrlKey || e.metaKey) && e.key === "ArrowRight") {
+        e.preventDefault()
+        forward5()
       }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [clock.isRunning, pauseClock, startClock, undoLast])
+  }, [clock.isRunning, pauseClock, startClock, undoLast, rewind5, forward5])
 
   // Shot dialog state
   const [shotDialog, setShotDialog] = useState({
@@ -408,6 +435,26 @@ export default function LiveMatchPage({ matchId }) {
       setOnField(side.starters, onId, true)
       setOnField(side.bench, onId, true)
       return next
+    })
+  }
+
+  // change period 
+  const changePeriod = () => {
+    setClock((prev) => {
+      let nextPeriod = prev.period
+
+      switch (prev.period) {
+        case "H1":
+          nextPeriod = "H2"
+          break
+        case "H2":
+          nextPeriod = "FT"
+          break
+        default:
+          nextPeriod = "H1" // reset back to start if needed
+      }
+
+      return { ...prev, period: nextPeriod }
     })
   }
 
@@ -566,45 +613,90 @@ export default function LiveMatchPage({ matchId }) {
     return 0
   }
 
+
+
   // UI rendering
   return (
-    <main className="p-4 md:p-6 space-y-4">
+    <section>
       {/* Top bar */}
-      <Card>
-        <CardHeader className="flex flex-col gap-2">
+      <div className="shadow-sm border-b bg-white shadow-sm p-2 sticky top-14 z-50">
+        <div className="flex flex-col gap-2">
+          {/* main bar  */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <Badge variant="outline">{clock.period}</Badge>
-              <div className="text-3xl font-semibold tabular-nums">{msToClock(clock.elapsedMs)}</div>
+              <div className="text-3xl font-semibold tabular-nums">
+                {msToClock(clock.elapsedMs)}
+              </div>
+              {/* clock action button  */}
               <div className="flex items-center gap-2">
+                {/* start/pause button  */}
                 {!clock.isRunning ? (
                   <Button onClick={startClock} variant="default">
-                    Start (Space)
+                    Start
                   </Button>
                 ) : (
-                  <Button onClick={pauseClock} variant="secondary">
-                    Pause (Space)
+                  <Button onClick={pauseClock} variant="destructive">
+                    Pause
                   </Button>
                 )}
-                <Button variant="outline" onClick={resetClock}>
-                  Reset
+                {/* time change button  */}
+                <div className="hidden md:flex items-center gap-1">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="outline" onClick={rewind5} disabled={clock.isRunning}>
+                        −5
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Rewind 5s (paused)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="icon" variant="outline" onClick={forward5} disabled={clock.isRunning}>
+                        +5
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Forward 5s (paused)</TooltipContent>
+                  </Tooltip>
+                  <Button size="sm" variant="outline" onClick={changePeriod}>
+                    Next Period
+                  </Button>
+                </div>
+                {/* set time button  */}
+                <Button
+                  size="sm"
+                  variant="outline"
+
+                  disabled={clock.isRunning}
+                >
+                  Set time…
                 </Button>
+                {/* mark button  */}
                 <Button
                   variant="outline"
                   onClick={() =>
                     addEvent({
                       type: "period",
                       team: "home",
-                      details: { boundary: phase === "in-play" ? "half-time" : "full-time" },
+                      details: {
+                        boundary: phase === "in-play" ? "half-time" : "full-time",
+                      },
                     })
                   }
                 >
                   Mark {phase === "in-play" ? "Half-Time" : "Full-Time"}
                 </Button>
-                <Button variant="ghost" onClick={undoLast}>
+                <Button onClick={resetClock} variant="outline">
+                  Reset
+                </Button>
+                {/* undo button  */}
+                <Button variant="outline" onClick={undoLast}>
                   Undo (Z)
                 </Button>
               </div>
+
+
+              {/* drawer  */}
             </div>
             <div className="flex items-center gap-4">
               <Scoreboard
@@ -622,16 +714,58 @@ export default function LiveMatchPage({ matchId }) {
               />
             </div>
           </div>
+          <Separator className="w-full" />
+          {/* sub bar  */}
           <div className="flex items-center justify-between">
+            {/* automatic time saved  */}
             <div className="text-sm text-muted-foreground">
               Save:{" "}
               {saveStatus.state === "saving"
                 ? "Saving..."
                 : saveStatus.state === "saved"
-                  ? `Saved at ${new Date(saveStatus.at || Date.now()).toLocaleTimeString()}`
+                  ? `Saved at ${new Date(
+                    saveStatus.at || Date.now()
+                  ).toLocaleTimeString()}`
                   : "Idle"}
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* live status bar  */}
+            <div className="flex justify-between items-center w-[70%]">
+              {/* shots  */}
+              <div>
+                <div className="text-[11px]  tracking-wide text-slate-500">SHOTS</div>
+                <div className="font-medium">0-0</div>
+              </div>
+
+              {/* score  */}
+              <div>
+                <div className="text-[11px] tracking-wide text-slate-500">SCORES</div>
+                <div className="font-medium">0/0-0/0</div>
+              </div>
+
+              {/* frees  */}
+               <div>
+                <div className="text-[11px] tracking-wide text-slate-500">FREES</div>
+                <div className="font-medium">0-0</div>
+              </div>
+
+               {/* restart  */}
+               <div>
+                <div className="text-[11px] tracking-wide text-slate-500">RESTART RETENTION</div>
+                <div className="font-medium">0%-0%</div>
+              </div>
+
+                {/* ppp  */}
+               <div>
+                <div className="text-[11px] tracking-wide text-slate-500">PPP</div>
+                <div className="font-medium">0.00-0.00</div>
+              </div>
+            </div>
+
+
+
+
+            {/* <div className="flex items-center gap-2">
               <Button variant="outline" onClick={exportEvents}>
                 Export Events CSV
               </Button>
@@ -671,233 +805,309 @@ export default function LiveMatchPage({ matchId }) {
                   </ul>
                 </DialogContent>
               </Dialog>
-            </div>
+            </div> */}
           </div>
-        </CardHeader>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Event Pad */}
-        <section className="lg:col-span-4 space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Event Pad</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                <Button onClick={() => setShotDialog({ open: true, team: "home", result: "point" })}>Shot (S)</Button>
-                <Button variant="secondary" onClick={() => setFreeDialog({ open: true, team: "home", outcome: "won" })}>
-                  Free (F)
-                </Button>
-                <Button variant="outline" onClick={() => setPuckDialog({ open: true, team: "home", who: "own" })}>
-                  Puck-out (P)
-                </Button>
-                <Button variant="outline" onClick={() => openTurnover("home")}>
-                  Turnover (T)
-                </Button>
-              </div>
-              <div className="mt-4 text-sm text-muted-foreground">
-                Tip: Choose team inside dialogs. Possessions open/close automatically.
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Sub */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Substitution</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <SubForm lineups={lineups} onSubmit={makeSub} />
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Right Panels */}
-        <section className="lg:col-span-8">
-          <Tabs value={activePanel} onValueChange={setActivePanel}>
-            <TabsList className="grid grid-cols-4 w-full">
-              <TabsTrigger value="lineups">Lineups</TabsTrigger>
-              <TabsTrigger value="feed">Event Feed</TabsTrigger>
-              <TabsTrigger value="stats">Live Stats</TabsTrigger>
-              <TabsTrigger value="pitch">Mini Pitch</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="lineups" className="space-y-4">
-              <LineupsPanel lineups={lineups} playerMinutes={playerMinutes} />
-            </TabsContent>
-
-            <TabsContent value="feed">
-              <EventFeed
-                events={events}
-                onEdit={(idx, patch) => {
-                  const next = events.slice()
-                  next[idx] = { ...next[idx], ...patch }
-                  const { poss, open } = recomputePossessions(next)
-                  setEvents(next)
-                  setPossessions(poss)
-                  setOpenPossession(open)
-                }}
-              />
-            </TabsContent>
-
-            <TabsContent value="stats">
-              <LiveStatsPanel stats={liveStats} />
-            </TabsContent>
-
-            <TabsContent value="pitch">
-              <MiniPitch
-                events={events.filter((e) => e.type === "shot")}
-                onPoint={(xy) => setShotDialog((s) => ({ ...s, open: true, xy }))}
-              />
-            </TabsContent>
-          </Tabs>
-        </section>
-      </div>
-
-      {/* Validation warnings */}
-      {validationMessages.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Validation Warnings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-6 text-sm space-y-1">
-              {validationMessages.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">Phase: {phase}</div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => {
-              setPhase("half-time")
-              pauseClock()
-              setValidationMessages(validate())
-            }}
-          >
-            Half-Time
-          </Button>
-          <Button variant="default" onClick={completeMatch}>
-            Complete Match
-          </Button>
         </div>
       </div>
 
-      {/* Pre-Match Checklist Modal */}
-      <Dialog open={showPreMatch} onOpenChange={(v) => setShowPreMatch(v)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Pre-Match Checklist</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Season</Label>
-              <Input
-                type="number"
-                value={meta.season}
-                onChange={(e) => setMeta({ ...meta, season: Number(e.target.value) })}
-              />
-              <Label>Competition</Label>
-              <Input value={meta.competition} onChange={(e) => setMeta({ ...meta, competition: e.target.value })} />
-              <Label>Venue</Label>
-              <Input value={meta.venue} onChange={(e) => setMeta({ ...meta, venue: e.target.value })} />
-              <Label>Referee</Label>
-              <Input value={meta.referee} onChange={(e) => setMeta({ ...meta, referee: e.target.value })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Ruleset</Label>
-              <Select value={meta.ruleset} onValueChange={(v) => setMeta({ ...meta, ruleset: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select ruleset" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="custom">Custom</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label>Half Length (min)</Label>
-                  <Input
-                    type="number"
-                    value={halfLengthMin}
-                    onChange={(e) => setHalfLengthMin(Number(e.target.value || 0))}
-                  />
+      {/* main container  */}
+      <div className="p-4 md:p-6 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          {/* Event Pad */}
+          <section className="lg:col-span-4 space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Event Pad</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button onClick={() => setShotDialog({ open: true, team: "home", result: "point" })}>Shot (S)</Button>
+                  <Button variant="secondary" onClick={() => setFreeDialog({ open: true, team: "home", outcome: "won" })}>
+                    Free (F)
+                  </Button>
+                  <Button variant="outline" onClick={() => setPuckDialog({ open: true, team: "home", who: "own" })}>
+                    Puck-out (P)
+                  </Button>
+                  <Button variant="outline" onClick={() => openTurnover("home")}>
+                    Turnover (T)
+                  </Button>
                 </div>
-                <div className="flex items-center gap-2 mt-6">
-                  <Checkbox
-                    id="et"
-                    checked={extraTimeEnabled}
-                    onCheckedChange={(v) => setExtraTimeEnabled(Boolean(v))}
-                  />
-                  <Label htmlFor="et">Extra-Time possible</Label>
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Tip: Choose team inside dialogs. Possessions open/close automatically.
                 </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div>
-                  <Label>Wind Dir</Label>
-                  <Input
-                    value={meta.weather.windDir}
-                    onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, windDir: e.target.value } })}
-                  />
-                </div>
-                <div>
-                  <Label>Wind Strength</Label>
-                  <Input
-                    value={meta.weather.windStrength}
-                    onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, windStrength: e.target.value } })}
-                  />
-                </div>
-                <div>
-                  <Label>Surface</Label>
-                  <Input
-                    value={meta.weather.surface}
-                    onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, surface: e.target.value } })}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="md:col-span-2">
-              <Label>Notes</Label>
-              <Textarea placeholder="Any pre-match notes..." />
-            </div>
-          </div>
-          <DialogFooter className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">Complete all required fields to start.</div>
-            <Button
-              onClick={() => {
-                setShowPreMatch(false)
-                setPhase("in-play")
-                startClock()
-              }}
-              disabled={
-                !meta.venue || !meta.referee || lineups.home.starters.length < 15 || lineups.away.starters.length < 15
-              }
-            >
-              Confirm & Start
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              </CardContent>
+            </Card>
 
-      {/* Shot Dialog */}
-      <Dialog open={shotDialog.open} onOpenChange={(v) => setShotDialog((s) => ({ ...s, open: v }))}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Shot</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3">
+            {/* Quick Sub */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Substitution</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <SubForm lineups={lineups} onSubmit={makeSub} />
+              </CardContent>
+            </Card>
+          </section>
+
+          {/* Right Panels */}
+          <section className="lg:col-span-8">
+            <Tabs value={activePanel} onValueChange={setActivePanel}>
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="lineups">Lineups</TabsTrigger>
+                <TabsTrigger value="feed">Event Feed</TabsTrigger>
+                <TabsTrigger value="stats">Live Stats</TabsTrigger>
+                <TabsTrigger value="pitch">Mini Pitch</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="lineups" className="space-y-4">
+                <LineupsPanel lineups={lineups} playerMinutes={playerMinutes} />
+              </TabsContent>
+
+              <TabsContent value="feed">
+                <EventFeed
+                  events={events}
+                  onEdit={(idx, patch) => {
+                    const next = events.slice()
+                    next[idx] = { ...next[idx], ...patch }
+                    const { poss, open } = recomputePossessions(next)
+                    setEvents(next)
+                    setPossessions(poss)
+                    setOpenPossession(open)
+                  }}
+                />
+              </TabsContent>
+
+              <TabsContent value="stats">
+                <LiveStatsPanel stats={liveStats} />
+              </TabsContent>
+
+              <TabsContent value="pitch">
+                <MiniPitch
+                  events={events.filter((e) => e.type === "shot")}
+                  onPoint={(xy) => setShotDialog((s) => ({ ...s, open: true, xy }))}
+                />
+              </TabsContent>
+            </Tabs>
+          </section>
+        </div>
+
+        {/* Validation warnings */}
+        {validationMessages.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Validation Warnings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="list-disc pl-6 text-sm space-y-1">
+                {validationMessages.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">Phase: {phase}</div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPhase("half-time")
+                pauseClock()
+                setValidationMessages(validate())
+              }}
+            >
+              Half-Time
+            </Button>
+            <Button variant="default" onClick={completeMatch}>
+              Complete Match
+            </Button>
+          </div>
+        </div>
+
+        {/* Pre-Match Checklist Modal */}
+        <Dialog open={showPreMatch} onOpenChange={(v) => setShowPreMatch(v)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Pre-Match Checklist</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Season</Label>
+                <Input
+                  type="number"
+                  value={meta.season}
+                  onChange={(e) => setMeta({ ...meta, season: Number(e.target.value) })}
+                />
+                <Label>Competition</Label>
+                <Input value={meta.competition} onChange={(e) => setMeta({ ...meta, competition: e.target.value })} />
+                <Label>Venue</Label>
+                <Input value={meta.venue} onChange={(e) => setMeta({ ...meta, venue: e.target.value })} />
+                <Label>Referee</Label>
+                <Input value={meta.referee} onChange={(e) => setMeta({ ...meta, referee: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Ruleset</Label>
+                <Select value={meta.ruleset} onValueChange={(v) => setMeta({ ...meta, ruleset: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select ruleset" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label>Half Length (min)</Label>
+                    <Input
+                      type="number"
+                      value={halfLengthMin}
+                      onChange={(e) => setHalfLengthMin(Number(e.target.value || 0))}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 mt-6">
+                    <Checkbox
+                      id="et"
+                      checked={extraTimeEnabled}
+                      onCheckedChange={(v) => setExtraTimeEnabled(Boolean(v))}
+                    />
+                    <Label htmlFor="et">Extra-Time possible</Label>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <Label>Wind Dir</Label>
+                    <Input
+                      value={meta.weather.windDir}
+                      onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, windDir: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Wind Strength</Label>
+                    <Input
+                      value={meta.weather.windStrength}
+                      onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, windStrength: e.target.value } })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Surface</Label>
+                    <Input
+                      value={meta.weather.surface}
+                      onChange={(e) => setMeta({ ...meta, weather: { ...meta.weather, surface: e.target.value } })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <Label>Notes</Label>
+                <Textarea placeholder="Any pre-match notes..." />
+              </div>
+            </div>
+            <DialogFooter className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Complete all required fields to start.</div>
+              <Button
+                onClick={() => {
+                  setShowPreMatch(false)
+                  setPhase("in-play")
+                  startClock()
+                }}
+                disabled={
+                  !meta.venue || !meta.referee || lineups.home.starters.length < 15 || lineups.away.starters.length < 15
+                }
+              >
+                Confirm & Start
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Shot Dialog */}
+        <Dialog open={shotDialog.open} onOpenChange={(v) => setShotDialog((s) => ({ ...s, open: v }))}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Shot</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Team</Label>
+                  <Select value={shotDialog.team} onValueChange={(v) => setShotDialog((s) => ({ ...s, team: v }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="home">{teams.home.name}</SelectItem>
+                      <SelectItem value="away">{teams.away.name}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Result</Label>
+                  <Select value={shotDialog.result} onValueChange={(v) => setShotDialog((s) => ({ ...s, result: v }))}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="goal">Goal</SelectItem>
+                      <SelectItem value="point">Point</SelectItem>
+                      <SelectItem value="wide">Wide</SelectItem>
+                      <SelectItem value="saved">Saved</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Label>Shooter</Label>
+              <Input
+                value={shotDialog.shooterId}
+                onChange={(e) => setShotDialog((s) => ({ ...s, shooterId: e.target.value }))}
+                placeholder="Player ID/Name (free text MVP)"
+              />
+              <Label>Note</Label>
+              <Input
+                value={shotDialog.note}
+                onChange={(e) => setShotDialog((s) => ({ ...s, note: e.target.value }))}
+                placeholder="Optional"
+              />
+              <div>
+                <Label>Shot Location</Label>
+                <MiniPitch clickToSet className="mt-2" onPoint={(xy) => setShotDialog((s) => ({ ...s, xy }))} />
+                <div className="text-xs text-muted-foreground mt-1">Click on the mini pitch to set location.</div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  addEvent({
+                    type: "shot",
+                    team: shotDialog.team,
+                    details: {
+                      result: shotDialog.result,
+                      shooterId: shotDialog.shooterId,
+                      note: shotDialog.note,
+                      xy: shotDialog.xy,
+                    },
+                  })
+                  setShotDialog({ open: false, team: "home", shooterId: "", result: "point", note: "", xy: null })
+                }}
+              >
+                Add Shot
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Free Dialog */}
+        <Dialog open={freeDialog.open} onOpenChange={(v) => setFreeDialog((s) => ({ ...s, open: v }))}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Free</DialogTitle>
+            </DialogHeader>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label>Team</Label>
-                <Select value={shotDialog.team} onValueChange={(v) => setShotDialog((s) => ({ ...s, team: v }))}>
+                <Select value={freeDialog.team} onValueChange={(v) => setFreeDialog((s) => ({ ...s, team: v }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -908,211 +1118,138 @@ export default function LiveMatchPage({ matchId }) {
                 </Select>
               </div>
               <div>
-                <Label>Result</Label>
-                <Select value={shotDialog.result} onValueChange={(v) => setShotDialog((s) => ({ ...s, result: v }))}>
+                <Label>Outcome</Label>
+                <Select value={freeDialog.outcome} onValueChange={(v) => setFreeDialog((s) => ({ ...s, outcome: v }))}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="goal">Goal</SelectItem>
-                    <SelectItem value="point">Point</SelectItem>
-                    <SelectItem value="wide">Wide</SelectItem>
-                    <SelectItem value="saved">Saved</SelectItem>
+                    <SelectItem value="won">Won</SelectItem>
+                    <SelectItem value="conceded">Conceded</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              <div className="md:col-span-2">
+                <Label>Foul Type</Label>
+                <Input
+                  value={freeDialog.foul}
+                  onChange={(e) => setFreeDialog((s) => ({ ...s, foul: e.target.value }))}
+                  placeholder="e.g., Tackle"
+                />
+              </div>
             </div>
-            <Label>Shooter</Label>
-            <Input
-              value={shotDialog.shooterId}
-              onChange={(e) => setShotDialog((s) => ({ ...s, shooterId: e.target.value }))}
-              placeholder="Player ID/Name (free text MVP)"
-            />
-            <Label>Note</Label>
-            <Input
-              value={shotDialog.note}
-              onChange={(e) => setShotDialog((s) => ({ ...s, note: e.target.value }))}
-              placeholder="Optional"
-            />
-            <div>
-              <Label>Shot Location</Label>
-              <MiniPitch clickToSet className="mt-2" onPoint={(xy) => setShotDialog((s) => ({ ...s, xy }))} />
-              <div className="text-xs text-muted-foreground mt-1">Click on the mini pitch to set location.</div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                addEvent({
-                  type: "shot",
-                  team: shotDialog.team,
-                  details: {
-                    result: shotDialog.result,
-                    shooterId: shotDialog.shooterId,
-                    note: shotDialog.note,
-                    xy: shotDialog.xy,
-                  },
-                })
-                setShotDialog({ open: false, team: "home", shooterId: "", result: "point", note: "", xy: null })
-              }}
-            >
-              Add Shot
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  addEvent({
+                    type: "free",
+                    team: freeDialog.team,
+                    details: { outcome: freeDialog.outcome, foul: freeDialog.foul },
+                  })
+                  setFreeDialog({ open: false, team: "home", outcome: "won", foul: "tackle", note: "" })
+                }}
+              >
+                Add Free
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Free Dialog */}
-      <Dialog open={freeDialog.open} onOpenChange={(v) => setFreeDialog((s) => ({ ...s, open: v }))}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Free</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Team</Label>
-              <Select value={freeDialog.team} onValueChange={(v) => setFreeDialog((s) => ({ ...s, team: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">{teams.home.name}</SelectItem>
-                  <SelectItem value="away">{teams.away.name}</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Puck-out Dialog */}
+        <Dialog open={puckDialog.open} onOpenChange={(v) => setPuckDialog((s) => ({ ...s, open: v }))}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Puck-out / Kick-out</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Team</Label>
+                <Select value={puckDialog.team} onValueChange={(v) => setPuckDialog((s) => ({ ...s, team: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="home">{teams.home.name}</SelectItem>
+                    <SelectItem value="away">{teams.away.name}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Who</Label>
+                <Select value={puckDialog.who} onValueChange={(v) => setPuckDialog((s) => ({ ...s, who: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="own">Own</SelectItem>
+                    <SelectItem value="oppo">Opposition</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Length</Label>
+                <Select value={puckDialog.length} onValueChange={(v) => setPuckDialog((s) => ({ ...s, length: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="short">Short</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="long">Long</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Outcome</Label>
+                <Select value={puckDialog.outcome} onValueChange={(v) => setPuckDialog((s) => ({ ...s, outcome: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="clean">Clean</SelectItem>
+                    <SelectItem value="contested">Contested</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2 md:col-span-2">
+                <Checkbox
+                  id="retained"
+                  checked={puckDialog.retained}
+                  onCheckedChange={(v) => setPuckDialog((s) => ({ ...s, retained: Boolean(v) }))}
+                />
+                <Label htmlFor="retained">Possession retained</Label>
+              </div>
             </div>
-            <div>
-              <Label>Outcome</Label>
-              <Select value={freeDialog.outcome} onValueChange={(v) => setFreeDialog((s) => ({ ...s, outcome: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="won">Won</SelectItem>
-                  <SelectItem value="conceded">Conceded</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="md:col-span-2">
-              <Label>Foul Type</Label>
-              <Input
-                value={freeDialog.foul}
-                onChange={(e) => setFreeDialog((s) => ({ ...s, foul: e.target.value }))}
-                placeholder="e.g., Tackle"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                addEvent({
-                  type: "free",
-                  team: freeDialog.team,
-                  details: { outcome: freeDialog.outcome, foul: freeDialog.foul },
-                })
-                setFreeDialog({ open: false, team: "home", outcome: "won", foul: "tackle", note: "" })
-              }}
-            >
-              Add Free
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Puck-out Dialog */}
-      <Dialog open={puckDialog.open} onOpenChange={(v) => setPuckDialog((s) => ({ ...s, open: v }))}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Puck-out / Kick-out</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>Team</Label>
-              <Select value={puckDialog.team} onValueChange={(v) => setPuckDialog((s) => ({ ...s, team: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">{teams.home.name}</SelectItem>
-                  <SelectItem value="away">{teams.away.name}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Who</Label>
-              <Select value={puckDialog.who} onValueChange={(v) => setPuckDialog((s) => ({ ...s, who: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="own">Own</SelectItem>
-                  <SelectItem value="oppo">Opposition</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Length</Label>
-              <Select value={puckDialog.length} onValueChange={(v) => setPuckDialog((s) => ({ ...s, length: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="short">Short</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="long">Long</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>Outcome</Label>
-              <Select value={puckDialog.outcome} onValueChange={(v) => setPuckDialog((s) => ({ ...s, outcome: v }))}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="clean">Clean</SelectItem>
-                  <SelectItem value="contested">Contested</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center gap-2 md:col-span-2">
-              <Checkbox
-                id="retained"
-                checked={puckDialog.retained}
-                onCheckedChange={(v) => setPuckDialog((s) => ({ ...s, retained: Boolean(v) }))}
-              />
-              <Label htmlFor="retained">Possession retained</Label>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button
-              onClick={() => {
-                addEvent({
-                  type: "puckout",
-                  team: puckDialog.team,
-                  details: {
-                    who: puckDialog.who,
-                    length: puckDialog.length,
-                    outcome: puckDialog.outcome,
-                    retained: puckDialog.retained,
-                  },
-                })
-                setPuckDialog({
-                  open: false,
-                  team: "home",
-                  who: "own",
-                  length: "short",
-                  outcome: "clean",
-                  retained: true,
-                })
-              }}
-            >
-              Add Puck-out
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </main>
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  addEvent({
+                    type: "puckout",
+                    team: puckDialog.team,
+                    details: {
+                      who: puckDialog.who,
+                      length: puckDialog.length,
+                      outcome: puckDialog.outcome,
+                      retained: puckDialog.retained,
+                    },
+                  })
+                  setPuckDialog({
+                    open: false,
+                    team: "home",
+                    who: "own",
+                    length: "short",
+                    outcome: "clean",
+                    retained: true,
+                  })
+                }}
+              >
+                Add Puck-out
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </section>
   )
 }
 
