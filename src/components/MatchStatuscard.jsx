@@ -51,8 +51,12 @@ function MatchStatusCard() {
     setIsLoading(true)
 
     let filteredMatches = matches.filter((match) => {
-      const matchDate = new Date(match.match_date)
+      const kickoffDate = new Date(match.kickoff_datetime);  
+      const dateOnly = kickoffDate.toISOString().split("T")[0];  
+      const matchDate = new Date(dateOnly)
       matchDate.setHours(0, 0, 0, 0)
+      console.log(matchDate <= nextWeek)
+
 
       // ✅ check if match is within the next 7 days
       const isWithin7Days = matchDate >= today && matchDate <= nextWeek
