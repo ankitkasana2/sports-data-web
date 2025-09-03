@@ -1,44 +1,42 @@
 import { useMemo } from "react"
-import { useLive } from "./LiveContext"
 import { Card } from "../ui/card"
+import { toTotalPoints } from "../../stores/LiveMatchStore"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 
-export function LiveStatsPanel({ compact = false }) {
-  const { state } = useLive()
+export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false }) {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
 
   const shots = useMemo(() => {
-    const list = state.events.filter((e) => e.type === "shot")
+    const list = store.events.filter((e) => e.type === "shot")
     const attempts = list.length
-    const goals = list.filter((s) => s.result === "goal").length
-    const points = list.filter((s) => s.result === "point").length
-    const wides = list.filter((s) => s.result === "wide").length
-    const short = list.filter((s) => s.result === "dropped_short").length
-    const saved = list.filter((s) => s.result === "saved").length
-    const blocked = list.filter((s) => s.result === "blocked").length
-    const ptsTotal = list.reduce(
-      (acc, s) => acc + (s.score_value ?? (s.result === "goal" ? 3 : s.result === "point" ? 1 : 0)),
-      0,
-    )
-    const pps = computePPP(state)
-    return { attempts, goals, points, wides, short, saved, blocked, ptsTotal, pps }
-  }, [state])
+    // We don't track detailed results on the event; derive scores from store.score
+    const ptsTotal = toTotalPoints(store.score.home) + toTotalPoints(store.score.away)
+    const completed = store.possessions.filter((p) => p.end != null).length || 1
+    const pps = ptsTotal / completed
+    return { attempts, ptsTotal, pps }
+  }, [store.events, store.score.home, store.score.away, store.possessions])
 
   const restarts = useMemo(() => {
-    const isKick = state.code === "football"
-    const list = state.events.filter((e) => (isKick ? e.type === "kickout" : e.type === "puckout"))
-    // Placeholder: compute percentages when first_contact/final_possession fields exist
+    const isKick = store.code === "football"
+    const list = store.events.filter((e) => (isKick ? e.type === "kickout" : e.type === "puckout"))
     return { total: list.length, ownRetentionPct: null }
-  }, [state])
+  }, [store.events, store.code])
+
+  const scoreA = store.score.home
+  const scoreB = store.score.away
 
   if (compact) {
     return (
       <div className="flex items-center gap-4 overflow-x-auto py-2 text-sm">
-        <StatPill label="Shots" value={`${shots.attempts}`} sub={`${shots.goals}G/${shots.points}P`} />
+        <StatPill label="Shots" value={`${shots.attempts}`} />
         <StatPill
           label="Scores"
-          value={`${state.scoreboard.teamA.goals}-${state.scoreboard.teamA.points} • ${state.scoreboard.teamB.goals}-${state.scoreboard.teamB.points}`}
-          sub={`A ${state.scoreboard.teamA.total} • B ${state.scoreboard.teamB.total}`}
+          value={`${scoreA.goals}-${scoreA.points} • ${scoreB.goals}-${scoreB.points}`}
+          sub={`A ${toTotalPoints(scoreA)} • B ${toTotalPoints(scoreB)}`}
         />
-        <StatPill label="Frees" value={`${state.events.filter((e) => e.type === "free").length}`} />
+        <StatPill label="Frees" value={`${store.events.filter((e) => e.type === "free").length}`} />
         <StatPill
           label="Restart retention"
           value={restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}
@@ -55,25 +53,20 @@ export function LiveStatsPanel({ compact = false }) {
         <div className="rounded border p-2">
           <div className="font-medium">Shots</div>
           <div>Attempts: {shots.attempts}</div>
-          <div>
-            Goals: {shots.goals} • Points: {shots.points}
-          </div>
-          <div>
-            Wides: {shots.wides} • Saved: {shots.saved} • Blocked: {shots.blocked} • Short: {shots.short}
-          </div>
           <div>PPP: {shots.pps.toFixed(2)}</div>
         </div>
         <div className="rounded border p-2">
-          <div className="font-medium">{state.code === "football" ? "Kick-outs" : "Puck-outs"}</div>
+          <div className="font-medium">{store.code === "football" ? "Kick-outs" : "Puck-outs"}</div>
           <div>Total: {restarts.total}</div>
           <div>
-            Own retention: {restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}
+            Own retention:{" "}
+            {restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}
           </div>
         </div>
       </div>
     </Card>
   )
-}
+})
 
 function StatPill({ label, value, sub }) {
   return (
@@ -82,10 +75,4 @@ function StatPill({ label, value, sub }) {
       {sub && <span className="ml-2 text-muted-foreground">{sub}</span>}
     </div>
   )
-}
-
-function computePPP(state) {
-  const pts = state.scoreboard.teamA.total + state.scoreboard.teamB.total // team-neutral display
-  const completed = state.possessions.filter((p) => p.end_time_sec != null).length || 1
-  return pts / completed
 }

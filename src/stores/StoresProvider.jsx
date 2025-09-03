@@ -1,9 +1,11 @@
 import React, { createContext, useContext } from "react"
 import { homeFilterbarStore } from "./HomeFilterbarStore"
+import { liveMatchStore } from "./LiveMatchStore"
 
 
 const stores = {
   homeFilterbarStore,
+  liveMatchStore,
 }
 
 const StoresContext = createContext(stores)

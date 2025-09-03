@@ -3,11 +3,11 @@ import { LiveProvider } from "../../components/live/LiveContext"
 import { TopBar } from "../../components/live/Topbar"
 import { EventPad } from "../../components/live/EvenetPad"
 import { EventFeed } from "../../components/live/EventFeed"
-import { MiniPitchPanel } from "../../components/live/MiniPitchPanel"
+import MiniPitchPanel from "../../components/live/MiniPitchPanel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
 import { LiveStatsPanel } from "../../components/live/LiveStatsPanel"
 import { LineupsPanel } from "../../components/live/LineupsPanel"
-import PreMatchDialog from "../../components/live/PreMatchChecklistDialog"
+import PreMatchDialog from "../../components/live/PreMatchDialog"
 
 export default function LivePage() {
   // Switch code between "football" and "hurling"

@@ -1,40 +1,32 @@
 import { useState } from "react"
-import { useLive } from "./LiveContext"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { MiniPitch } from "./MiniPitch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Switch } from "../ui/switch"
 import { Label } from "../ui/label"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 
-export function FreeDialog() {
-  const { state, dispatch } = useLive()
-  const open = !!state.ui.currentFree?.open
-  const xy = state.ui.currentFree?.xy ?? null
+export const FreeDialog = observer(function FreeDialog() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
+  const open = !!store.ui.currentFree.open
+  const xy = store.ui.currentFree.xy ?? null
 
-  const [awardedTeam, setAwardedTeam] = useState(state.teamA.id)
-  const [foulingTeam, setFoulingTeam] = useState(state.teamB.id)
+  const [awardedTeam, setAwardedTeam] = useState("home")
+  const [foulingTeam, setFoulingTeam] = useState("away")
   const [is45, setIs45] = useState(false)
   const [is65, setIs65] = useState(false)
   const [tapAndGo, setTapAndGo] = useState(false)
 
   const onSave = () => {
-    dispatch({
-      type: "SUBMIT_EVENT",
-      event: {
-        // id left undefined for backend to generate
-        type: "free",
-        match_id: state.matchId,
-        awarded_to_team_id: awardedTeam,
-        fouling_team_id: foulingTeam,
-        xy: xy ?? undefined,
-        meta: {},
-      },
-    })
+    store.addEvent({ type: "free", team: awardedTeam })
+    store.closeDialogs()
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && dispatch({ type: "CLOSE_DIALOGS" })}>
+    <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Free</DialogTitle>
@@ -43,16 +35,15 @@ export function FreeDialog() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-3">
             <MiniPitch
-              code={state.code}
+              code={store.code}
               mode="select"
               value={xy ?? undefined}
-              onChange={(xy) => dispatch({ type: "SET_DIALOG_XY", dialog: "free", xy })}
+              onChange={(xy) => store.setDialogXY("free", xy)}
             />
             <div className="text-xs text-muted-foreground">Click pitch to set XY.</div>
           </div>
 
           <div className="space-y-3">
-            {/* Awarded Team */}
             <div className="grid gap-1">
               <label className="text-sm font-medium">Awarded to</label>
               <Select value={awardedTeam} onValueChange={(v) => setAwardedTeam(v)}>
@@ -60,13 +51,12 @@ export function FreeDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={state.teamA.id}>{state.teamA.name}</SelectItem>
-                  <SelectItem value={state.teamB.id}>{state.teamB.name}</SelectItem>
+                  <SelectItem value="home">Home</SelectItem>
+                  <SelectItem value="away">Away</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Fouling Team */}
             <div className="grid gap-1">
               <label className="text-sm font-medium">Fouling team</label>
               <Select value={foulingTeam} onValueChange={(v) => setFoulingTeam(v)}>
@@ -74,14 +64,13 @@ export function FreeDialog() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={state.teamA.id}>{state.teamA.name}</SelectItem>
-                  <SelectItem value={state.teamB.id}>{state.teamB.name}</SelectItem>
+                  <SelectItem value="home">Home</SelectItem>
+                  <SelectItem value="away">Away</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Football options */}
-            {state.code === "football" && (
+            {store.code === "football" && (
               <>
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="is45">Is 45</Label>
@@ -94,8 +83,7 @@ export function FreeDialog() {
               </>
             )}
 
-            {/* Hurling options */}
-            {state.code === "hurling" && (
+            {store.code === "hurling" && (
               <div className="flex items-center justify-between rounded-md border p-2">
                 <Label htmlFor="is65">Is 65</Label>
                 <Switch id="is65" checked={is65} onCheckedChange={setIs65} />
@@ -105,7 +93,7 @@ export function FreeDialog() {
         </div>
 
         <DialogFooter>
-          <Button onClick={() => dispatch({ type: "CLOSE_DIALOGS" })} variant="outline">
+          <Button onClick={() => store.closeDialogs()} variant="outline">
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>
@@ -113,4 +101,4 @@ export function FreeDialog() {
       </DialogContent>
     </Dialog>
   )
-}
+})

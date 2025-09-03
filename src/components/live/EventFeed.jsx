@@ -1,129 +1,58 @@
 import { useMemo } from "react"
-import { useLive } from "./LiveContext"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { EllipsisVertical, Pencil, Clock  } from 'lucide-react';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover"
-import { Separator } from "../ui/separator"
+import { Card } from "../ui/card"
+import { secondsToHHMMSS } from "./LiveUtils"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 
-export function EventFeed() {
-  const { state } = useLive()
+export const EventFeed = observer(function EventFeed() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
 
   const rows = useMemo(() => {
-    const sorted = [...state.events].sort((a, b) => {
-      const porder = (p) =>
-        p === "H1" ? 1 : p === "HT" ? 2 : p === "H2" ? 3 : p === "FT" ? 4 : p === "ET1" ? 5 : 6
-      if (porder(a.period) !== porder(b.period)) return porder(a.period) - porder(b.period)
-      return a.time_sec - b.time_sec
-    })
+     const sorted = [...(store.events || [])].sort((a, b) => a.ts - b.ts)
     return sorted
-  }, [state.events])
+  }, [store.events])
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Event Feed</CardTitle>
-      </CardHeader>
-      <CardContent className="h-auto max-h-[45vh] overflow-y-scroll">
-        <Table>
-          <TableHeader >
-            <TableRow className="sticky top-0">
-              <TableHead>Time</TableHead>
-              <TableHead>Team</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Details</TableHead>
-              <TableHead>Score</TableHead>
-              <TableHead>POS id</TableHead>
-              <TableHead>Tools</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.map((e, idx) => {
-              
-              return (
-                <TableRow key={e.id}>
-                  <TableCell className="tabular-nums">{e.period} {e.hhmmss}</TableCell>
-                  <TableCell className="capitalize">{"team A"}</TableCell>
-                  <TableCell className="uppercase">{e.type}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <code>{e.result} • {"From Play"} </code>
-                      {/* Simple inline edit: change a result from wide->point, etc. */}
-                      {e.type === "shot" && (
-                        <Select
-                          onValueChange={()=>{}}
-                          defaultValue={e.result}
-                        >
-                          <SelectTrigger className="h-8 w-[90px]">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="goal">Goal</SelectItem>
-                            <SelectItem value="point">Point</SelectItem>
-                            <SelectItem value="wide">Wide</SelectItem>
-                            <SelectItem value="saved">Saved</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="uppercase">{e.type == "shot" ? "+1" : "0"}</TableCell>
-                  <TableCell className="capitalize">101</TableCell>
-                  <TableCell className="capitalize">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <EllipsisVertical className="h-4 w-4 hover:cursor-pointer" />
-                      </PopoverTrigger>
-                      <PopoverContent className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3 hover:cursor-pointer">
-                          <Pencil className="h-4 w-4" />
-                          <div className="text-sm">Edit time</div>
-                        </div>
-                        <Separator />
-                        <div className="flex items-center gap-3  hover:cursor-pointer">
-                          <Clock className="h-4 w-4" />
-                          <div className="text-sm">Jump clock to 00:00</div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-            {rows.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">
-                  No events yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </CardContent>
+    <Card className="p-3">
+      <div className="mb-2 text-sm font-medium">Event Feed</div>
+      <div className="grid gap-2">
+        {rows.map((e) => (
+          <div
+            key={e.id}
+            className="grid grid-cols-[72px,1fr,auto] items-center gap-2 rounded border p-2"
+          >
+            <div className="font-mono text-sm tabular-nums">{secondsToHHMMSS(e.ts)}</div>
+            <div className="flex items-center gap-2">
+              <TypeChip event={e} />
+              {e.possession_id && (
+                <span className="rounded bg-muted px-2 py-0.5 text-xs">
+                  POS {e.possession_id.slice(0, 4)}
+                </span>
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground">{store.clock.period}</div>
+          </div>
+        ))}
+      </div>
     </Card>
   )
-}
+})
 
 function TypeChip({ event }) {
+  const t = event.type
   const label =
-    event.type === "shot"
-      ? `Shot • ${event.result}`
-      : event.type === "free"
-        ? "Free"
-        : event.type === "kickout"
-          ? "Kick-out"
-          : event.type === "puckout"
-            ? "Puck-out"
-            : event.type === "turnover"
-              ? "Turnover"
-              : event.type
-
+    t === "shot"
+      ? "Shot"
+      : t === "free"
+      ? "Free"
+      : t === "kickout"
+      ? "Kick-out"
+      : t === "puckout"
+      ? "Puck-out"
+      : t === "turnover"
+      ? "Turnover"
+      : t
   return (
     <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs text-emerald-900">
       {label}

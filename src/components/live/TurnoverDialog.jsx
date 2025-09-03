@@ -1,29 +1,24 @@
+
 import { useState } from "react"
-import { useLive } from "./LiveContext"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
-export function TurnoverDialog() {
-  const { state, dispatch } = useLive()
-  const open = !!state.ui.currentTurnover?.open
-  const [gain, setGain] = useState(state.teamA.id)
+export const TurnoverDialog = observer(function TurnoverDialog() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
+  const open = !!store.ui.currentTurnover.open
+  const [gain, setGain] = useState("home")
 
   const onSave = () => {
-    dispatch({
-      type: "SUBMIT_EVENT",
-      event: {
-        id: undefined,
-        type: "turnover",
-        match_id: state.matchId,
-        team_losing_possession_id: gain === state.teamA.id ? state.teamB.id : state.teamA.id,
-        team_gaining_possession_id: gain,
-      },
-    })
+    store.addEvent({ type: "turnover", team: gain })
+    store.closeDialogs()
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && dispatch({ type: "CLOSE_DIALOGS" })}>
+    <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Turnover</DialogTitle>
@@ -37,15 +32,15 @@ export function TurnoverDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={state.teamA.id}>{state.teamA.name}</SelectItem>
-                <SelectItem value={state.teamB.id}>{state.teamB.name}</SelectItem>
+                <SelectItem value="home">Home</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={() => dispatch({ type: "CLOSE_DIALOGS" })} variant="outline">
+          <Button onClick={() => store.closeDialogs()} variant="outline">
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>
@@ -53,4 +48,4 @@ export function TurnoverDialog() {
       </DialogContent>
     </Dialog>
   )
-}
+})

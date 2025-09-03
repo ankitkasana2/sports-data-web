@@ -1,37 +1,30 @@
 import { useState } from "react"
-import { useLive } from "./LiveContext"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
-export function RestartDialog() {
-  const { state, dispatch } = useLive()
-  const open = !!state.ui.currentRestart?.open
+export const RestartDialog = observer(function RestartDialog() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
+  const open = !!store.ui.currentRestart.open
 
   const [length, setLength] = useState("short")
   const [direction, setDirection] = useState("middle")
-  const [executing, setExecuting] = useState(state.teamA.id)
+  const [executing, setExecuting] = useState("home")
 
   const onSave = () => {
-    const type = state.code === "football" ? "kickout" : "puckout"
-    dispatch({
-      type: "SUBMIT_EVENT",
-      event: {
-        id: undefined,
-        match_id: state.matchId,
-        type,
-        executing_team_id: executing,
-        length,
-        direction,
-      },
-    })
+    const type = store.code === "football" ? "kickout" : "puckout"
+    store.addEvent({ type, team: executing })
+    store.closeDialogs()
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && dispatch({ type: "CLOSE_DIALOGS" })}>
+    <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{state.code === "football" ? "Kick-out" : "Puck-out"}</DialogTitle>
+          <DialogTitle>{store.code === "football" ? "Kick-out" : "Puck-out"}</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
@@ -42,8 +35,8 @@ export function RestartDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={state.teamA.id}>{state.teamA.name}</SelectItem>
-                <SelectItem value={state.teamB.id}>{state.teamB.name}</SelectItem>
+                <SelectItem value="home">Home</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -78,7 +71,7 @@ export function RestartDialog() {
         </div>
 
         <DialogFooter>
-          <Button onClick={() => dispatch({ type: "CLOSE_DIALOGS" })} variant="outline">
+          <Button onClick={() => store.closeDialogs()} variant="outline">
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>
@@ -86,4 +79,4 @@ export function RestartDialog() {
       </DialogContent>
     </Dialog>
   )
-}
+})

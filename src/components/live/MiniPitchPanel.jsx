@@ -1,20 +1,29 @@
-import { useMemo } from "react"
-import { useLive } from "./LiveContext"
+import { useMemo, useEffect } from "react"
 import { MiniPitch } from "./MiniPitch"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { toJS } from "mobx"
 
-export function MiniPitchPanel() {
-  const { state } = useLive()
-  const lastShots = useMemo(() => state.events.filter((e) => e.type === "shot").slice(-12), [state.events])
-  const ghost = state.events.map((e)=>{return e.xy})
 
-  console.log("hello",ghost[0])
+function MiniPitchPanel() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
+  // const ghost = state.events.map((e)=>{return e.xy})
+  const ghost = store.ui.currentShot.xy ?? null
+
+  useEffect(() => {
+    console.log(toJS(store.ui.currentShot.xy))
+  }, [toJS(store.ui.currentShot.xy)])
+
 
   return (
     <div className="space-y-3">
-      <MiniPitch code={state.code} mode="view" value={ghost ?? []} />
+      <MiniPitch code={store.code} mode="view" value={ghost ?? []} />
     </div>
   )
 }
+
+export default observer(MiniPitchPanel)
 
 function ShotDot({ result }) {
   const color =

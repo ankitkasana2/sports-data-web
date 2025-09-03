@@ -1,10 +1,8 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-export function MiniPitch({ code, mode, value, onChange, className }) {
+export function MiniPitch({ code, mode, value, onChange, className, value2 }) {
   const ref = React.useRef(null)
-
-  console.log("hiiii", value)
 
   const handleClick = (e) => {
     if (mode !== "select" || !ref.current || !onChange) return
@@ -12,8 +10,17 @@ export function MiniPitch({ code, mode, value, onChange, className }) {
     let x = ((e.clientX - rect.left) / rect.width) * 100
     let y = ((e.clientY - rect.top) / rect.height) * 100
 
+    // if (!onChange) {
+    //   value = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
+    //   console.log("heuhdhdb", value)
+    // } else {
+    //   onChange({ x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 })
+    // }
 
     onChange({ x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 })
+
+
+
   }
 
   return (
@@ -43,25 +50,62 @@ export function MiniPitch({ code, mode, value, onChange, className }) {
         {/* L/C/R light lanes */}
         <line x1="33.3" y1="1" x2="33.3" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
         <line x1="66.6" y1="1" x2="66.6" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
+        {/* lines for both ends  */}
+        <line x1="13" y1="1" x2="13" y2="59 " stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
+        <line x1="20" y1="1" x2="20" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
+        <line x1="87" y1="1" x2="87" y2="59 " stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
+        <line x1="80" y1="1" x2="80" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
+        {/* goal post  */}
+        <rect x="1" y="22" width="12" height="15" fill="none" stroke="#065f46" strokeWidth="0.3" opacity="0.6"
+        />
+        <rect x="87" y="22" width="12" height="15" fill="none" stroke="#065f46" strokeWidth="0.3" opacity="0.6"
+        />
         {/* Code-specific arcs */}
-        {code === "football" ? (
-          <>
-            {/* 20m and 40m arcs approximated */}
-            <circle cx="10" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="10" cy="30" r="16" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="90" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="90" cy="30" r="16" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-          </>
-        ) : (
-          <>
-            {/* 20m and 65m arcs approximated */}
-            <circle cx="10" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="10" cy="30" r="26" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="90" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-            <circle cx="90" cy="30" r="26" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" />
-          </>
-        )}
+
+        {/* 20m and 40m arcs approximated */}
+        {/* <circle cx="10" cy="30" r="8" fill="none" stroke="#10b981" strokeWidth="0.3" opacity="0.6" /> */}
+        <path
+          d="M 20 22 A 10 9 0 0 1 20 38"
+          fill="none"
+          stroke="#065f46"
+          strokeWidth="0.3"
+          opacity="0.6"
+        />
+        <path
+          d="M 20 15 A 8 10 0 0 1 20 45"
+          fill="none"
+          stroke="#065f46"
+          strokeWidth="0.3"
+          opacity="0.6"
+        />
+
+        <path
+          d="M 80 22 A 7 8 0 1 0 80 38"
+          fill="none"
+          stroke="#065f46"
+          strokeWidth="0.3"
+          opacity="0.6"
+        />
+        <path
+          d="M 80 15 A 8 10 0 1 0 80 45"
+          fill="none"
+          stroke="#065f46"
+          strokeWidth="0.3"
+          opacity="0.6"
+        />
       </svg>
+
+      {value2 && <div
+        key={index} // use index if coordinates are not unique
+        className="absolute pointer-events-none"
+        style={{
+          left: `${value2.x}%`,
+          top: `${value2.y}%`,
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <div className="h-4 w-4 rounded-full border-2 border-emerald-600 bg-white" />
+      </div>}
 
       {/* Selection crosshair */}
       {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (

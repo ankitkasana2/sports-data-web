@@ -1,16 +1,18 @@
 import { useState, useEffect } from "react"
-import { useLive } from "./LiveContext"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
 import { Button } from "../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { MiniPitch } from "./MiniPitch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 
-export function ShotDialog() {
-  const { state, dispatch } = useLive()
-  const open = !!state.ui.currentShot?.open
+export const ShotDialog = observer(function ShotDialog() {
+  const { liveMatchStore } = useStores()
+  const store = liveMatchStore
+  const open = !!store.ui.currentShot.open
   const [result, setResult] = useState("point")
   const [shotType, setShotType] = useState("open_play")
-  const xy = state.ui.currentShot?.xy ?? null
+  const [position, setPosition] = useState(null)
 
   useEffect(() => {
     if (!open) return
@@ -27,29 +29,24 @@ export function ShotDialog() {
   }, [open])
 
   const onSave = () => {
-    // Minimal required fields + score value derived later
-    const teamId = state.teamA.id // For demo, alternate by parity of shots
-    const which = state.events.filter((e) => e.type === "shot").length % 2 === 0 ? state.teamA.id : state.teamB.id
+    // Simple alternation for team side demo: home/away
+    const shotCount = store.events.filter((e) => e.type === "shot").length
+    const team = shotCount % 2 === 0 ? "home" : "away"
 
-    dispatch({
-      type: "SUBMIT_EVENT",
-      event: {
-        id: undefined,
-        type: "shot",
-        team_id: which,
-        match_id: state.matchId,
-        period: state.clock.period,
-        time_sec: state.clock.timeSec,
-        hhmmss: "",
-        xy: xy ?? undefined,
-        result,
-        shot_type: shotType,
-      },
-    })
+    // Record the shot event
+    store.addEvent({ type: "shot", team, result, shot_type: shotType, position })
+
+    // store position 
+    store.setDialogXY("shot", position)
+    // Update scoreboard if point/goal
+    if (result === "goal") store.addScore(team, "goal")
+    if (result === "point") store.addScore(team, "point")
+
+    store.closeDialogs()
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && dispatch({ type: "CLOSE_DIALOGS" })}>
+    <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Shot</DialogTitle>
@@ -58,10 +55,10 @@ export function ShotDialog() {
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-3">
             <MiniPitch
-              code={state.code}
+              code={store.code}
               mode="select"
-              value={xy ?? undefined}
-              onChange={(xy) => dispatch({ type: "SET_DIALOG_XY", dialog: "shot", xy })}
+              value={position}
+              onChange={(xy) => setPosition(xy)}
             />
             <div className="text-xs text-muted-foreground">
               Click pitch to set XY. Quick keys: G goal, P point, W wide, V saved, B blocked, D dropped.
@@ -105,17 +102,16 @@ export function ShotDialog() {
               </Select>
             </div>
 
-            {state.code === "football" && (
+            {store.code === "football" && (
               <div className="rounded-md border p-2 text-xs">
-                Two-pointer logic: outside/on 40 m arc from open play or free qualifies, unless touched in flight. We
-                derive the score value from XY and shot_type.
+                Two-pointer logic can be derived later. We update score for goals/points now.
               </div>
             )}
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={() => dispatch({ type: "CLOSE_DIALOGS" })} variant="outline">
+          <Button onClick={() => store.closeDialogs()} variant="outline">
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>
@@ -123,4 +119,4 @@ export function ShotDialog() {
       </DialogContent>
     </Dialog>
   )
-}
+})
