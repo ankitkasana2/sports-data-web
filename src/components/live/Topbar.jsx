@@ -26,8 +26,22 @@ export const TopBar = observer(function TopBar() {
     setOpenSetTime(false)
   }
 
+  const formatSaveTime = (timestamp) => {
+    if (!timestamp) return "—"
+    const date = new Date(timestamp)
+    return date.toLocaleTimeString("en-US", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    })
+  }
+
   // Placeholder for autosave timestamp
-  const autosaveLabel = "—"
+  const autosaveLabel = store.lastSavedAt ? formatSaveTime(store.lastSavedAt) : "—"
+
+  const saveStatus = store.pendingChanges ? "Saving..." : `Saved ${autosaveLabel}`
+  const offlineIndicator = !store.isOnline ? " (Offline)" : ""
 
   const totalHome = store.score.home.goals * 3 + store.score.home.points
   const totalAway = store.score.away.goals * 3 + store.score.away.points
@@ -85,7 +99,11 @@ export const TopBar = observer(function TopBar() {
           <ScoreBox label="Team B" g={store.score.away.goals} p={store.score.away.points} total={totalAway} />
         </div>
 
-        <div className="text-xs text-muted-foreground">Saved {autosaveLabel}</div>
+        {/* <div className="text-xs text-muted-foreground">Saved {autosaveLabel}</div> */}
+        <div className={`text-xs ${!store.isOnline ? "text-orange-500" : "text-muted-foreground"}`}>
+          {saveStatus}
+          {offlineIndicator}
+        </div>
       </div>
     </div>
   )

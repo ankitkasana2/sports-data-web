@@ -1,7 +1,7 @@
 import React from "react"
 import { cn } from "@/lib/utils"
 
-export function MiniPitch({ code, mode, value, onChange, className, value2 }) {
+export function MiniPitch({ code, mode, value, onChange, className}) {
   const ref = React.useRef(null)
 
   const handleClick = (e) => {
@@ -10,17 +10,7 @@ export function MiniPitch({ code, mode, value, onChange, className, value2 }) {
     let x = ((e.clientX - rect.left) / rect.width) * 100
     let y = ((e.clientY - rect.top) / rect.height) * 100
 
-    // if (!onChange) {
-    //   value = { x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
-    //   console.log("heuhdhdb", value)
-    // } else {
-    //   onChange({ x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 })
-    // }
-
     onChange({ x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 })
-
-
-
   }
 
   return (
@@ -94,18 +84,6 @@ export function MiniPitch({ code, mode, value, onChange, className, value2 }) {
           opacity="0.6"
         />
       </svg>
-
-      {value2 && <div
-        key={index} // use index if coordinates are not unique
-        className="absolute pointer-events-none"
-        style={{
-          left: `${value2.x}%`,
-          top: `${value2.y}%`,
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        <div className="h-4 w-4 rounded-full border-2 border-emerald-600 bg-white" />
-      </div>}
 
       {/* Selection crosshair */}
       {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (

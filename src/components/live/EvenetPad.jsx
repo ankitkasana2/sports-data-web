@@ -63,6 +63,14 @@ export const EventPad = observer(function EventPad() {
         setPing("t")
       } else if (e.key === "Escape") {
         store.closeDialogs()
+      } else if (e.key === "ArrowLeft" && e.ctrlKey) {
+        if (store.clock.running) return
+        const next = Math.max(0, store.clock.seconds - 5)
+        store.setTime(next)
+      }else if (e.key === "ArrowRight" && e.ctrlKey) {
+        if (store.clock.running) return
+        const next = Math.max(0, store.clock.seconds + 5)
+        store.setTime(next)
       }
       setTimeout(() => setPing(null), 150)
     }
@@ -76,28 +84,28 @@ export const EventPad = observer(function EventPad() {
         <Button
           onClick={() => store.openDialog("shot")}
           aria-keyshortcuts="S"
-          variant={ping === "s" ? "default" : "secondary"}
+          variant={ping === "s" ? "default" : "outline"}
         >
           Shot (S)
         </Button>
         <Button
           onClick={() => store.openDialog("free")}
           aria-keyshortcuts="F"
-          variant={ping === "f" ? "default" : "secondary"}
+          variant={ping === "f" ? "default" : "outline"}
         >
           Free (F)
         </Button>
         <Button
           onClick={() => store.openDialog("restart")}
           aria-keyshortcuts={store.code === "football" ? "K" : "P"}
-          variant={ping === "k" ? "default" : "secondary"}
+          variant={ping === "k" ? "default" : "outline"}
         >
           {store.code === "football" ? "Kick-out (K)" : "Puck-out (P)"}
         </Button>
         <Button
           onClick={() => store.openDialog("turnover")}
           aria-keyshortcuts="T"
-          variant={ping === "t" ? "default" : "secondary"}
+          variant={ping === "t" ? "default" : "outline"}
         >
           Turnover (T)
         </Button>

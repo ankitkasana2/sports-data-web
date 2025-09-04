@@ -19,9 +19,15 @@ export const FreeDialog = observer(function FreeDialog() {
   const [is45, setIs45] = useState(false)
   const [is65, setIs65] = useState(false)
   const [tapAndGo, setTapAndGo] = useState(false)
+  const [position, setPosition] = useState(null)
+
 
   const onSave = () => {
     store.addEvent({ type: "free", team: awardedTeam })
+    
+    // store position 
+    store.setDialogXY("free", position)
+
     store.closeDialogs()
   }
 
@@ -37,8 +43,8 @@ export const FreeDialog = observer(function FreeDialog() {
             <MiniPitch
               code={store.code}
               mode="select"
-              value={xy ?? undefined}
-              onChange={(xy) => store.setDialogXY("free", xy)}
+              value={position}
+              onChange={(xy) => setPosition(xy)}
             />
             <div className="text-xs text-muted-foreground">Click pitch to set XY.</div>
           </div>

@@ -17,6 +17,7 @@ export const RestartDialog = observer(function RestartDialog() {
   const onSave = () => {
     const type = store.code === "football" ? "kickout" : "puckout"
     store.addEvent({ type, team: executing })
+
     store.closeDialogs()
   }
 

@@ -1,6 +1,6 @@
 
 import { makeAutoObservable, computed } from "mobx"
-
+import { toJS } from "mobx"
 // Gaelic formatting helper: goals-points (total points = goals*3 + points)
 export function toTotalPoints(s) {
   return s.goals * 3 + s.points
@@ -11,6 +11,7 @@ export function toTotalPoints(s) {
 class LiveMatchStore {
   code = "football"
   clock = { period: "H1", seconds: 0, running: false }
+  intervalId = null
 
   score = {
     home: { goals: 0, points: 0 },
@@ -20,13 +21,18 @@ class LiveMatchStore {
   // core data
   events = []
   possessions = []
+  match_context = {}
+
+  lastSavedAt = null
+  isOnline = true
+  pendingChanges = false
 
   // UI state
   ui = {
     prematchOpen: true,
     selection: null,
     currentShot: { open: false, xy: [] },
-    currentFree: { open: false, xy: null },
+    currentFree: { open: false, xy: [] },
     currentRestart: { open: false, xy: null },
     currentTurnover: { open: false, xy: null },
   }
@@ -35,13 +41,101 @@ class LiveMatchStore {
   past = []
   future = []
 
+  autosaveTimer = null;
+
   constructor() {
     makeAutoObservable(this, {
       pppHome: computed,
       pppAway: computed,
       possessionCounts: computed,
     })
+
+    this.initializeAutosave()
+    this.initializeOnlineDetection()
+    this.loadFromLocalStorage()
   }
+
+  initializeAutosave() {
+    // Start autosave timer (every 2.5 seconds)
+    this.autosaveTimer = setInterval(() => {
+      this.saveToLocalStorage()
+    }, 2500)
+  }
+
+  initializeOnlineDetection() {
+    if (typeof window !== "undefined") {
+      this.isOnline = navigator.onLine
+
+      window.addEventListener("online", () => {
+        this.isOnline = true
+        if (this.pendingChanges) {
+          this.saveToLocalStorage()
+        }
+      })
+
+      window.addEventListener("offline", () => {
+        this.isOnline = false
+      })
+    }
+  }
+
+  saveToLocalStorage() {
+    if (typeof window === "undefined") return
+
+    try {
+      const saveData = {
+        code: this.code,
+        clock: this.clock,
+        score: this.score,
+        events: this.events,
+        possessions: this.possessions,
+        ui: this.ui,
+        timestamp: Date.now(),
+      }
+
+      localStorage.setItem("live-match-autosave", JSON.stringify(saveData))
+      this.lastSavedAt = Date.now()
+      this.pendingChanges = false
+    } catch (error) {
+      console.error("Failed to save to localStorage:", error)
+    }
+  }
+
+  loadFromLocalStorage() {
+    if (typeof window === "undefined") return
+
+    try {
+      const saved = localStorage.getItem("live-match-autosave")
+      if (!saved) return
+
+      const saveData = JSON.parse(saved)
+      const hoursSinceLastSave = (Date.now() - saveData.timestamp) / (1000 * 60 * 60)
+      if (hoursSinceLastSave > 24) return
+
+      this.code = saveData.code || this.code
+      this.clock = { ...this.clock, ...saveData.clock }
+      this.score = { ...this.score, ...saveData.score }
+      this.events = saveData.events || []
+      this.possessions = saveData.possessions || []
+      this.ui = { ...this.ui, ...saveData.ui }
+      this.lastSavedAt = saveData.timestamp
+    } catch (error) {
+      console.error("Failed to load from localStorage:", error)
+    }
+  }
+
+  destroy() {
+    if (this.autosaveTimer) {
+      clearInterval(this.autosaveTimer)
+      this.autosaveTimer = null
+    }
+  }
+
+  markChanged() {
+    this.pendingChanges = true
+  }
+
+
 
   // serialization for simple history
   snapshot() {
@@ -60,9 +154,11 @@ class LiveMatchStore {
     this.code = v.code
     this.clock = v.clock
     this.score = v.score
-    this.events = v.events
+    this.events.pop()
     this.possessions = v.possessions
-    this.ui = v.ui
+    this.ui.currentShot.xy.pop()
+    this.ui.currentFree.xy.pop()
+    // this.ui = v.ui
   }
 
   pushHistory() {
@@ -95,16 +191,29 @@ class LiveMatchStore {
     this.ui.prematchOpen = open
   }
 
-  savePrematch(data){
+  savePrematch(data) {
+    console.log("data",data)
+    this.match_context = data
+    this.clock.period = "H1"
+    this.clock.seconds = 0
+    this.startClock()
     return
   }
 
   startClock() {
-    this.clock.running = true
+    if (this.intervalId) return; // prevent multiple intervals
+    this.clock.running = true;
+    this.intervalId = setInterval(() => {
+      this.clock.seconds = this.clock.seconds + 1;
+    }, 1000);
   }
 
   pauseClock() {
-    this.clock.running = false
+    this.clock.running = false;
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null; // reset
+    }
   }
 
   setTime(seconds) {
@@ -210,6 +319,7 @@ class LiveMatchStore {
   }
 
   openDialog(kind) {
+    this.pauseClock()
     if (kind === "shot") this.ui.currentShot.open = true
     if (kind === "free") this.ui.currentFree.open = true
     if (kind === "restart") this.ui.currentRestart.open = true
@@ -217,6 +327,7 @@ class LiveMatchStore {
   }
 
   closeDialogs() {
+    this.startClock()
     this.ui.currentShot.open = false
     this.ui.currentFree.open = false
     this.ui.currentRestart.open = false
@@ -225,9 +336,9 @@ class LiveMatchStore {
 
   setDialogXY(kind, xy) {
     if (kind === "shot") this.ui.currentShot.xy = [...this.ui.currentShot.xy, xy]
-    if (kind === "free") this.ui.currentFree.xy = xy
-    if (kind === "restart") this.ui.currentRestart.xy = xy
-    if (kind === "turnover") this.ui.currentTurnover.xy = xy
+    if (kind === "free") this.ui.currentFree.xy = [...this.ui.currentFree.xy, xy]
+    if (kind === "restart") this.ui.currentRestart.xy = [...this.ui.currentShot.xy, xy]
+    if (kind === "turnover") this.ui.currentTurnover.xy = [...this.ui.currentShot.xy, xy]
   }
 }
 

@@ -8,12 +8,11 @@ import { toJS } from "mobx"
 function MiniPitchPanel() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  // const ghost = state.events.map((e)=>{return e.xy})
-  const ghost = store.ui.currentShot.xy ?? null
 
-  useEffect(() => {
-    console.log(toJS(store.ui.currentShot.xy))
-  }, [toJS(store.ui.currentShot.xy)])
+  const ghost = [
+    ...(toJS(store.ui.currentShot)?.xy ?? []),
+    ...(toJS(store.ui.currentFree)?.xy ?? [])
+  ];
 
 
   return (

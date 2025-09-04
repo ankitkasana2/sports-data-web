@@ -38,6 +38,7 @@ export const ShotDialog = observer(function ShotDialog() {
 
     // store position 
     store.setDialogXY("shot", position)
+    
     // Update scoreboard if point/goal
     if (result === "goal") store.addScore(team, "goal")
     if (result === "point") store.addScore(team, "point")
