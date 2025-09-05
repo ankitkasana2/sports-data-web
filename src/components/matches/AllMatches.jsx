@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -7,190 +7,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { toJS } from "mobx"
+import { autorun } from "mobx"
 
-// Utilities
-function formatDateTime(iso) {
-  const d = new Date(iso)
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-}
+import MatchesFilterBar from "./MatchesFilterBar"
+import MatchesTable from "./MatchesTable"
+
+
 function currentYear() {
-  return new Date().getFullYear().toString()
+  return new Date().getFullYear()
 }
+
+
 
 // Mock data (replace with your backend/SWR)
-const initialMatches = [
-  {
-    id: "m1",
-    dateTime: new Date().toISOString(),
-    teamA: "Rivertown Rovers",
-    teamB: "Lakeside Lions",
-    competition: "County Championship",
-    grade: "Senior",
-    season: currentYear(),
-    round: "Round 3",
-    venue: "Main Stadium",
-    referee: "Pat O'Neil",
-    status: "scheduled", // scheduled | in-progress | completed | draft
-  },
-  {
-    id: "m2",
-    dateTime: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-    teamA: "Hillcrest Harps",
-    teamB: "Valley United",
-    competition: "County League",
-    grade: "Junior",
-    season: currentYear(),
-    round: "Round 5",
-    venue: "North Field",
-    referee: "Jamie Byrne",
-    status: "completed",
-  },
-  {
-    id: "m3",
-    dateTime: new Date(Date.now() + 1000 * 60 * 60 * 6).toISOString(),
-    teamA: "Greenfield Gaels",
-    teamB: "Rivertown Rovers",
-    competition: "County League",
-    grade: "Senior",
-    season: currentYear(),
-    round: "Round 8",
-    venue: "South Park",
-    referee: "Chris Doyle",
-    status: "in-progress",
-  },
-]
-
-// Filters UI
-function FiltersBar({
-  search,
-  setSearch,
-  fromDate,
-  setFromDate,
-  toDate,
-  setToDate,
-  competition,
-  setCompetition,
-  grade,
-  setGrade,
-  season,
-  setSeason,
-  team,
-  setTeam,
-  status,
-  setStatus,
-  competitions,
-  grades,
-  seasons,
-  teams,
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="search">Search</Label>
-        <Input
-          id="search"
-          placeholder="Search by teams, competition, venue, referee"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="flex flex-col gap-2">
-          <Label>Date range</Label>
-          <div className="flex items-center gap-2">
-            <Input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} aria-label="From date" />
-            <span className="text-sm text-muted-foreground">to</span>
-            <Input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} aria-label="To date" />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Competition</Label>
-          <Select value={competition} onValueChange={setCompetition}>
-            <SelectTrigger>
-              <SelectValue placeholder="All competitions" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {competitions.map((c) => (
-                <SelectItem key={c} value={c}>
-                  {c}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Grade</Label>
-          <Select value={grade} onValueChange={setGrade}>
-            <SelectTrigger>
-              <SelectValue placeholder="All grades" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {grades.map((g) => (
-                <SelectItem key={g} value={g}>
-                  {g}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Season</Label>
-          <Select value={season} onValueChange={setSeason}>
-            <SelectTrigger>
-              <SelectValue placeholder="Season" />
-            </SelectTrigger>
-            <SelectContent>
-              {seasons.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {s}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Team</Label>
-          <Select value={team} onValueChange={setTeam}>
-            <SelectTrigger>
-              <SelectValue placeholder="All teams" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              {teams.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <Label>Status</Label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger>
-              <SelectValue placeholder="All statuses" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="in-progress">In-progress</SelectItem>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
-  )
-}
+// const initialMatches = ()=>{
+//   matchesStore.getAllMatch()
+//   return matchesStore.matches
+// }
 
 // Create Match modal
 function CreateMatchDialog({ onCreate }) {
@@ -252,7 +88,7 @@ function CreateMatchDialog({ onCreate }) {
       <DialogTrigger asChild>
         <Button>Add Match</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="min-w-3xl h-[80vh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Create Match</DialogTitle>
         </DialogHeader>
@@ -434,114 +270,122 @@ function ActionsBar({ onCreate, onImport }) {
 }
 
 // Table with checkbox selection and actions
-function MatchesTable({ rows, selected, setSelected }) {
-  const visibleIds = rows.map((r) => r.id)
-  const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id))
-  const someSelected = visibleIds.some((id) => selected.has(id)) && !allSelected
-  const headerChecked = allSelected ? true : someSelected ? "indeterminate" : false
+// function MatchesTable({ rows, selected, setSelected }) {
+//   const visibleIds = rows.map((r) => r.id)
+//   const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id))
+//   const someSelected = visibleIds.some((id) => selected.has(id)) && !allSelected
+//   const headerChecked = allSelected ? true : someSelected ? "indeterminate" : false
 
-  function toggleSelectAll(nextChecked) {
-    const next = new Set(selected)
-    if (nextChecked) {
-      visibleIds.forEach((id) => next.add(id))
-    } else {
-      visibleIds.forEach((id) => next.delete(id))
-    }
-    setSelected(next)
-  }
+//   function toggleSelectAll(nextChecked) {
+//     const next = new Set(selected)
+//     if (nextChecked) {
+//       visibleIds.forEach((id) => next.add(id))
+//     } else {
+//       visibleIds.forEach((id) => next.delete(id))
+//     }
+//     setSelected(next)
+//   }
 
-  function toggleRow(id, nextChecked) {
-    const next = new Set(selected)
-    if (nextChecked) next.add(id)
-    else next.delete(id)
-    setSelected(next)
-  }
+//   function toggleRow(id, nextChecked) {
+//     const next = new Set(selected)
+//     if (nextChecked) next.add(id)
+//     else next.delete(id)
+//     setSelected(next)
+//   }
 
-  return (
-    <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-10">
-              <Checkbox
-                checked={headerChecked}
-                onCheckedChange={(v) => toggleSelectAll(Boolean(v))}
-                aria-label="Select all visible matches"
-              />
-            </TableHead>
-            <TableHead>Date & Time</TableHead>
-            <TableHead>Teams (A vs B)</TableHead>
-            <TableHead>Competition & Round</TableHead>
-            <TableHead>Venue</TableHead>
-            <TableHead>Referee</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
-                No matches found.
-              </TableCell>
-            </TableRow>
-          ) : (
-            rows.map((m) => {
-              const isSelected = selected.has(m.id)
-              const isCompleted = m.status === "completed"
-              return (
-                <TableRow
-                  key={m.id}
-                  className={isCompleted ? "cursor-pointer" : ""}
-                  onClick={() => {
-                    if (isCompleted) {
-                      window.location.href = `/matches/${m.id}`
-                    }
-                  }}
-                >
-                  <TableCell onClick={(e) => e.stopPropagation()} className="w-10">
-                    <Checkbox
-                      checked={isSelected}
-                      onCheckedChange={(v) => toggleRow(m.id, Boolean(v))}
-                      aria-label={`Select match ${m.id}`}
-                    />
-                  </TableCell>
-                  <TableCell>{formatDateTime(m.dateTime)}</TableCell>
-                  <TableCell>
-                    <span className="font-medium">{m.teamA}</span> <span className="text-muted-foreground">vs</span>{" "}
-                    <span className="font-medium">{m.teamB}</span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span>{m.competition}</span>
-                      <span className="text-xs text-muted-foreground">{m.round}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{m.venue}</TableCell>
-                  <TableCell>{m.referee}</TableCell>
-                  <TableCell className="capitalize">{m.status.replace("-", " ")}</TableCell>
-                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                    {m.status === "scheduled" || m.status === "in-progress" ? (
-                      <Button asChild size="sm">
-                        <Link to={`/live/${m.id}`}>{m.status === "scheduled" ? "Start" : "Resume"}</Link>
-                      </Button>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                </TableRow>
-              )
-            })
-          )}
-        </TableBody>
-      </Table>
-    </div>
-  )
-}
+//   return (
+//     <div className="overflow-x-auto">
+//       <Table>
+//         <TableHeader>
+//           <TableRow>
+//             <TableHead className="w-10">
+//               <Checkbox
+//                 checked={headerChecked}
+//                 onCheckedChange={(v) => toggleSelectAll(Boolean(v))}
+//                 aria-label="Select all visible matches"
+//               />
+//             </TableHead>
+//             <TableHead>Date & Time</TableHead>
+//             <TableHead>Teams (A vs B)</TableHead>
+//             <TableHead>Competition & Round</TableHead>
+//             <TableHead>Venue</TableHead>
+//             <TableHead>Referee</TableHead>
+//             <TableHead>Status</TableHead>
+//             <TableHead className="text-right">Actions</TableHead>
+//           </TableRow>
+//         </TableHeader>
+//         <TableBody>
+//           {rows.length === 0 ? (
+//             <TableRow>
+//               <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
+//                 No matches found.
+//               </TableCell>
+//             </TableRow>
+//           ) : (
+//             rows.map((m) => {
+//               const isSelected = selected.has(m.id)
+//               const isCompleted = m.status === "completed"
+//               return (
+//                 <TableRow
+//                   key={m.id}
+//                   className={isCompleted ? "cursor-pointer" : ""}
+//                   onClick={() => {
+//                     if (isCompleted) {
+//                       window.location.href = `/matches/${m.id}`
+//                     }
+//                   }}
+//                 >
+//                   <TableCell onClick={(e) => e.stopPropagation()} className="w-10">
+//                     <Checkbox
+//                       checked={isSelected}
+//                       onCheckedChange={(v) => toggleRow(m.id, Boolean(v))}
+//                       aria-label={`Select match ${m.id}`}
+//                     />
+//                   </TableCell>
+//                   <TableCell>{formatDateTime(m.dateTime)}</TableCell>
+//                   <TableCell>
+//                     <span className="font-medium">{m.teamA}</span> <span className="text-muted-foreground">vs</span>{" "}
+//                     <span className="font-medium">{m.teamB}</span>
+//                   </TableCell>
+//                   <TableCell>
+//                     <div className="flex flex-col">
+//                       <span>{m.competition}</span>
+//                       <span className="text-xs text-muted-foreground">{m.round}</span>
+//                     </div>
+//                   </TableCell>
+//                   <TableCell>{m.venue}</TableCell>
+//                   <TableCell>{m.referee}</TableCell>
+//                   <TableCell className="capitalize">{m.status.replace("-", " ")}</TableCell>
+//                   <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+//                     {m.status === "scheduled" || m.status === "in-progress" ? (
+//                       <Button asChild size="sm">
+//                         <Link to={`/live/${m.id}`}>{m.status === "scheduled" ? "Start" : "Resume"}</Link>
+//                       </Button>
+//                     ) : (
+//                       <span className="text-sm text-muted-foreground">—</span>
+//                     )}
+//                   </TableCell>
+//                 </TableRow>
+//               )
+//             })
+//           )}
+//         </TableBody>
+//       </Table>
+//     </div>
+//   )
+// }
 
-export default function MatchesPage() {
+function MatchesPage() {
+
+  const { matchesStore, homeFilterbarStore } = useStores()
+
+
+
+
   // Data
-  const [matches, setMatches] = useState(initialMatches)
+  const [matches, setMatches] = useState([])
+
+  const [allmatch, setallmatch] = useState([])
 
   // Filters
   const [search, setSearch] = useState("")
@@ -556,33 +400,60 @@ export default function MatchesPage() {
   // Selection
   const [selected, setSelected] = useState(new Set())
 
+
+  useEffect(() => {
+    // 1. Fetch matches from MobX store
+    matchesStore.getAllMatchBySeason(new Date().getFullYear());
+
+    // 2. Sync store.matches → local state
+    // reaction will run whenever matchesStore.matches changes
+    const disposer = autorun(() => {
+      setMatches([...matchesStore.matches]);
+    });
+
+    // cleanup on unmount
+    return () => disposer();
+  }, []);
+
+
+  useEffect(() => {
+    console.log(toJS(allmatch))
+  }, [allmatch])
+
+
+
+
+
+
   // Derived options
-  const competitions = useMemo(() => Array.from(new Set(matches.map((m) => m.competition))).sort(), [matches])
+  const competitions = useMemo(() => Array.from(new Set(matches.map((m) => m.competition_name))).sort(), [matches])
   const grades = useMemo(() => Array.from(new Set(matches.map((m) => m.grade))).sort(), [matches])
-  const seasons = useMemo(() => Array.from(new Set(matches.map((m) => m.season))).sort(), [matches])
-  const teams = useMemo(() => Array.from(new Set(matches.flatMap((m) => [m.teamA, m.teamB]))).sort(), [matches])
+  const currentYears = new Date().getFullYear();
+  const seasons = Array.from({ length: currentYears - 2000 + 1 }, (_, i) => currentYears - i);
+
+  const teams = useMemo(() => Array.from(new Set(matches.flatMap((m) => [m.team_a_id, m.team_b_id]))).sort(), [matches])
 
   // Filtering
   const filtered = useMemo(() => {
     return matches.filter((m) => {
-      const text = `${m.teamA} ${m.teamB} ${m.competition} ${m.venue} ${m.referee}`.toLowerCase()
+      const text = `${m.team_a_id} ${m.team_b_id} ${m.competition_name} ${m.venue_name} ${m.referee_name}`.toLowerCase()
       const q = search.trim().toLowerCase()
       if (q && !text.includes(q)) return false
 
       if (fromDate) {
         const from = new Date(fromDate)
-        if (new Date(m.dateTime) < from) return false
+        if (new Date(m.kickoff_datetime) < from) return false
       }
       if (toDate) {
         const to = new Date(toDate)
         to.setHours(23, 59, 59, 999)
-        if (new Date(m.dateTime) > to) return false
+        if (new Date(m.kickoff_datetime) > to) return false
       }
-      if (competition !== "all" && m.competition !== competition) return false
+      if (competition !== "all" && m.competition_name !== competition) return false
       if (grade !== "all" && m.grade !== grade) return false
       if (season && m.season.toString() !== season.toString()) return false
-      if (team !== "all" && !(m.teamA === team || m.teamB === team)) return false
-      if (status !== "all" && m.status !== status) return false
+      if (team !== "all" && !(m.team_a_id === team || m.team_b_id === team)) return false
+      if (status !== "all" && m.match_status !== status) return false
 
       return true
     })
@@ -597,16 +468,9 @@ export default function MatchesPage() {
   }
 
   return (
-    <main className="mx-auto w-full p-4 md:p-6">
-      <header className="mb-4">
-        <h1 className="text-xl font-semibold tracking-tight text-pretty">Matches</h1>
-        <p className="text-sm text-muted-foreground">
-          Filter, create, import, and manage matches. Select rows for bulk actions later.
-        </p>
-      </header>
-
-      <section className="mb-6">
-        <FiltersBar
+    <section className="space-y-4">
+      <section >
+        <MatchesFilterBar
           search={search}
           setSearch={setSearch}
           fromDate={fromDate}
@@ -630,13 +494,16 @@ export default function MatchesPage() {
         />
       </section>
 
-      <section className="mb-4">
-        <ActionsBar onCreate={handleCreate} onImport={handleImport} />
+      <section >
+        <ActionsBar matches={matches} setMatches={setMatches} onCreate={handleCreate} onImport={handleImport} />
       </section>
 
       <section>
         <MatchesTable rows={filtered} selected={selected} setSelected={setSelected} />
       </section>
-    </main>
+    </section>
   )
 }
+
+
+export default observer(MatchesPage)

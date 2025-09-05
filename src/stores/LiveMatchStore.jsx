@@ -192,7 +192,6 @@ class LiveMatchStore {
   }
 
   savePrematch(data) {
-    console.log("data",data)
     this.match_context = data
     this.clock.period = "H1"
     this.clock.seconds = 0

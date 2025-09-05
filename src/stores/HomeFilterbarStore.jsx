@@ -3,6 +3,8 @@ import data from "../../data"
 import axios from "axios"
 import { toJS } from "mobx"
 
+const apiUrl = import.meta.env;
+
 
 class HomeFilterbarStore {
     filters = {
@@ -34,7 +36,7 @@ class HomeFilterbarStore {
     // Generate years from 1950 to current year
     initYears() {
         const currentYear = new Date().getFullYear()
-        const startYear = 1950
+        const startYear = 2000
         const years = []
         for (let year = startYear; year <= currentYear; year++) {
             years.push(year)
@@ -45,7 +47,7 @@ class HomeFilterbarStore {
     // fetch all matches by season
     getMatches() {
         setTimeout(() => {
-            axios.get(`https://readyforyourreview.com/KevinR123/public/matches/season/${this.filters.season}`)
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${this.filters.season}`)
                 .then(response => {
                     this.matches = response.data;
                     this.loadCompetitions(response.data)
