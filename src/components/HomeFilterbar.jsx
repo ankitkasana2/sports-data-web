@@ -13,6 +13,7 @@ function HomeFilterbar() {
   const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
 
   const [searchParams, setSearchParams] = useSearchParams();
+  const [shortCode, setShortCode] = useState("")
 
   useEffect(() => {
     if (searchParams.size != 0) {
@@ -22,7 +23,7 @@ function HomeFilterbar() {
     } else {
       homeFilterbarStore.setFilter("season", new Date().getFullYear())
     }
-    
+    homeFilterbarStore.loadCompetitions()
     homeFilterbarStore.getMatches()
   }, [])
 
@@ -32,13 +33,14 @@ function HomeFilterbar() {
 
   useEffect(() => {
     searchParams.set("season", filters.season)
-    searchParams.set("competition", filters.competition.code ? filters.competition.code : "")
+    searchParams.set("competition", shortCode)
     searchParams.set("code", filters.code)
     searchParams.set("grade", filters.grade)
     searchParams.set("group", filters.group)
     setSearchParams(searchParams)
 
     homeFilterbarStore.getMatches()
+    homeFilterbarStore.loadCompetitions()
 
   }, [filters.season, filters.competition, filters, filters.code, filters.grade, filters.group])
 
@@ -68,8 +70,8 @@ function HomeFilterbar() {
 
           {/* competition */}
           <Select
-            value={filters.competition?.name || ""}
-            onValueChange={(val) => homeFilterbarStore.setFilter("competition", competitions.find(c => c == val))}
+            value={filters.competition}
+            onValueChange={(val) => {homeFilterbarStore.setFilter("competition", val), homeFilterbarStore.setFilter("code", competitions.find(c=>c.competition_name==val).game_code), setShortCode(competitions.find(c=>c.competition_name==val).competition_code)}}
           >
             <SelectTrigger className="w-auto">
               <SelectValue placeholder="Select a competition" />
@@ -77,7 +79,7 @@ function HomeFilterbar() {
             <SelectContent>
               <SelectItem value="All">All</SelectItem>
               {competitions?.map(c => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c.competition_code} value={c.competition_name}>{c.competition_name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

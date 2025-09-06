@@ -55,7 +55,6 @@ function MatchStatusCard() {
       const dateOnly = kickoffDate.toISOString().split("T")[0];  
       const matchDate = new Date(dateOnly)
       matchDate.setHours(0, 0, 0, 0)
-      console.log(matchDate <= nextWeek)
 
 
       // ✅ check if match is within the next 7 days

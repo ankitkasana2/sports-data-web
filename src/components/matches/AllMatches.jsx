@@ -22,14 +22,17 @@ function currentYear() {
 
 
 
-// Mock data (replace with your backend/SWR)
-// const initialMatches = ()=>{
-//   matchesStore.getAllMatch()
-//   return matchesStore.matches
-// }
 
 // Create Match modal
 function CreateMatchDialog({ onCreate }) {
+
+  const { matchesStore, homeFilterbarStore, teamsStore } = useStores()
+
+  useEffect(() => {
+    console.log("hello", toJS(teamsStore.teams))
+  }, [teamsStore.teams])
+
+
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({
     date: "",
@@ -94,6 +97,28 @@ function CreateMatchDialog({ onCreate }) {
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
+            <Label htmlFor="competition">Competition</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a competition" />
+              </SelectTrigger>
+              <SelectContent>
+                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="round">Round</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a round" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='Final'>Final</SelectItem> 
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-2">
             <Label htmlFor="date">Date</Label>
             <Input id="date" name="date" type="date" value={form.date} onChange={handleChange} />
           </div>
@@ -102,16 +127,26 @@ function CreateMatchDialog({ onCreate }) {
             <Input id="time" name="time" type="time" value={form.time} onChange={handleChange} />
           </div>
           <div className="flex flex-col gap-2">
-            <Label htmlFor="teamA">Team A</Label>
-            <Input id="teamA" name="teamA" value={form.teamA} onChange={handleChange} />
+            <Label htmlFor="teamB">Team A</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Team B</Label>
-            <Input id="teamB" name="teamB" value={form.teamB} onChange={handleChange} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="competition">Competition</Label>
-            <Input id="competition" name="competition" value={form.competition} onChange={handleChange} />
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="grade">Grade</Label>
@@ -378,8 +413,6 @@ function ActionsBar({ onCreate, onImport }) {
 function MatchesPage() {
 
   const { matchesStore, homeFilterbarStore } = useStores()
-
-
 
 
   // Data

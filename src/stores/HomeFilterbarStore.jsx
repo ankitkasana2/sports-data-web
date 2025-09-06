@@ -50,25 +50,31 @@ class HomeFilterbarStore {
             axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${this.filters.season}`)
                 .then(response => {
                     this.matches = response.data;
-                    this.loadCompetitions(response.data)
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);
                 });
         }, 500);
-
     }
 
     // Load competitions for selected season
-    loadCompetitions(value) {
-
-        value ? this.competitions = [...new Set(value.map(match => match.competition_name))] : this.competitions = []
-
+    loadCompetitions() {
+        setTimeout(() => {
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}competition/${this.filters.season}`)
+                .then(response => {
+                    this.competitions = response.data;
+                })
+                .catch(error => {
+                    console.error("There was an error fetching users!", error);
+                });
+        }, 500);
     }
 
     // Handle filter updates
     setFilter(key, value) {
         this.filters[key] = value
+
+        console.log("haaaa",value)
 
         // When season changes → reload competitions
         if (key === "season") {
@@ -77,9 +83,9 @@ class HomeFilterbarStore {
             this.filters.code = ""
         }
 
-        if (key === "competition") {
-            this.filters.code = data.matchData.find((val) => { return value.name == val.competition.name })?.game_code
-        }
+        // if (key === "competition") {
+        //     this.filters.code = 
+        // }
 
         // Save to localStorage
         localStorage.setItem("filters", JSON.stringify(this.filters))

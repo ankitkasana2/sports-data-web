@@ -91,8 +91,8 @@ function MatchesTable({ rows, selected, setSelected }) {
                                     </TableCell>
                                     <TableCell>{formatDateTime(m.kickoff_datetime)}</TableCell>
                                     <TableCell>
-                                        <span className="font-medium">{m.team_a_id}</span> <span className="text-muted-foreground">vs</span>{" "}
-                                        <span className="font-medium">{m.team_b_id}</span>
+                                        <span className="font-medium">{m.team_a}</span> <span className="text-muted-foreground">vs</span>{" "}
+                                        <span className="font-medium">{m.team_b}</span>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -104,9 +104,9 @@ function MatchesTable({ rows, selected, setSelected }) {
                                     <TableCell>{m.referee_name}</TableCell>
                                     <TableCell className="capitalize">{m.match_status.replace("-", " ")}</TableCell>
                                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                        {m.match_status === "scheduled" || m.match_status === "in-progress" ? (
+                                        {m.match_status === "Scheduled" || m.match_status === "InProgress" ? (
                                             <Button asChild size="sm">
-                                                <Link to={`/live/${m.id}`}>{m.match_status === "scheduled" ? "Start" : "Resume"}</Link>
+                                                <Link to={`/live/${m.id}`}>{m.match_status == "Scheduled" ? "Start" : "Resume"}</Link>
                                             </Button>
                                         ) : (
                                             <span className="text-sm text-muted-foreground">—</span>
