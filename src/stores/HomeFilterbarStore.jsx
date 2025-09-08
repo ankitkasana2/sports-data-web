@@ -74,21 +74,20 @@ class HomeFilterbarStore {
     setFilter(key, value) {
         this.filters[key] = value
 
-        console.log("haaaa",value)
-
-        // When season changes → reload competitions
-        if (key === "season") {
-            // this.loadCompetitions(value)
-            this.filters.competition = ""
-            this.filters.code = ""
-        }
-
-        // if (key === "competition") {
-        //     this.filters.code = 
-        // }
 
         // Save to localStorage
-        localStorage.setItem("filters", JSON.stringify(this.filters))
+        if (localStorage.getItem("filters")) {
+            let filter = JSON.parse(localStorage.getItem("filters"))
+            if (key == "season" && value != this.filters.season) {
+                this.loadCompetitions(value)
+                this.filters.competition = ""
+                this.filters.code = ""
+            }
+            filter[key] = value
+            localStorage.setItem('filters', JSON.stringify(filter))
+        } else {
+            localStorage.setItem("filters", JSON.stringify(this.filters))
+        }
     }
 }
 

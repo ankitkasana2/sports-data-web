@@ -51,8 +51,8 @@ function MatchStatusCard() {
     setIsLoading(true)
 
     let filteredMatches = matches.filter((match) => {
-      const kickoffDate = new Date(match.kickoff_datetime);  
-      const dateOnly = kickoffDate.toISOString().split("T")[0];  
+      const kickoffDate = new Date(match.kickoff_datetime);
+      const dateOnly = kickoffDate.toISOString().split("T")[0];
       const matchDate = new Date(dateOnly)
       matchDate.setHours(0, 0, 0, 0)
 
@@ -62,10 +62,12 @@ function MatchStatusCard() {
 
       // ✅ check if competition matches (or no filter applied)
       const isCompetitionMatch =
-        !filters.competition || match.competition_name === filters.competition
+        !filters.competition || filters.competition.name === "All"
+          ? true
+          : match.comp_season_id === filters.competition.id
 
       // check match ststus 
-      const isNotPused = match.match_status != "paused"
+      const isNotPused = match.match_status != "InProgress"
       return isWithin7Days && isCompetitionMatch && isNotPused
     })
 
@@ -130,17 +132,21 @@ function MatchStatusCard() {
               return <div key={index} className="border rounded-lg p-4 space-y-2">
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-semibold">{match.team_a_id} vs {match.team_b_id}</h4>
+                    <h4 className="font-semibold">{match.team_a} vs {match.team_b}</h4>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-3 w-3" />
                       {match.venue_name}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-3 w-3" />
-                      {match.date == formattedToday ? "Today" : match.date}, {match.time}
+                      {
+                        match.kickoff_datetime.split("T")[0] === formattedToday
+                          ? "Today"
+                          : match.kickoff_datetime
+                      }
                     </div>
                   </div>
-                  <Button size="sm" onClick={()=>{navigate(`live/${match.match_id}`)}}>
+                  <Button size="sm" onClick={() => { navigate(`live/${match.match_id}`) }}>
                     <Play className="h-3 w-3 mr-1" />
                     Start
                   </Button>

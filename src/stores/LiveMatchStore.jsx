@@ -33,8 +33,10 @@ class LiveMatchStore {
     selection: null,
     currentShot: { open: false, xy: [] },
     currentFree: { open: false, xy: [] },
-    currentRestart: { open: false, xy: null },
-    currentTurnover: { open: false, xy: null },
+    currentRestart: { open: false, xy: [] },
+    currentTurnover: { open: false, xy: [] },
+    currentKickoutOrPuckout: { open: false, xy: [] },
+    currentSideline: { open: false, xy: [] },
   }
 
   // basic history for undo/redo
@@ -323,6 +325,8 @@ class LiveMatchStore {
     if (kind === "free") this.ui.currentFree.open = true
     if (kind === "restart") this.ui.currentRestart.open = true
     if (kind === "turnover") this.ui.currentTurnover.open = true
+    if (kind === "KickoutOrPuckout") this.ui.currentKickoutOrPuckout.open=true
+    if (kind === "sideline") this.ui.currentSideline.open=true
   }
 
   closeDialogs() {
@@ -331,6 +335,8 @@ class LiveMatchStore {
     this.ui.currentFree.open = false
     this.ui.currentRestart.open = false
     this.ui.currentTurnover.open = false
+    this.ui.currentKickoutOrPuckout.open = false
+    this.ui.currentSideline.open=false
   }
 
   setDialogXY(kind, xy) {

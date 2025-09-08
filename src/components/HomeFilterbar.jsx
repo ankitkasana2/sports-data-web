@@ -13,7 +13,6 @@ function HomeFilterbar() {
   const { filters, years, competitions, grades, groups, matches } = homeFilterbarStore
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [shortCode, setShortCode] = useState("")
 
   useEffect(() => {
     if (searchParams.size != 0) {
@@ -23,8 +22,20 @@ function HomeFilterbar() {
     } else {
       homeFilterbarStore.setFilter("season", new Date().getFullYear())
     }
+
+    if (localStorage.getItem('filters')) {
+      let filtersValue = JSON.parse(localStorage.getItem("filters"))
+
+      homeFilterbarStore.setFilter("season", filtersValue.season)
+      homeFilterbarStore.setFilter("competition", filtersValue.competition)
+      homeFilterbarStore.setFilter("code", filtersValue.code)
+      homeFilterbarStore.setFilter("grade", filtersValue.grade)
+      homeFilterbarStore.setFilter("group", filtersValue.group)
+
+    }
     homeFilterbarStore.loadCompetitions()
     homeFilterbarStore.getMatches()
+
   }, [])
 
 
@@ -33,11 +44,12 @@ function HomeFilterbar() {
 
   useEffect(() => {
     searchParams.set("season", filters.season)
-    searchParams.set("competition", shortCode)
+    searchParams.set("competition", filters.competition.short)
     searchParams.set("code", filters.code)
     searchParams.set("grade", filters.grade)
     searchParams.set("group", filters.group)
     setSearchParams(searchParams)
+
 
     homeFilterbarStore.getMatches()
     homeFilterbarStore.loadCompetitions()
@@ -70,8 +82,22 @@ function HomeFilterbar() {
 
           {/* competition */}
           <Select
-            value={filters.competition}
-            onValueChange={(val) => {homeFilterbarStore.setFilter("competition", val), homeFilterbarStore.setFilter("code", competitions.find(c=>c.competition_name==val).game_code), setShortCode(competitions.find(c=>c.competition_name==val).competition_code)}}
+            value={filters.competition.name}
+
+            onValueChange={(val) => {
+              if (val === "All") {
+                // Reset filters when "All" is selected
+                homeFilterbarStore.setFilter("competition", { name: "All", id: null, short: null })
+                // homeFilterbarStore.setFilter("code", null)
+              } else {
+                // Find the competition object
+                const comp = competitions.find(c => c.competition_name === val)
+                if (comp) {
+                  homeFilterbarStore.setFilter("competition", { name: comp.competition_name, id: comp.id, short: comp.competition_code })
+                  homeFilterbarStore.setFilter("code", comp.game_code)
+                }
+              }
+            }}
           >
             <SelectTrigger className="w-auto">
               <SelectValue placeholder="Select a competition" />

@@ -10,6 +10,10 @@ import { ShotDialog } from "./ShotDialog"
 import { FreeDialog } from "./FreeDialog"
 import { RestartDialog } from "./RestartDialog"
 import { TurnoverDialog } from "./TurnoverDialog"
+import { KickoutOrPuckoutDialog } from "./dialogs/KickoutOrPuckoutDialog"
+import { SidelineDialog } from "./dialogs/SidelineDialog"
+import {ThrowInDialog} from "./dialogs/ThrowInDialog"
+
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
 
@@ -67,7 +71,7 @@ export const EventPad = observer(function EventPad() {
         if (store.clock.running) return
         const next = Math.max(0, store.clock.seconds - 5)
         store.setTime(next)
-      }else if (e.key === "ArrowRight" && e.ctrlKey) {
+      } else if (e.key === "ArrowRight" && e.ctrlKey) {
         if (store.clock.running) return
         const next = Math.max(0, store.clock.seconds + 5)
         store.setTime(next)
@@ -96,7 +100,7 @@ export const EventPad = observer(function EventPad() {
           Free (F)
         </Button>
         <Button
-          onClick={() => store.openDialog("restart")}
+          onClick={() => store.openDialog("KickoutOrPuckout")}
           aria-keyshortcuts={store.code === "football" ? "K" : "P"}
           variant={ping === "k" ? "default" : "outline"}
         >
@@ -114,8 +118,32 @@ export const EventPad = observer(function EventPad() {
             <Button variant="outline">More ▾</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => store.openDialog("sideline")}>
+              Sideline
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => store.openDialog("restart")}>
-              Sideline / Throw-in
+              Throw-in
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              45
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              Penalty
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              Mark
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              Card
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              50m Advance
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              Back-pass to GK
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+              Note
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -128,6 +156,8 @@ export const EventPad = observer(function EventPad() {
       <FreeDialog />
       <RestartDialog />
       <TurnoverDialog />
+      <KickoutOrPuckoutDialog/>
+      <SidelineDialog/>
     </div>
   )
 })
