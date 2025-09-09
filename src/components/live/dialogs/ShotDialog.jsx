@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react"
 import { observer } from "mobx-react-lite"
-import { useStores } from "../../stores/StoresProvider"
-import { Button } from "../ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
-import { MiniPitch } from "./MiniPitch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useStores } from "../../../stores/StoresProvider"
+import { Button } from "../../ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
+import { MiniPitch } from "../MiniPitch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
 export const ShotDialog = observer(function ShotDialog() {
   const { liveMatchStore } = useStores()
@@ -13,6 +13,7 @@ export const ShotDialog = observer(function ShotDialog() {
   const [result, setResult] = useState("point")
   const [shotType, setShotType] = useState("open_play")
   const [position, setPosition] = useState(null)
+   const [team, setTeam] = useState("teamA")
 
   useEffect(() => {
     if (!open) return
@@ -38,7 +39,7 @@ export const ShotDialog = observer(function ShotDialog() {
 
     // store position 
     store.setDialogXY("shot", position)
-    
+
     // Update scoreboard if point/goal
     if (result === "goal") store.addScore(team, "goal")
     if (result === "point") store.addScore(team, "point")
@@ -67,6 +68,19 @@ export const ShotDialog = observer(function ShotDialog() {
           </div>
 
           <div className="space-y-3">
+            <div className="grid gap-1">
+              <label className="text-sm font-medium">Team</label>
+              <Select value={team} onValueChange={(v) => setTeam(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="teamA">Team A</SelectItem>
+                  <SelectItem value="teamB">Team B</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid gap-1">
               <label className="text-sm font-medium">Result</label>
               <Select value={result} onValueChange={(v) => setResult(v)}>

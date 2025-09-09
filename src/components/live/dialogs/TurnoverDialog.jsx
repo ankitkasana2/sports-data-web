@@ -1,3 +1,4 @@
+
 import { useState } from "react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
@@ -5,17 +6,14 @@ import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
-export const ThrowInDialog = observer(function ThrowInDialog() {
+export const TurnoverDialog = observer(function TurnoverDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  const open = !!store.ui.currentThrowIn.open
-
-  const [wonTeam, setWonTeam] = useState('teamA')
+  const open = !!store.ui.currentTurnover.open
+  const [gain, setGain] = useState("home")
 
   const onSave = () => {
-    const type = store.code === "football" ? "kickout" : "puckout"
-    store.addEvent({ type, team: executing })
-
+    store.addEvent({ type: "turnover", team: gain })
     store.closeDialogs()
   }
 
@@ -23,19 +21,19 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Throw In</DialogTitle>
+          <DialogTitle>Turnover</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => setWonTeam(v)}>
+            <label className="text-sm font-medium">Gaining team</label>
+            <Select value={gain} onValueChange={(v) => setGain(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="teamA">Team A</SelectItem>
-                <SelectItem value="teamB">Team B</SelectItem>
+                <SelectItem value="home">Home</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
               </SelectContent>
             </Select>
           </div>

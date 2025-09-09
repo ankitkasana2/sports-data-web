@@ -5,16 +5,16 @@ import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
-export const ThrowInDialog = observer(function ThrowInDialog() {
+export const Advance50mDialog = observer(function Advance50mDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  const open = !!store.ui.currentThrowIn.open
+  const open = !!store.ui.current50mAdvance.open
 
-  const [wonTeam, setWonTeam] = useState('teamA')
+  const [team, setTeam] = useState("teamA")
 
   const onSave = () => {
-    const type = store.code === "football" ? "kickout" : "puckout"
-    store.addEvent({ type, team: executing })
+    // const type = store.code === "football" ? "kickout" : "puckout"
+    // store.addEvent({ type, team: executing })
 
     store.closeDialogs()
   }
@@ -23,13 +23,13 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Throw In</DialogTitle>
+          <DialogTitle>50m Advance</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => setWonTeam(v)}>
+            <label className="text-sm font-medium">Team</label>
+            <Select value={team} onValueChange={(v) => setTeam(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

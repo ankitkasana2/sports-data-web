@@ -5,19 +5,19 @@ import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
-export const SidelineDialog = observer(function SidelineDialog() {
+export const PaneltyDialog = observer(function PaneltyDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  const open = !!store.ui.currentSideline.open
+  const open = !!store.ui.currentPanelty.open
 
-  
-  const [direction, setDirection] = useState("middle")
   const [awardedTeam, setAwardedTeam] = useState("teamA")
-  const [outcome, setOutcome] = useState("")
+  const [fouledPlayer, setFouledPlayer] = useState("")
+  const [takeNow, setTakeNow] = useState("yes")
+
 
   const onSave = () => {
-    const type = store.code === "football" ? "kickout" : "puckout"
-    store.addEvent({ type, team: awardedTeam })
+    // const type = store.code === "football" ? "kickout" : "puckout"
+    // store.addEvent({ type, team: awardedTeam })
 
     store.closeDialogs()
   }
@@ -26,7 +26,7 @@ export const SidelineDialog = observer(function SidelineDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Sideline</DialogTitle>
+          <DialogTitle>Panelty</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
@@ -43,16 +43,30 @@ export const SidelineDialog = observer(function SidelineDialog() {
             </Select>
           </div>
 
-          {/* outcome  */}
+          {/* foules player  */}
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Outcome</label>
-            <Select value={outcome} onValueChange={(v) => setOutcome(v)}>
+            <label className="text-sm font-medium">Fouled Player</label>
+            <Select value={fouledPlayer} onValueChange={(v) => setFouledPlayer(v)}>
               <SelectTrigger>
-                <SelectValue placeholder="select an outcome"/>
+                <SelectValue placeholder="Select fouled player"/>
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="playOn">Play On</SelectItem>
-                <SelectItem value="setShotNow">Set Shot Now</SelectItem>
+                <SelectItem value="player1">Player 1</SelectItem>
+                <SelectItem value="player2">Player 2</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* outcome  */}
+          <div className="grid gap-1">
+            <label className="text-sm font-medium">Take Now ?</label>
+            <Select value={takeNow} onValueChange={(v) => setTakeNow(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="select an outcome" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="yes">Yes</SelectItem>
+                <SelectItem value="no">No</SelectItem>
               </SelectContent>
             </Select>
           </div>

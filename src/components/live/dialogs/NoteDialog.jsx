@@ -3,18 +3,18 @@ import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { Textarea } from "@/components/ui/textarea"
 
-export const ThrowInDialog = observer(function ThrowInDialog() {
+export const NoteDialog = observer(function NoteDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  const open = !!store.ui.currentThrowIn.open
+  const open = !!store.ui.currentNote.open
 
-  const [wonTeam, setWonTeam] = useState('teamA')
+  const [message, setMessage] = useState('')
 
   const onSave = () => {
-    const type = store.code === "football" ? "kickout" : "puckout"
-    store.addEvent({ type, team: executing })
+    // const type = store.code === "football" ? "kickout" : "puckout"
+    // store.addEvent({ type, team: executing })
 
     store.closeDialogs()
   }
@@ -23,21 +23,14 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Throw In</DialogTitle>
+          <DialogTitle>Note</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => setWonTeam(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="teamA">Team A</SelectItem>
-                <SelectItem value="teamB">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+            <label className="text-sm font-medium">Note</label>
+            <Textarea placeholder="Type your message here." value={message}
+              onChange={(e) => setMessage(e.target.value)} />
           </div>
         </div>
 

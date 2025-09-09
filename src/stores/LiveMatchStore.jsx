@@ -37,6 +37,15 @@ class LiveMatchStore {
     currentTurnover: { open: false, xy: [] },
     currentKickoutOrPuckout: { open: false, xy: [] },
     currentSideline: { open: false, xy: [] },
+    currentThrowIn: { open: false, xy: [] },
+    current45Or65: { open: false, xy: [] },
+    currentPanelty: { open: false, xy: [] },
+    currentMark: { open: false, xy: [] },
+    currentCard: { open: false, xy: [] },
+    current50mAdvance: { open: false, xy: [] },
+    currentBackPass: { open: false, xy: [] },
+    currentNote: { open: false, xy: [] },
+
   }
 
   // basic history for undo/redo
@@ -325,18 +334,34 @@ class LiveMatchStore {
     if (kind === "free") this.ui.currentFree.open = true
     if (kind === "restart") this.ui.currentRestart.open = true
     if (kind === "turnover") this.ui.currentTurnover.open = true
-    if (kind === "KickoutOrPuckout") this.ui.currentKickoutOrPuckout.open=true
-    if (kind === "sideline") this.ui.currentSideline.open=true
+    if (kind === "KickoutOrPuckout") this.ui.currentKickoutOrPuckout.open = true
+    if (kind === "sideline") this.ui.currentSideline.open = true
+    if (kind === "throwIn") this.ui.currentThrowIn.open = true
+    if (kind === "45Or65") this.ui.current45Or65.open = true
+    if (kind === "panelty") this.ui.currentPanelty.open = true
+    if (kind === "mark") this.ui.currentMark.open = true
+    if (kind === "card") this.ui.currentCard.open = true
+    if (kind === "50mAdvance") this.ui.current50mAdvance.open = true
+    if (kind === "backPass") this.ui.currentBackPass.open = true
+    if (kind === "note") this.ui.currentNote.open = true
   }
 
   closeDialogs() {
-    this.startClock()
+
     this.ui.currentShot.open = false
     this.ui.currentFree.open = false
     this.ui.currentRestart.open = false
     this.ui.currentTurnover.open = false
     this.ui.currentKickoutOrPuckout.open = false
-    this.ui.currentSideline.open=false
+    this.ui.currentSideline.open = false
+    this.ui.currentThrowIn.open = false
+    this.ui.current45Or65.open = false
+    this.ui.currentPanelty.open = false
+    this.ui.currentMark.open = false
+    this.ui.currentCard.open = false
+    this.ui.current50mAdvance.open = false
+    this.ui.currentBackPass.open = false
+    this.ui.currentNote.open = false
   }
 
   setDialogXY(kind, xy) {

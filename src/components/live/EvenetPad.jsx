@@ -6,13 +6,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { ShotDialog } from "./ShotDialog"
-import { FreeDialog } from "./FreeDialog"
+import { ShotDialog } from "./dialogs/ShotDialog"
+import { FreeDialog } from "./dialogs/FreeDialog"
 import { RestartDialog } from "./RestartDialog"
-import { TurnoverDialog } from "./TurnoverDialog"
+import { TurnoverDialog } from "./dialogs/TurnoverDialog"
 import { KickoutOrPuckoutDialog } from "./dialogs/KickoutOrPuckoutDialog"
 import { SidelineDialog } from "./dialogs/SidelineDialog"
 import {ThrowInDialog} from "./dialogs/ThrowInDialog"
+import { Free45Or65Dialog } from "./dialogs/Free45Or65Dialog"
+import { PaneltyDialog } from "./dialogs/PaneltyDialog"
+import { MarkDialog } from "./dialogs/MarkDialog"
+import { CardDialog } from "./dialogs/CardDialog"
+import { Advance50mDialog } from "./dialogs/Advance50mDialog"
+import { BackPassDialog } from "./dialogs/BackPassDialog"
+import { NoteDialog } from "./dialogs/NoteDialog"
 
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
@@ -121,28 +128,28 @@ export const EventPad = observer(function EventPad() {
             <DropdownMenuItem onClick={() => store.openDialog("sideline")}>
               Sideline
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            <DropdownMenuItem onClick={() => store.openDialog("throwIn")}>
               Throw-in
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
-              45
+            <DropdownMenuItem onClick={() => store.openDialog("45Or65")}>
+              {store.code == 'football' ? '45' : '65'}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            <DropdownMenuItem onClick={() => store.openDialog("panelty")}>
               Penalty
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            {store.code == "football" && <DropdownMenuItem onClick={() => store.openDialog("mark")}>
               Mark
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            </DropdownMenuItem>}
+            <DropdownMenuItem onClick={() => store.openDialog("card")}>
               Card
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            {store.code == 'football' && <DropdownMenuItem onClick={() => store.openDialog("50mAdvance")}>
               50m Advance
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            </DropdownMenuItem>}
+            {store.code == 'football' && <DropdownMenuItem onClick={() => store.openDialog("backPass")}>
               Back-pass to GK
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => store.openDialog("restart")}>
+            </DropdownMenuItem>}
+            <DropdownMenuItem onClick={() => store.openDialog("note")}>
               Note
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -158,6 +165,14 @@ export const EventPad = observer(function EventPad() {
       <TurnoverDialog />
       <KickoutOrPuckoutDialog/>
       <SidelineDialog/>
+      <ThrowInDialog/>
+      <Free45Or65Dialog/>
+      <PaneltyDialog/>
+      <MarkDialog/>
+      <CardDialog/>
+      <Advance50mDialog/>
+      <BackPassDialog/>
+      <NoteDialog/>
     </div>
   )
 })

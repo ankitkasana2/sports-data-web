@@ -1,19 +1,22 @@
-
 import { useState } from "react"
 import { observer } from "mobx-react-lite"
-import { useStores } from "../../stores/StoresProvider"
-import { Button } from "../ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { useStores } from "../../../stores/StoresProvider"
+import { Button } from "../../ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 
-export const TurnoverDialog = observer(function TurnoverDialog() {
+export const BackPassDialog = observer(function BackPassDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
-  const open = !!store.ui.currentTurnover.open
-  const [gain, setGain] = useState("home")
+  const open = !!store.ui.currentBackPass.open
+
+  const [team, setTeam] = useState("teamA")
+
 
   const onSave = () => {
-    store.addEvent({ type: "turnover", team: gain })
+    // const type = store.code === "football" ? "kickout" : "puckout"
+    // store.addEvent({ type, team: executing })
+
     store.closeDialogs()
   }
 
@@ -21,19 +24,19 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Turnover</DialogTitle>
+          <DialogTitle>Back Pass To GK Violation</DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Gaining team</label>
-            <Select value={gain} onValueChange={(v) => setGain(v)}>
+            <label className="text-sm font-medium">Offending Team</label>
+            <Select value={team} onValueChange={(v) => setTeam(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="home">Home</SelectItem>
-                <SelectItem value="away">Away</SelectItem>
+                <SelectItem value="teamA">Team A</SelectItem>
+                <SelectItem value="teamB">Team B</SelectItem>
               </SelectContent>
             </Select>
           </div>

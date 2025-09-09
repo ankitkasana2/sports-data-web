@@ -1,12 +1,12 @@
 import { useState } from "react"
-import { Button } from "../ui/button"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
-import { MiniPitch } from "./MiniPitch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Switch } from "../ui/switch"
-import { Label } from "../ui/label"
+import { Button } from "../../ui/button"
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
+import { MiniPitch } from "../MiniPitch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { Switch } from "../../ui/switch"
+import { Label } from "../../ui/label"
 import { observer } from "mobx-react-lite"
-import { useStores } from "../../stores/StoresProvider"
+import { useStores } from "../../../stores/StoresProvider"
 
 export const FreeDialog = observer(function FreeDialog() {
   const { liveMatchStore } = useStores()
