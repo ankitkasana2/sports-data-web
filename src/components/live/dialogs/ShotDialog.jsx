@@ -13,7 +13,8 @@ export const ShotDialog = observer(function ShotDialog() {
   const [result, setResult] = useState("point")
   const [shotType, setShotType] = useState("open_play")
   const [position, setPosition] = useState(null)
-   const [team, setTeam] = useState("teamA")
+  const [team, setTeam] = useState("teamA")
+  const [arcStatus, setArcStatus] = useState("")
 
   useEffect(() => {
     if (!open) return
@@ -93,35 +94,44 @@ export const ShotDialog = observer(function ShotDialog() {
                   <SelectItem value="wide">Wide</SelectItem>
                   <SelectItem value="saved">Saved</SelectItem>
                   <SelectItem value="blocked">Blocked</SelectItem>
-                  <SelectItem value="dropped_short">Dropped short</SelectItem>
-                  <SelectItem value="off_post">Off post</SelectItem>
+                  <SelectItem value="short">Dropped Short</SelectItem>
+                  <SelectItem value="post">Off Post</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="grid gap-1">
-              <label className="text-sm font-medium">Shot Type</label>
-              <Select value={shotType} onValueChange={(v) => setShotType(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="open_play">Open play</SelectItem>
-                  <SelectItem value="free">Free</SelectItem>
-                  <SelectItem value="45">45</SelectItem>
-                  <SelectItem value="65">65</SelectItem>
-                  <SelectItem value="penalty">Penalty</SelectItem>
-                  <SelectItem value="sideline_cut">Sideline cut</SelectItem>
-                  <SelectItem value="mark_free">Mark free</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {store.code === "football" && (
-              <div className="rounded-md border p-2 text-xs">
-                Two-pointer logic can be derived later. We update score for goals/points now.
+            <div className="flex justify-between">
+              <div className="grid gap-1">
+                <label className="text-sm font-medium">Shot Type</label>
+                <Select value={shotType} onValueChange={(v) => setShotType(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="open_play">Open Play</SelectItem>
+                    <SelectItem value="free">Free</SelectItem>
+                    {<SelectItem value={store.code == 'football' ? '45' : '65'}>{store.code == 'football' ? '45' : '65'}</SelectItem>}
+                    <SelectItem value="penalty">Penalty</SelectItem>
+                    <SelectItem value="sideline_cut">Sideline</SelectItem>
+                    {store.code == 'football' && <SelectItem value="mark_free">Mark free</SelectItem>}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+
+              {store.code == 'football' && <div className="grid gap-1">
+                <label className="text-sm font-medium">Arc Status</label>
+                <Select value={arcStatus} onValueChange={(v) => setArcStatus(v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Arc-status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value=" inside_40">Inside 40</SelectItem>
+                    <SelectItem value="on_40">On 40</SelectItem>
+                    <SelectItem value="outside_40">Outside 40</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>}
+            </div>
           </div>
         </div>
 

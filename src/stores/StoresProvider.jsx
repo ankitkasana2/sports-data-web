@@ -3,6 +3,7 @@ import { homeFilterbarStore } from "./HomeFilterbarStore"
 import { liveMatchStore } from "./LiveMatchStore"
 import { matchesStore } from "./MatchesStore"
 import { teamsStore } from "./TeamsStore"
+import { refereesStore } from "./RefereesStore"
 
 
 const stores = {
@@ -10,6 +11,7 @@ const stores = {
   liveMatchStore,
   matchesStore,
   teamsStore,
+  refereesStore,
 }
 
 const StoresContext = createContext(stores)

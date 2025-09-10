@@ -6,20 +6,20 @@ import { toJS } from "mobx"
 const apiUrl = import.meta.env;
 
 
-class TeamsStore {
+class RefereesStore {
 
-    allTeams = []
+    allRefrees = []
 
     constructor() {
         makeAutoObservable(this)
-        this.getAllTeams()
+        this.getReferees()
     }
 
-    getAllTeams() {
+    getReferees() {
          setTimeout(() => {
-            axios.get(`${apiUrl.VITE_BACKEND_PATH}teams`)
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}referees`)
                 .then(response => {
-                    this.allTeams = response.data;
+                    this.allRefrees = response.data;
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);
@@ -28,4 +28,4 @@ class TeamsStore {
     }
 }
 
-export const teamsStore = new TeamsStore()
+export const refereesStore = new RefereesStore()

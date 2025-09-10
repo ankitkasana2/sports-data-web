@@ -10,10 +10,14 @@ class MatchesStore {
 
     matches = []
     competitions = []
+    allCompetitions = []
+    allVenues = []
 
     constructor() {
         makeAutoObservable(this)
         this.getAllMatchBySeason(new Date().getFullYear())
+        this.getAllCompetition()
+        this.getAllVenue()
     }
 
     getAllMatchBySeason(season) {
@@ -21,6 +25,33 @@ class MatchesStore {
             axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${season}`)
                 .then(response => {
                     this.matches = response.data;
+                })
+                .catch(error => {
+                    console.error("There was an error fetching users!", error);
+                });
+        }, 500);
+    }
+
+    // competition 
+    getAllCompetition() {
+        setTimeout(() => {
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}competition`)
+                .then(response => {
+                    this.allCompetitions = response.data;
+                    this.getAllVenue()
+                })
+                .catch(error => {
+                    console.error("There was an error fetching users!", error);
+                });
+        }, 500);
+    }
+
+    // get all venue 
+    getAllVenue() {
+        setTimeout(() => {
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}venue`)
+                .then(response => {
+                    this.allVenues = response.data;
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);

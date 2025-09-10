@@ -26,11 +26,11 @@ function currentYear() {
 // Create Match modal
 function CreateMatchDialog({ onCreate }) {
 
-  const { matchesStore, homeFilterbarStore, teamsStore } = useStores()
+  const { matchesStore, homeFilterbarStore, teamsStore, refereesStore } = useStores()
 
   useEffect(() => {
-    console.log("hello", toJS(teamsStore.teams))
-  }, [teamsStore.teams])
+    console.log("hello", toJS(matchesStore.allCompetitions))
+  }, [matchesStore.allCompetitions])
 
 
   const [open, setOpen] = useState(false)
@@ -89,13 +89,32 @@ function CreateMatchDialog({ onCreate }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Add Match</Button>
+        <Button onClick={() => { matchesStore.getAllCompetition(), teamsStore.getAllTeams(), refereesStore.getReferees() }}>Add Match</Button>
       </DialogTrigger>
       <DialogContent className="min-w-3xl h-[80vh] overflow-y-scroll">
         <DialogHeader>
           <DialogTitle>Create Match</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* code  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="round">Game Code</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select game code" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='hurling'>Hurling</SelectItem>
+                <SelectItem value='football'>Football</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* season  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="season">Season</Label>
+            <Input id="season" name="season" value={form.season} disabled />
+          </div>
+          {/* competition  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="competition">Competition</Label>
             <Select>
@@ -103,10 +122,11 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a competition" />
               </SelectTrigger>
               <SelectContent>
-                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+                {matchesStore.allCompetitions && matchesStore.allCompetitions.map((comp) => { return <SelectItem key={comp.id} value={comp.name}>{comp.name}</SelectItem> })}
               </SelectContent>
             </Select>
           </div>
+          {/* round  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="round">Round</Label>
             <Select>
@@ -114,18 +134,48 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a round" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='Final'>Final</SelectItem> 
+                <SelectItem value='final'>Final</SelectItem>
+                <SelectItem value='semi-final'>Semi Final</SelectItem>
+                <SelectItem value='quarter-final'>Quarter Final</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          {/* venue name  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="round">Venue Name</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a venue" />
+              </SelectTrigger>
+              <SelectContent>
+                {matchesStore.allVenues && matchesStore.allVenues.map((venue) => { return <SelectItem key={venue.venue_id} value={venue.venue_name}>{venue.venue_name}</SelectItem> })}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* venue type  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="round">Venue Type</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select venue type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='grass'>Grass</SelectItem>
+                <SelectItem value='artificial'>Artificial</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          {/* date  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="date">Date</Label>
             <Input id="date" name="date" type="date" value={form.date} onChange={handleChange} />
           </div>
+          {/* time  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="time">Time</Label>
             <Input id="time" name="time" type="time" value={form.time} onChange={handleChange} />
           </div>
+          {/* team A  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Team A</Label>
             <Select>
@@ -133,10 +183,11 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
               <SelectContent>
-                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+                {teamsStore.allTeams && teamsStore.allTeams.map((team) => { return team.active_flag == 'Y' && <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
               </SelectContent>
             </Select>
           </div>
+          {/* team b  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Team B</Label>
             <Select>
@@ -144,17 +195,36 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
               <SelectContent>
-                {teamsStore.teams && teamsStore.teams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+                {teamsStore.allTeams && teamsStore.allTeams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
               </SelectContent>
             </Select>
           </div>
+          {/* referee  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="teamB">Referee Name</Label>
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a referee" />
+              </SelectTrigger>
+              <SelectContent>
+                {refereesStore.allRefrees && refereesStore.allRefrees.map((referee) => { return referee.active_flag == 'Y' && <SelectItem key={referee.referee_id} value={referee.name}>{referee.name}</SelectItem> })}
+              </SelectContent>
+            </Select>
+          </div>
+          {/* grade  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="grade">Grade</Label>
-            <Input id="grade" name="grade" value={form.grade} onChange={handleChange} />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="season">Season</Label>
-            <Input id="season" name="season" value={form.season} onChange={handleChange} />
+            <Select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a grade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='senior'>Senior</SelectItem>
+                <SelectItem value='intermediate'>Intermediate</SelectItem>
+                <SelectItem value='junior'>Junior</SelectItem>
+                <SelectItem value='minor'>Minor</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="round">Round</Label>
