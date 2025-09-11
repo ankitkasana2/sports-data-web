@@ -4,6 +4,7 @@ import { liveMatchStore } from "./LiveMatchStore"
 import { matchesStore } from "./MatchesStore"
 import { teamsStore } from "./TeamsStore"
 import { refereesStore } from "./RefereesStore"
+import { playersStore } from "./PlayersStore"
 
 
 const stores = {
@@ -11,6 +12,7 @@ const stores = {
   liveMatchStore,
   matchesStore,
   teamsStore,
+  playersStore,
   refereesStore,
 }
 
