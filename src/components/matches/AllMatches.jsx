@@ -9,8 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
-import { toJS } from "mobx"
+import { set, toJS } from "mobx"
 import { autorun } from "mobx"
+import { Switch } from "@/components/ui/switch"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 import MatchesFilterBar from "./MatchesFilterBar"
 import MatchesTable from "./MatchesTable"
@@ -26,28 +28,34 @@ function currentYear() {
 // Create Match modal
 function CreateMatchDialog({ onCreate }) {
 
-  const { matchesStore, homeFilterbarStore, teamsStore, refereesStore } = useStores()
-
-  useEffect(() => {
-    console.log("hello", toJS(matchesStore.allCompetitions))
-  }, [matchesStore.allCompetitions])
+  const { matchesStore, homeFilterbarStore, teamsStore, refereesStore, playersStore } = useStores()
 
 
   const [open, setOpen] = useState(false)
+  const [count, setCount] = useState(0)
+  const [teamA, setTeamA] = useState([])
+  const [teamB, setTeamB] = useState([])
+  const [selectedTeamA, setSelectedTeamA] = useState([]);
+  const [selectedTeamB, setSelectedTeamB] = useState([]);
   const [form, setForm] = useState({
+    game_code: "",
+    season: currentYear(),
+    competition: "",
+    round: "",
+    venue_name: "",
+    venue_type: "",
     date: "",
     time: "",
     teamA: "",
     teamB: "",
-    competition: "",
-    grade: "",
-    season: currentYear(),
-    round: "",
-    venue: "",
     referee: "",
-    status: "scheduled",
-    lineupA: "",
-    lineupB: "",
+    grade: "",
+    half_length: "",
+    videoSrc: "",
+    neutral_flag: false,
+    penalty_shootout_flag: false,
+    extra_time: false,
+    et_length: "",
   })
 
   function handleChange(e) {
@@ -55,34 +63,59 @@ function CreateMatchDialog({ onCreate }) {
     setForm((f) => ({ ...f, [name]: value }))
   }
 
+  useEffect(() => {
+    console.log("form", form)
+  }, [form])
+
+
+
+
+  const handleTeamA = (val) => {
+    setForm((f) => ({ ...f, teamA: val }))
+
+    playersStore.getPlayerByTeam(teamsStore.allTeams.find(team => team.team_name == val).team_id)
+    setTeamA(toJS(playersStore.players))
+  }
+
+  const handleTeamB = (val) => {
+    setForm((f) => ({ ...f, teamB: val }))
+    playersStore.getPlayerByTeam(teamsStore.allTeams.find(team => team.team_name == val).team_id)
+    setTeamB(toJS(playersStore.players))
+  }
+
+  const handleCheckTeamA = (playerId) => {
+    setSelectedTeamA((prev) =>
+      prev.includes(playerId)
+        ? prev.filter((id) => id !== playerId) // remove if already selected
+        : setSelectedTeamA.length < 26 ? [...prev, playerId] : [...prev]                 // add if not selected
+    );
+  };
+
+
+  const handleCheckTeamB = (playerId) => {
+    setSelectedTeamB((prev) =>
+      prev.includes(playerId)
+        ? prev.filter((id) => id !== playerId) // remove if already selected
+        : selectedTeamB.length < 26 ? [...prev, playerId] : [...prev]                  // add if not selected
+    );
+  };
+
+
+
+
   function submit() {
-    const id = crypto.randomUUID ? crypto.randomUUID() : `m_${Date.now()}`
-    const dateTime =
-      form.date && form.time ? new Date(`${form.date}T${form.time}`).toISOString() : new Date().toISOString()
+    // const id = crypto.randomUUID ? crypto.randomUUID() : `m_${Date.now()}`
+    // const comp_season_id = ""
 
-    const newMatch = {
-      id,
-      dateTime,
-      teamA: form.teamA.trim(),
-      teamB: form.teamB.trim(),
-      competition: form.competition.trim(),
-      grade: form.grade.trim(),
-      season: form.season.toString(),
-      round: form.round.trim(),
-      venue: form.venue.trim(),
-      referee: form.referee.trim(),
-      status: form.status,
-      lineupA: form.lineupA
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-      lineupB: form.lineupB
-        .split("\n")
-        .map((s) => s.trim())
-        .filter(Boolean),
-    }
+    // const newMatch = {
+    //   id,
+    //   comp_season_id,
 
-    onCreate(newMatch)
+      
+   
+    // }
+
+    // matchesStore.createMatch(newMatch)
     setOpen(false)
   }
 
@@ -98,8 +131,8 @@ function CreateMatchDialog({ onCreate }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* code  */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="round">Game Code</Label>
-            <Select>
+            <Label htmlFor="game_code">Game Code</Label>
+            <Select id='game_code' value={form.game_code} onValueChange={(val) => setForm((f) => ({ ...f, game_code: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select game code" />
               </SelectTrigger>
@@ -117,7 +150,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* competition  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="competition">Competition</Label>
-            <Select>
+            <Select value={form.competition} onValueChange={(val) => setForm((f) => ({ ...f, competition: val }))}  >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a competition" />
               </SelectTrigger>
@@ -129,7 +162,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* round  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="round">Round</Label>
-            <Select>
+            <Select value={form.round} onValueChange={(val) => setForm((f) => ({ ...f, round: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a round" />
               </SelectTrigger>
@@ -143,7 +176,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* venue name  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="round">Venue Name</Label>
-            <Select>
+            <Select value={form.venue_name} onValueChange={(val) => setForm((f) => ({ ...f, venue_name: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a venue" />
               </SelectTrigger>
@@ -155,7 +188,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* venue type  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="round">Venue Type</Label>
-            <Select>
+            <Select value={form.venue_type} onValueChange={(val) => setForm((f) => ({ ...f, venue_type: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select venue type" />
               </SelectTrigger>
@@ -177,8 +210,8 @@ function CreateMatchDialog({ onCreate }) {
           </div>
           {/* team A  */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="teamB">Team A</Label>
-            <Select>
+            <Label htmlFor="teamA">Team A</Label>
+            <Select value={form.teamA} onValueChange={handleTeamA}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
@@ -190,7 +223,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* team b  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Team B</Label>
-            <Select>
+            <Select value={form.teamB} onValueChange={handleTeamB}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
@@ -199,10 +232,44 @@ function CreateMatchDialog({ onCreate }) {
               </SelectContent>
             </Select>
           </div>
+          {/* linup A  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="teamALineup">Lineup A</Label>
+            <ScrollArea className="max-h-[30vh] h-auto rounded-md border">
+              <div className="px-4 pt-2 text-sm top-0 sticky bg-background flex justify-between"><span>Players</span><span>{selectedTeamA.length}</span></div>
+              <div className="p-4 pt-3 flex gap-3 flex-col ">
+                {teamA?.map(player => (<div className="flex items-center gap-4">
+                  <Checkbox
+                    id={player.display_name}
+                    checked={selectedTeamA.includes(player.player_id)}
+                    onCheckedChange={() => handleCheckTeamA(player.player_id)} // ✅ toggle state
+                  />
+                  <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                </div>))}
+              </div>
+            </ScrollArea>
+          </div>
+          {/* linup B  */}
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="teamBLineup">Lineup B</Label>
+            <ScrollArea className="max-h-[30vh] h-auto rounded-md border">
+              <div className="px-4 pt-2 text-sm top-0 sticky bg-background flex justify-between"><span>Players</span><span>{selectedTeamB.length}</span></div>
+              <div className="p-4 pt-3 flex gap-3 flex-col ">
+                {teamB?.map(player => (<div className="flex items-center gap-4">
+                  <Checkbox
+                    id={player.display_name}
+                    checked={selectedTeamB.includes(player.player_id)}
+                    onCheckedChange={() => handleCheckTeamB(player.player_id)} // ✅ toggle state
+                  />
+                  <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                </div>))}
+              </div>
+            </ScrollArea>
+          </div>
           {/* referee  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Referee Name</Label>
-            <Select>
+            <Select value={form.referee} onValueChange={(val) => setForm((f) => ({ ...f, referee: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a referee" />
               </SelectTrigger>
@@ -214,7 +281,7 @@ function CreateMatchDialog({ onCreate }) {
           {/* grade  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="grade">Grade</Label>
-            <Select>
+            <Select value={form.grade} onValueChange={(val) => setForm((f) => ({ ...f, grade: val }))}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select a grade" />
               </SelectTrigger>
@@ -226,55 +293,61 @@ function CreateMatchDialog({ onCreate }) {
               </SelectContent>
             </Select>
           </div>
+          {/* half-length  */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="round">Round</Label>
-            <Input id="round" name="round" value={form.round} onChange={handleChange} />
+            <Label htmlFor="half-length">Half length (In minute)</Label>
+            <Input id="half-length" name="half_length" value={form.half_length} onChange={handleChange} placeholder="Enter half length" />
           </div>
+          {/* video source  */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="venue">Venue</Label>
-            <Input id="venue" name="venue" value={form.venue} onChange={handleChange} />
+            <Label htmlFor="video">Video Source</Label>
+            <Input id="video" name="videoSrc" placeholder='Enter a video source' value={form.videoSrc} onChange={handleChange} />
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="referee">Referee</Label>
-            <Input id="referee" name="referee" value={form.referee} onChange={handleChange} />
+          {/* neutral  */}
+          <div className="flex flex-col gap-2 justify-center">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="neutral"
+                checked={form.neutral_flag}
+                onCheckedChange={(checked) =>
+                  setForm((prev) => ({ ...prev, neutral_flag: checked }))
+                }
+              />
+              <Label htmlFor="neutral">Neutral Flag</Label>
+            </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={form.status} onValueChange={(v) => setForm((f) => ({ ...f, status: v }))}>
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="scheduled">Scheduled</SelectItem>
-                <SelectItem value="in-progress">In-progress</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* penalty shootout  */}
+          <div className="flex flex-col gap-2 justify-center">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="penalty"
+                checked={form.penalty_shootout_flag}
+                onCheckedChange={(checked) =>
+                  setForm((prev) => ({ ...prev, penalty_shootout_flag: checked }))
+                }
+              />
+              <Label htmlFor="penalty">Penalty Shootout</Label>
+            </div>
           </div>
-          <div className="flex flex-col gap-2 md:col-span-1">
-            <Label htmlFor="lineupA">Lineup A (one per line)</Label>
-            <textarea
-              id="lineupA"
-              name="lineupA"
-              value={form.lineupA}
-              onChange={handleChange}
-              className="min-h-28 rounded-md border bg-background px-3 py-2 text-sm"
-            />
-          </div>
-          <div className="flex flex-col gap-2 md:col-span-1">
-            <Label htmlFor="lineupB">Lineup B (one per line)</Label>
-            <textarea
-              id="lineupB"
-              name="lineupB"
-              value={form.lineupB}
-              onChange={handleChange}
-              className="min-h-28 rounded-md border bg-background px-3 py-2 text-sm"
-            />
+          {/* extra time  */}
+          <div className="flex flex-col gap-2 justify-center">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="extra-time"
+                checked={form.extra_time}
+                onCheckedChange={(checked) =>
+                  setForm((prev) => ({ ...prev, extra_time: checked }))
+                } />
+              <Label htmlFor="extra-time">Extra Time</Label>
+            </div>
+            {form.extra_time == true && <div className="flex flex-col gap-2">
+              <Label htmlFor="et-length">Extra Time Length (In minute)</Label>
+              <Input id="et-length" name="et_length" value={form.et_length} onChange={handleChange} placeholder="Enter extra time length" />
+            </div>}
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={submit}>Create</Button>
+          <Button onClick={''}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
