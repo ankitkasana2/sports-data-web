@@ -33,10 +33,22 @@ function CreateMatchDialog({ onCreate }) {
 
   const [open, setOpen] = useState(false)
   const [count, setCount] = useState(0)
-  const [teamA, setTeamA] = useState([])
-  const [teamB, setTeamB] = useState([])
-  const [selectedTeamA, setSelectedTeamA] = useState([]);
-  const [selectedTeamB, setSelectedTeamB] = useState([]);
+  const [teamA, setTeamA] = useState({
+    starter: [],
+    bench: [],
+  })
+  const [teamB, setTeamB] = useState({
+    starter: [],
+    bench: [],
+  })
+  const [selectedTeamA, setSelectedTeamA] = useState({
+    starter: [],
+    bench: []
+  });
+  const [selectedTeamB, setSelectedTeamB] = useState({
+    starter: [],
+    bench: []
+  });
   const [form, setForm] = useState({
     game_code: "",
     season: currentYear(),
@@ -67,6 +79,11 @@ function CreateMatchDialog({ onCreate }) {
     console.log("form", form)
   }, [form])
 
+  useEffect(() => {
+    console.log("team", teamA)
+  }, [teamA])
+
+
 
 
 
@@ -74,46 +91,220 @@ function CreateMatchDialog({ onCreate }) {
     setForm((f) => ({ ...f, teamA: val }))
 
     playersStore.getPlayerByTeam(teamsStore.allTeams.find(team => team.team_name == val).team_id)
-    setTeamA(toJS(playersStore.players))
+    setTeamA({
+      starter: toJS(playersStore.players),
+      bench: toJS(playersStore.players)
+    })
   }
 
   const handleTeamB = (val) => {
     setForm((f) => ({ ...f, teamB: val }))
     playersStore.getPlayerByTeam(teamsStore.allTeams.find(team => team.team_name == val).team_id)
-    setTeamB(toJS(playersStore.players))
+    setTeamB({
+      starter: toJS(playersStore.players),
+      bench: toJS(playersStore.players)
+    })
+
   }
 
-  const handleCheckTeamA = (playerId) => {
-    setSelectedTeamA((prev) =>
-      prev.includes(playerId)
-        ? prev.filter((id) => id !== playerId) // remove if already selected
-        : setSelectedTeamA.length < 26 ? [...prev, playerId] : [...prev]                 // add if not selected
-    );
+  const handleCheckTeamA = (playerId, type, checked) => {
+    setTeamA((prev) => {
+      // get master list snapshot
+      const master = typeof playersStore !== "undefined" ? toJS(playersStore.players) : [];
+
+      // helper to safely find a player object
+      const findPlayer = () =>
+        master.find((p) => p.player_id === playerId) ||
+        prev.starter.find((p) => p.player_id === playerId) ||
+        prev.bench.find((p) => p.player_id === playerId);
+
+      if (type === "starter") {
+
+        if (checked) {
+          if (selectedTeamA.starter.length <= 15) {
+            // remove from bench only
+            return {
+              ...prev,
+              bench: prev.bench.filter((p) => p.player_id !== playerId),
+            };
+          }
+        } else {
+          // add back to bench only if we can find the player object
+          const playerObj = findPlayer();
+          if (!playerObj) {
+            console.warn(`Player ${playerId} not found — skipping add back to bench.`);
+            return prev;
+          }
+          // avoid duplicate
+          if (prev.bench.some((p) => p.player_id === playerId)) return prev;
+          return {
+            ...prev,
+            bench: [...prev.bench, playerObj],
+          };
+        }
+
+      }
+
+      if (type === "bench") {
+        if (checked) {
+          if (selectedTeamA.bench.length <= 11) {
+            // remove from starter only
+            return {
+              ...prev,
+              starter: prev.starter.filter((p) => p.player_id !== playerId),
+            };
+          }
+        } else {
+          // add back to starter only if we can find the player object
+          const playerObj = findPlayer();
+          if (!playerObj) {
+            console.warn(`Player ${playerId} not found — skipping add back to starter.`);
+            return prev;
+          }
+          if (prev.starter.some((p) => p.player_id === playerId)) return prev;
+          return {
+            ...prev,
+            starter: [...prev.starter, playerObj],
+          };
+        }
+      }
+
+      return prev;
+    });
+
+
+    setSelectedTeamA((prev) => {
+      const list = prev[type]; // pick starter or bench
+
+      return {
+        ...prev,
+        [type]: list.includes(playerId)
+          ? list.filter((id) => id !== playerId) // remove if already selected
+          : list.length < (type === "starter" ? 15 : 11) // limit example
+            ? [...list, playerId] // add if under limit
+            : [...list], // keep as is if limit exceeded
+      };
+    });
   };
 
 
-  const handleCheckTeamB = (playerId) => {
-    setSelectedTeamB((prev) =>
-      prev.includes(playerId)
-        ? prev.filter((id) => id !== playerId) // remove if already selected
-        : selectedTeamB.length < 26 ? [...prev, playerId] : [...prev]                  // add if not selected
-    );
+  const handleCheckTeamB = (playerId, type, checked) => {
+
+    setTeamB((prev) => {
+      // get master list snapshot
+      const master = typeof playersStore !== "undefined" ? toJS(playersStore.players) : [];
+
+      // helper to safely find a player object
+      const findPlayer = () =>
+        master.find((p) => p.player_id === playerId) ||
+        prev.starter.find((p) => p.player_id === playerId) ||
+        prev.bench.find((p) => p.player_id === playerId);
+
+      if (type === "starter") {
+
+        if (checked) {
+          if (selectedTeamB.starter.length <= 15) {
+            // remove from bench only
+            return {
+              ...prev,
+              bench: prev.bench.filter((p) => p.player_id !== playerId),
+            };
+          }
+        } else {
+          // add back to bench only if we can find the player object
+          const playerObj = findPlayer();
+          if (!playerObj) {
+            console.warn(`Player ${playerId} not found — skipping add back to bench.`);
+            return prev;
+          }
+          // avoid duplicate
+          if (prev.bench.some((p) => p.player_id === playerId)) return prev;
+          return {
+            ...prev,
+            bench: [...prev.bench, playerObj],
+          };
+        }
+
+      }
+
+      if (type === "bench") {
+        if (checked) {
+          if (selectedTeamB.bench.length <= 11) {
+            // remove from starter only
+            return {
+              ...prev,
+              starter: prev.starter.filter((p) => p.player_id !== playerId),
+            };
+          }
+        } else {
+          // add back to starter only if we can find the player object
+          const playerObj = findPlayer();
+          if (!playerObj) {
+            console.warn(`Player ${playerId} not found — skipping add back to starter.`);
+            return prev;
+          }
+          if (prev.starter.some((p) => p.player_id === playerId)) return prev;
+          return {
+            ...prev,
+            starter: [...prev.starter, playerObj],
+          };
+        }
+      }
+
+      return prev;
+    });
+
+
+
+    setSelectedTeamB((prev) => {
+      const list = prev[type]; // pick starter or bench
+
+      return {
+        ...prev,
+        [type]: list.includes(playerId)
+          ? list.filter((id) => id !== playerId) // remove if already selected
+          : list.length < (type === "starter" ? 15 : 11) // limit example
+            ? [...list, playerId] // add if under limit
+            : [...list], // keep as is if limit exceeded
+      };
+    });
   };
 
 
 
 
   function submit() {
-    // const id = crypto.randomUUID ? crypto.randomUUID() : `m_${Date.now()}`
-    // const comp_season_id = ""
+    const id = crypto.randomUUID ? crypto.randomUUID() : `m_${Date.now()}`
+    const comp_season_id = matchesStore.allCompetitions.find(comp => comp.name == form.competition && comp.season == form.season).comp_season_id
 
-    // const newMatch = {
-    //   id,
-    //   comp_season_id,
+    const kickoff_datetime = new Date(`${form.date}T${form.time}`).toISOString()
 
-      
-   
-    // }
+    
+
+    const newMatch = {
+      id,
+      round_id: "",
+      comp_season_id,
+      group_stage_id: "",
+      round_name: form.round,
+      round_code: "",
+      season: form.season,
+      kickoff_datetime,
+      match_status: "scheduled",
+      venue_id: matchesStore.allVenues.find(venue => venue.venue_name == form.venue_name && venue.venue_type == form.venue_type).venue_id,
+      referee_id: refereesStore.allRefrees.find(ref => ref.name == form.referee).referee_id,
+      game_code: form.game_code,
+      grade: form.grade,
+      ruleset: "",
+      half_length_sec: form.half_length,
+      et_half_length_sec: form.et_length,
+      extra_time_possible: form.extra_time,
+      penalty_shootout_possible: form.penalty_shootout_flag,
+      neutral_flag: form.neutral_flag,
+      team_a_id: teamsStore.allTeams.find(team => team.team_name == form.teamA).team_id,
+      team_b_id: teamsStore.allTeams.find(team => team.team_name == form.teamB).team_id,
+      video_source: form.videoSrc,
+    }
 
     // matchesStore.createMatch(newMatch)
     setOpen(false)
@@ -233,38 +424,88 @@ function CreateMatchDialog({ onCreate }) {
             </Select>
           </div>
           {/* linup A  */}
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 md:col-span-2">
             <Label htmlFor="teamALineup">Lineup A</Label>
-            <ScrollArea className="max-h-[30vh] h-auto rounded-md border">
-              <div className="px-4 pt-2 text-sm top-0 sticky bg-background flex justify-between"><span>Players</span><span>{selectedTeamA.length}</span></div>
-              <div className="p-4 pt-3 flex gap-3 flex-col ">
-                {teamA?.map(player => (<div className="flex items-center gap-4">
-                  <Checkbox
-                    id={player.display_name}
-                    checked={selectedTeamA.includes(player.player_id)}
-                    onCheckedChange={() => handleCheckTeamA(player.player_id)} // ✅ toggle state
-                  />
-                  <Label htmlFor={player.display_name}>{player.display_name}</Label>
-                </div>))}
+            <div className=" h-auto rounded-md border">
+              <div className="px-4 pt-1 text-sm flex justify-between"><span>Players</span><span>{selectedTeamA.starter.length + selectedTeamA.bench.length}</span></div>
+              <div className="p-4 pt-3 grid grid-cols-2 gap-2">
+                <ScrollArea className="max-h-[30vh] h-auto rounded-md border p-3">
+                  <div className="flex flex-col gap-3">
+                    <div className="text-sm flex justify-between sticky top-0 bg-background"><span>Starter</span><span>{selectedTeamA.starter.length}</span></div>
+                    {teamA.starter?.map(player => (<div className="flex items-center gap-3">
+                      <Checkbox
+                        id={player.display_name}
+                        checked={selectedTeamA.starter.includes(player.player_id)}
+                        onCheckedChange={(checked) => handleCheckTeamA(player.player_id, 'starter', checked)} // ✅ toggle state
+                      />
+                      <div className="flex w-full justify-between">
+                        <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                        <Label htmlFor={player.display_name}>{player.preferred_position}</Label>
+                      </div>
+                    </div>))}
+                  </div>
+                </ScrollArea>
+
+                <ScrollArea className="max-h-[30vh] h-auto rounded-md border p-3">
+                  <div className="flex flex-col gap-3">
+                    <div className="text-sm flex justify-between sticky top-0 bg-background"><span>Bench</span><span>{selectedTeamA.bench.length}</span></div>
+                    {teamA.bench?.map(player => (<div className="flex items-center gap-3">
+                      <Checkbox
+                        id={player.display_name}
+                        checked={selectedTeamA.bench.includes(player.player_id)}
+                        onCheckedChange={(checked) => handleCheckTeamA(player.player_id, 'bench', checked)} // ✅ toggle state
+                      />
+                      <div className="flex w-full justify-between">
+                        <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                        <Label htmlFor={player.display_name}>{player.preferred_position}</Label>
+                      </div>
+                    </div>))}
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
+            </div>
           </div>
           {/* linup B  */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="teamBLineup">Lineup B</Label>
-            <ScrollArea className="max-h-[30vh] h-auto rounded-md border">
-              <div className="px-4 pt-2 text-sm top-0 sticky bg-background flex justify-between"><span>Players</span><span>{selectedTeamB.length}</span></div>
-              <div className="p-4 pt-3 flex gap-3 flex-col ">
-                {teamB?.map(player => (<div className="flex items-center gap-4">
-                  <Checkbox
-                    id={player.display_name}
-                    checked={selectedTeamB.includes(player.player_id)}
-                    onCheckedChange={() => handleCheckTeamB(player.player_id)} // ✅ toggle state
-                  />
-                  <Label htmlFor={player.display_name}>{player.display_name}</Label>
-                </div>))}
+          <div className="flex flex-col gap-2 md:col-span-2">
+            <Label htmlFor="teamALineup">Lineup B</Label>
+            <div className=" h-auto rounded-md border">
+              <div className="px-4 pt-1 text-sm flex justify-between"><span>Players</span><span>{selectedTeamB.starter.length + selectedTeamB.bench.length}</span></div>
+              <div className="p-4 pt-3 grid grid-cols-2 gap-2">
+                <ScrollArea className="max-h-[30vh] h-auto rounded-md border p-3">
+                  <div className="flex flex-col gap-3">
+                    <div className="text-sm flex justify-between sticky top-0 bg-background"><span>Starter</span><span>{selectedTeamB.starter.length}</span></div>
+                    {teamB.starter?.map(player => (<div className="flex items-center gap-3">
+                      <Checkbox
+                        id={player.display_name}
+                        checked={selectedTeamB.starter.includes(player.player_id)}
+                        onCheckedChange={(checked) => handleCheckTeamB(player.player_id, 'starter', checked)} // ✅ toggle state
+                      />
+                      <div className="flex w-full justify-between">
+                        <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                        <Label htmlFor={player.display_name}>{player.preferred_position}</Label>
+                      </div>
+                    </div>))}
+                  </div>
+                </ScrollArea>
+
+                <ScrollArea className="max-h-[30vh] h-auto rounded-md border p-3">
+                  <div className="flex flex-col gap-3">
+                    <div className="text-sm flex justify-between sticky top-0 bg-background"><span>Bench</span><span>{selectedTeamB.bench.length}</span></div>
+                    {teamB.bench?.map(player => (<div className="flex items-center gap-3">
+                      <Checkbox
+                        id={player.display_name}
+                        checked={selectedTeamB.bench.includes(player.player_id)}
+                        onCheckedChange={(checked) => handleCheckTeamB(player.player_id, 'bench', checked)} // ✅ toggle state
+                      />
+                      <div className="flex w-full justify-between">
+                        <Label htmlFor={player.display_name}>{player.display_name}</Label>
+                        <Label htmlFor={player.display_name}>{player.preferred_position}</Label>
+                      </div>
+                    </div>))}
+                  </div>
+                </ScrollArea>
               </div>
-            </ScrollArea>
+            </div>
           </div>
           {/* referee  */}
           <div className="flex flex-col gap-2">

@@ -12,6 +12,7 @@ class MatchesStore {
     competitions = []
     allCompetitions = []
     allVenues = []
+    lineups = []
 
     constructor() {
         makeAutoObservable(this)
@@ -55,6 +56,21 @@ class MatchesStore {
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);
+                });
+        }, 500);
+    }
+
+
+    // store lineups 
+    storeLineups(lineupsA, lineupsB) {
+        const data = [lineupsA, lineupsB];
+        setTimeout(() => {
+            axios.post(`${apiUrl.VITE_BACKEND_PATH}lineup`, data)
+                .then(response => {
+                    console.log("Match created:", response.data);
+                })
+                .catch(error => {
+                    console.error("There was an error creating the match!", error);
                 });
         }, 500);
     }
