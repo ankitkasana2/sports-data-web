@@ -188,6 +188,7 @@ function CreateMatchDialog({ onCreate }) {
   };
 
 
+
   const handleCheckTeamB = (playerId, type, checked) => {
 
     setTeamB((prev) => {
@@ -279,7 +280,7 @@ function CreateMatchDialog({ onCreate }) {
 
     const kickoff_datetime = new Date(`${form.date}T${form.time}`).toISOString()
 
-    
+
 
     const newMatch = {
       id,
@@ -407,11 +408,19 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
               <SelectContent>
-                {teamsStore.allTeams && teamsStore.allTeams.map((team) => { return team.active_flag == 'Y' && <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+                {teamsStore.allTeams &&
+                  teamsStore.allTeams
+                    .filter((team) => team.active_flag === "Y" && team.team_name !== form.teamB) // exclude Team B
+                    .map((team) => (
+                      <SelectItem key={team.team_id} value={team.team_name}>
+                        {team.team_name}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
           </div>
-          {/* team b  */}
+
+          {/* team B  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="teamB">Team B</Label>
             <Select value={form.teamB} onValueChange={handleTeamB}>
@@ -419,10 +428,18 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a team" />
               </SelectTrigger>
               <SelectContent>
-                {teamsStore.allTeams && teamsStore.allTeams.map((team) => { return <SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem> })}
+                {teamsStore.allTeams &&
+                  teamsStore.allTeams
+                    .filter((team) => team.team_name !== form.teamA) // exclude Team A
+                    .map((team) => (
+                      <SelectItem key={team.team_id} value={team.team_name}>
+                        {team.team_name}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
           </div>
+
           {/* linup A  */}
           <div className="flex flex-col gap-2 md:col-span-2">
             <Label htmlFor="teamALineup">Lineup A</Label>
@@ -831,13 +848,6 @@ function MatchesPage() {
     // cleanup on unmount
     return () => disposer();
   }, []);
-
-
-  useEffect(() => {
-    console.log(toJS(allmatch))
-  }, [allmatch])
-
-
 
 
 

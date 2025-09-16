@@ -7,6 +7,7 @@ import TeamsPage from "./pages/teams/Teams"
 import Matches from "./pages/matches/Matches"
 import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
+import Analytics from "./pages/analytics/Analytics"
 
 
 function App() {
@@ -18,7 +19,7 @@ function App() {
         <Route path="/matches" element={<Matches />} />
         <Route path="/live" element={<LiveMatchesList />} />
         <Route path="/live/:matchId" element={<MatchTagging />} />
-        {/* <Route path="/analytics" element={<AnalyticsPage />} /> */}
+        <Route path="/analytics" element={<Analytics />} />
         <Route path="/players" element={<Players />} />
       </Routes>
     </div>

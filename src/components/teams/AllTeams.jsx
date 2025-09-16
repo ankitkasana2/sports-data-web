@@ -1,6 +1,9 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { set, toJS } from "mobx"
+import { autorun } from "mobx"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -90,17 +93,17 @@ function validateTeamRecord(rec) {
     team: errors.length
       ? null
       : {
-          id:
-            typeof crypto !== "undefined" && crypto.randomUUID
-              ? crypto.randomUUID()
-              : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          name,
-          code,
-          season,
-          active,
-          playerCount,
-          matchesPlayedThisSeason,
-        },
+        id:
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        name,
+        code,
+        season,
+        active,
+        playerCount,
+        matchesPlayedThisSeason,
+      },
   }
 }
 
@@ -130,16 +133,35 @@ const initialTeams = [
     id: "t3",
     name: "Riverside",
     code: "Hurling",
-    season: CURRENT_YEAR - 1,
+    season: CURRENT_YEAR,
     active: false,
     playerCount: 21,
     matchesPlayedThisSeason: 8,
   },
 ]
 
-export default function TeamsPage() {
+function TeamsPage() {
+
+  const { matchesStore, homeFilterbarStore, teamsStore } = useStores()
   const navigate = useNavigate()
-  const [teams, setTeams] = useState(initialTeams)
+  const [teams, setTeams] = useState([])
+
+
+  useEffect(() => {
+    // 1. Fetch matches from MobX store
+    teamsStore.getAllTeams()
+
+    // 2. Sync store.matches → local state
+    // reaction will run whenever matchesStore.matches changes
+    const disposer = autorun(() => {
+      setTeams([...toJS(teamsStore.allTeams)]); // create a new array to trigger re-render
+    });
+
+    // cleanup on unmount
+    return () => disposer();
+  }, []);
+
+  
 
   // UI state: search + filters
   const [search, setSearch] = useState("")
@@ -495,6 +517,7 @@ export default function TeamsPage() {
               <TableHead className="text-left">Code</TableHead>
               <TableHead className="text-left">Players</TableHead>
               <TableHead className="text-left">Matches (season)</TableHead>
+              <TableHead className="text-left">Active</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -536,6 +559,17 @@ export default function TeamsPage() {
                   </TableCell>
                   <TableCell className="text-left">{team.playerCount}</TableCell>
                   <TableCell className="text-left">{team.matchesPlayedThisSeason}</TableCell>
+                  <TableCell className="text-left">
+                    {team.active ? (
+                      <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
+                        Yes
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center rounded-full border border-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
+                        No
+                      </span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -545,3 +579,6 @@ export default function TeamsPage() {
     </main>
   )
 }
+
+
+export default observer(TeamsPage)
