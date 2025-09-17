@@ -20,6 +20,13 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { nanoid } from 'nanoid';
+
+
+
+
+
+
 
 // --- Helpers: CSV parsing and generation (simple; does not handle quoted commas) ---
 function parseCSV(text) {
@@ -64,6 +71,8 @@ function normalizeBool(v) {
 function validateTeamRecord(rec) {
   const errors = []
 
+  const id = `TEAM_${nanoid(6)}`; 
+
   const name = (rec.name || "").trim()
   if (!name) errors.push("Missing name")
 
@@ -72,37 +81,15 @@ function validateTeamRecord(rec) {
     errors.push("Code must be 'Hurling' or 'Football'")
   }
 
-  const season = Number(rec.season)
-  if (!Number.isInteger(season)) errors.push("Season must be an integer")
-
-  const active = normalizeBool(rec.active)
-
-  const playerCount = Number(rec.playerCount)
-  if (!Number.isInteger(playerCount) || playerCount < 0) {
-    errors.push("playerCount must be a non-negative integer")
-  }
-
-  const matchesPlayedThisSeason = Number(rec.matchesPlayedThisSeason)
-  if (!Number.isInteger(matchesPlayedThisSeason) || matchesPlayedThisSeason < 0) {
-    errors.push("matchesPlayedThisSeason must be a non-negative integer")
-  }
-
   return {
     ok: errors.length === 0,
     errors,
     team: errors.length
       ? null
       : {
-        id:
-          typeof crypto !== "undefined" && crypto.randomUUID
-            ? crypto.randomUUID()
-            : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        id,
         name,
         code,
-        season,
-        active,
-        playerCount,
-        matchesPlayedThisSeason,
       },
   }
 }
@@ -147,21 +134,42 @@ function TeamsPage() {
   const [teams, setTeams] = useState([])
 
 
+  // fetching team 
   useEffect(() => {
-    // 1. Fetch matches from MobX store
-    teamsStore.getAllTeams()
 
-    // 2. Sync store.matches → local state
-    // reaction will run whenever matchesStore.matches changes
+    // 1. Fetch teams from MobX store
+    teamsStore.getAllTeams();
+
     const disposer = autorun(() => {
-      setTeams([...toJS(teamsStore.allTeams)]); // create a new array to trigger re-render
+      const players = toJS(teamsStore.allTeams);
+
+      // Group by team_id
+      const grouped = players.reduce((acc, player) => {
+        const { team_id, team_name, code, active_flag } = player;
+        if (!acc[team_id]) {
+          acc[team_id] = {
+            team_id,
+            team_name,
+            count: 0,
+            players: [],
+            code,
+            active_flag,
+          };
+        }
+        acc[team_id].count++;
+        acc[team_id].players.push(player);
+        return acc;
+      }, {});
+
+      // Convert object -> array
+      setTeams(Object.values(grouped));
     });
 
     // cleanup on unmount
     return () => disposer();
   }, []);
-
   
+
 
   // UI state: search + filters
   const [search, setSearch] = useState("")
@@ -177,27 +185,23 @@ function TeamsPage() {
   const [addForm, setAddForm] = useState({
     name: "",
     code: "Hurling",
-    season: String(CURRENT_YEAR),
-    active: true,
-    playerCount: 0,
-    matchesPlayedThisSeason: 0,
   })
+
 
   // Selection state and helpers for table checkboxes
   const [selectedIds, setSelectedIds] = useState(new Set())
   const filteredTeams = useMemo(() => {
     return teams.filter((t) => {
-      const matchesSearch = !search || t.name.toLowerCase().includes(search.trim().toLowerCase())
+      const matchesSearch = !search || t.team_name.toLowerCase().includes(search.trim().toLowerCase())
 
       const matchesCode = codeFilter === "all" || t.code === codeFilter
-      const matchesSeason = !seasonFilter || String(t.season) === String(seasonFilter)
-      const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.active : !t.active)
+      const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.active_flag : !t.active_flag)
 
-      return matchesSearch && matchesCode && matchesSeason && matchesActive
+      return matchesSearch && matchesCode && matchesActive
     })
   }, [teams, search, codeFilter, seasonFilter, activeFilter])
 
-  const filteredIds = useMemo(() => filteredTeams.map((t) => t.id), [filteredTeams])
+  const filteredIds = useMemo(() => filteredTeams.map((t) => t.team_id), [filteredTeams])
 
   const allSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedIds.has(id))
   const someSelected = filteredIds.some((id) => selectedIds.has(id)) && !allSelected
@@ -225,27 +229,24 @@ function TeamsPage() {
 
   function handleAddTeam(e) {
     e.preventDefault()
+  
     const rec = {
       name: addForm.name,
       code: addForm.code,
-      season: addForm.season,
-      active: addForm.active,
-      playerCount: addForm.playerCount,
-      matchesPlayedThisSeason: addForm.matchesPlayedThisSeason,
     }
     const { ok, errors, team } = validateTeamRecord(rec)
     if (!ok || !team) {
       return
     }
-    setTeams((prev) => [{ ...team }, ...prev])
+
+    console.log("Creating team:", team);
+
+    teamsStore.createTeam(team);
+
     setOpenAdd(false)
     setAddForm({
       name: "",
       code: "Hurling",
-      season: String(CURRENT_YEAR),
-      active: true,
-      playerCount: 0,
-      matchesPlayedThisSeason: 0,
     })
   }
 
@@ -328,64 +329,6 @@ function TeamsPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-                <div className="grid gap-2">
-                  <Label>Season</Label>
-                  <Select value={addForm.season} onValueChange={(v) => setAddForm((f) => ({ ...f, season: v }))}>
-                    <SelectTrigger aria-label="Season">
-                      <SelectValue placeholder="Select season" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DEFAULT_SEASONS.map((s) => (
-                        <SelectItem key={s} value={String(s)}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="active"
-                    checked={addForm.active}
-                    onCheckedChange={(v) => setAddForm((f) => ({ ...f, active: Boolean(v) }))}
-                  />
-                  <Label htmlFor="active">Active</Label>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="playerCount">Number of players</Label>
-                  <Input
-                    id="playerCount"
-                    type="number"
-                    min={0}
-                    value={addForm.playerCount}
-                    onChange={(e) =>
-                      setAddForm((f) => ({
-                        ...f,
-                        playerCount: Number(e.target.value || 0),
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="matchesPlayedThisSeason">Matches played (this season)</Label>
-                  <Input
-                    id="matchesPlayedThisSeason"
-                    type="number"
-                    min={0}
-                    value={addForm.matchesPlayedThisSeason}
-                    onChange={(e) =>
-                      setAddForm((f) => ({
-                        ...f,
-                        matchesPlayedThisSeason: Number(e.target.value || 0),
-                      }))
-                    }
-                  />
-                </div>
-
                 <DialogFooter className="gap-2">
                   <Button type="button" variant="secondary" onClick={() => setOpenAdd(false)}>
                     Cancel
@@ -461,8 +404,8 @@ function TeamsPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All codes</SelectItem>
-              <SelectItem value="Hurling">Hurling</SelectItem>
-              <SelectItem value="Football">Football</SelectItem>
+              <SelectItem value="hurling">Hurling</SelectItem>
+              <SelectItem value="football">Football</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -531,14 +474,14 @@ function TeamsPage() {
             ) : (
               filteredTeams.map((team) => (
                 <TableRow
-                  key={team.id}
+                  key={team.team_id}
                   className="cursor-pointer"
-                  onClick={() => navigate(`/teams/${team.id}`)}
+                  onClick={() => navigate(`/teams/${team.team_id}`)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" || e.key === " ") {
-                      navigate(`/teams/${team.id}`)
+                      navigate(`/teams/${team.team_id}`)
                     }
                   }}
                 >
@@ -546,21 +489,21 @@ function TeamsPage() {
                   <TableCell className="w-10">
                     <div onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
                       <Checkbox
-                        aria-label={`Select team ${team.name}`}
-                        checked={selectedIds.has(team.id)}
-                        onCheckedChange={(v) => toggleOne(team.id, Boolean(v))}
+                        aria-label={`Select team ${team.team_name}`}
+                        checked={selectedIds.has(team.team_id)}
+                        onCheckedChange={(v) => toggleOne(team.team_id, Boolean(v))}
                       />
                     </div>
                   </TableCell>
 
-                  <TableCell className="font-medium">{team.name}</TableCell>
+                  <TableCell className="font-medium">{team.team_name}</TableCell>
                   <TableCell className="text-left ">
                     <Badge variant="bg-emerald-600">{team.code}</Badge>
                   </TableCell>
-                  <TableCell className="text-left">{team.playerCount}</TableCell>
+                  <TableCell className="text-left">{team.count}</TableCell>
                   <TableCell className="text-left">{team.matchesPlayedThisSeason}</TableCell>
                   <TableCell className="text-left">
-                    {team.active ? (
+                    {team.active_flag ? (
                       <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
                         Yes
                       </span>
