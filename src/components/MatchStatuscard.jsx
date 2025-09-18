@@ -130,9 +130,9 @@ function MatchStatusCard() {
             {/* Upcoming Match */}
             {matchesData.length != 0 ? (matchesData.map((match, index) => {
               return <div key={index} className="border rounded-lg p-4 space-y-2">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-semibold">{match.team_a} vs {match.team_b}</h4>
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex flex-col gap-2">
+                    <h5 className="font-semibold text-sm">{match.team_a} vs {match.team_b}</h5>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <MapPin className="h-3 w-3" />
                       {match.venue_name}
