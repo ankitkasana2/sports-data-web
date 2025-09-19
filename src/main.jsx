@@ -5,12 +5,14 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom';
 import Navigation from './components/Navigation.jsx';
 import { StoresProvider } from "./stores/StoresProvider.jsx"
+import { Toaster } from "@/components/ui/sonner"
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <Navigation />
     <StoresProvider>
       <App />
+       <Toaster position="top-left"/>
     </StoresProvider>
   </BrowserRouter>
 

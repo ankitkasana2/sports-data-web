@@ -21,6 +21,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { nanoid } from 'nanoid';
+import { toast } from "sonner"
+import { Check, Ban } from 'lucide-react';
 
 
 
@@ -71,7 +73,7 @@ function normalizeBool(v) {
 function validateTeamRecord(rec) {
   const errors = []
 
-  const id = `TEAM_${nanoid(6)}`; 
+  const id = `TEAM_${nanoid(6)}`;
 
   const name = (rec.name || "").trim()
   if (!name) errors.push("Missing name")
@@ -97,35 +99,6 @@ function validateTeamRecord(rec) {
 const CURRENT_YEAR = new Date().getFullYear()
 const DEFAULT_SEASONS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR - 2 + i)
 
-const initialTeams = [
-  {
-    id: "t1",
-    name: "Ballymore",
-    code: "Hurling",
-    season: CURRENT_YEAR,
-    active: true,
-    playerCount: 28,
-    matchesPlayedThisSeason: 12,
-  },
-  {
-    id: "t2",
-    name: "St. Patrick's",
-    code: "Football",
-    season: CURRENT_YEAR,
-    active: true,
-    playerCount: 24,
-    matchesPlayedThisSeason: 10,
-  },
-  {
-    id: "t3",
-    name: "Riverside",
-    code: "Hurling",
-    season: CURRENT_YEAR,
-    active: false,
-    playerCount: 21,
-    matchesPlayedThisSeason: 8,
-  },
-]
 
 function TeamsPage() {
 
@@ -162,13 +135,14 @@ function TeamsPage() {
       }, {});
 
       // Convert object -> array
-      setTeams(Object.values(grouped));
+      setTeams(players);
     });
 
     // cleanup on unmount
     return () => disposer();
   }, []);
-  
+
+
 
 
   // UI state: search + filters
@@ -195,7 +169,7 @@ function TeamsPage() {
       const matchesSearch = !search || t.team_name.toLowerCase().includes(search.trim().toLowerCase())
 
       const matchesCode = codeFilter === "all" || t.code === codeFilter
-      const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.active_flag : !t.active_flag)
+      const matchesActive = activeFilter === "all" || (activeFilter === "active" ? t.active_flag == 'active' : t.active_flag == 'inactive')
 
       return matchesSearch && matchesCode && matchesActive
     })
@@ -227,9 +201,9 @@ function TeamsPage() {
     })
   }
 
-  function handleAddTeam(e) {
+  async function handleAddTeam(e) {
     e.preventDefault()
-  
+
     const rec = {
       name: addForm.name,
       code: addForm.code,
@@ -239,11 +213,20 @@ function TeamsPage() {
       return
     }
 
-    console.log("Creating team:", team);
+    const created = await teamsStore.createTeam(team);
 
-    teamsStore.createTeam(team);
+    if (created) {
+      toast(<div className="flex gap-3">
+        <Check className="text-green-800" /><span>Team has been created Successfully.</span>
+      </div>)
+      setOpenAdd(false)
+    } else {
+      toast(<div className="flex gap-3">
+        <Ban className="text-red-700" /><span>Team not created.</span>
+      </div>)
+    }
 
-    setOpenAdd(false)
+
     setAddForm({
       name: "",
       code: "Hurling",
@@ -384,7 +367,7 @@ function TeamsPage() {
 
       {/* Filters */}
       <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div className="col-span-1 md:col-span-2">
+        <div className=" col-span-1 md:col-span-2">
           <Label htmlFor="search" className="sr-only">
             Search teams
           </Label>
@@ -500,10 +483,10 @@ function TeamsPage() {
                   <TableCell className="text-left ">
                     <Badge variant="bg-emerald-600">{team.code}</Badge>
                   </TableCell>
-                  <TableCell className="text-left">{team.count}</TableCell>
+                  <TableCell className="text-left">{team.player_count}</TableCell>
                   <TableCell className="text-left">{team.matchesPlayedThisSeason}</TableCell>
                   <TableCell className="text-left">
-                    {team.active_flag ? (
+                    {team.active_flag == 'active' ? (
                       <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
                         Yes
                       </span>

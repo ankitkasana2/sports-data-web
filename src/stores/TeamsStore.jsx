@@ -27,18 +27,21 @@ class TeamsStore {
                 });
         }, 500);
     }
-//  axios.post(`https://readyforyourreview.com/KevinR123/api/team`, team, )
+
     // create a team 
-    createTeam(team) {
-        setTimeout(() => {
-            axios.post(`${apiUrl.VITE_BACKEND_PATH}team`, team, )
-                .then(response => {
-                    console.log("team created:", response.data);
-                })
-                .catch(error => {
-                    console.error("There was an error creating the team!", error);
-                });
-        }, 500);
+    async createTeam(team) {
+        try {
+            const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/team`, team);
+
+            if (response.data.success) {
+                return true;  // success
+            } else {
+                return false; // failed
+            }
+        } catch (error) {
+            console.error("Error creating team:", error);
+            return false;
+        }
     }
 }
 

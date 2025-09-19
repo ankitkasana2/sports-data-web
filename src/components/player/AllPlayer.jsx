@@ -1,6 +1,31 @@
 import { useMemo, useState, useRef, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "../ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import { nanoid } from 'nanoid';
+import { toast } from "sonner"
+import { Check, Ban } from 'lucide-react';
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { set, toJS } from "mobx"
+import { autorun } from "mobx"
+
+
+
 
 // Mock data (replace with real data later)
 const initialPlayers = [
@@ -39,7 +64,8 @@ const initialPlayers = [
   },
 ]
 
-export default function PlayersPage() {
+function PlayersPage() {
+  const { matchesStore, homeFilterbarStore, teamsStore, playersStore } = useStores()
   // Filters & search
   const [query, setQuery] = useState("")
   const [team, setTeam] = useState("All")
@@ -47,7 +73,7 @@ export default function PlayersPage() {
   const [code, setCode] = useState("All") // All | Hurling | Football
 
   // Data and selection
-  const [players, setPlayers] = useState(initialPlayers)
+  const [players, setPlayers] = useState([])
   const [selected, setSelected] = useState(new Set()) // selected ids for bulk actions
 
   // Dialog states
@@ -55,6 +81,27 @@ export default function PlayersPage() {
   const [showImport, setShowImport] = useState(false)
   const [showMerge, setShowMerge] = useState(false)
   const [showDeactivate, setShowDeactivate] = useState(false)
+
+
+  // fetching players 
+  useEffect(() => {
+
+    // 1. Fetch teams from MobX store
+    playersStore.getAllPlayers();
+
+    const disposer = autorun(() => {
+      const allPlayers = toJS(playersStore.allPlayers);
+
+
+      // Convert object -> array
+      setPlayers(allPlayers);
+    });
+
+    // cleanup on unmount
+    return () => disposer();
+  }, []);
+
+
 
   // Derived values
   const teams = useMemo(() => {
@@ -147,6 +194,16 @@ export default function PlayersPage() {
 
   return (
     <section className="space-y-4">
+      <ActionsBar
+        onAdd={() => setShowAdd(true)}
+        onImport={() => setShowImport(true)}
+        onMerge={() => setShowMerge(true)}
+        onDeactivate={() => setShowDeactivate(true)}
+        canMerge={canMerge}
+        canDeactivate={canDeactivate}
+        selectedCount={selected.size}
+      />
+
       <SearchAndFilters
         query={query}
         setQuery={setQuery}
@@ -158,15 +215,7 @@ export default function PlayersPage() {
         code={code}
         setCode={setCode}
       />
-      <ActionsBar
-        onAdd={() => setShowAdd(true)}
-        onImport={() => setShowImport(true)}
-        onMerge={() => setShowMerge(true)}
-        onDeactivate={() => setShowDeactivate(true)}
-        canMerge={canMerge}
-        canDeactivate={canDeactivate}
-        selectedCount={selected.size}
-      />
+
       <PlayerTable
         players={filtered}
         selected={selected}
@@ -196,15 +245,18 @@ export default function PlayersPage() {
   )
 }
 
+
+export default observer(PlayersPage);
+
 function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setActive, code, setCode }) {
   return (
-    <div className="rounded-lg border border-slate-200  p-3 md:p-4">
+    <div className="rounded-lg  ">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div className="flex-1">
           <label htmlFor="player-search" className="block text-sm font-medium text-slate-700">
             Search by player name
           </label>
-          <input
+          <Input
             id="player-search"
             type="search"
             value={query}
@@ -273,14 +325,14 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
 
 function ActionsBar({ onAdd, onImport, onMerge, onDeactivate, canMerge, canDeactivate, selectedCount }) {
   return (
-    <div className="flex flex-col items-start justify-between gap-3 md:flex-row">
-      <div className="text-sm text-slate-700">{selectedCount > 0 ? `${selectedCount} selected` : "No selection"}</div>
+    <div className="flex items-start ">
+      {/* <div className="text-sm text-slate-700">{selectedCount > 0 ? `${selectedCount} selected` : "No selection"}</div> */}
       <div className="flex flex-wrap items-center gap-2">
         <Button onClick={onAdd} className="hover:cursor-pointer">
-            Add Player
+          Add Player
         </Button>
         <Button onClick={onImport} variant="outline" className="hover:cursor-pointer">
-            Import CSV
+          Import CSV
         </Button>
         <Button
           onClick={onMerge}
@@ -344,27 +396,27 @@ function PlayerTable({ players, selected, onToggleOne, onToggleAll, allVisibleSe
             </tr>
           ) : (
             players.map((p) => (
-              <tr key={p.id} className="border-b border-slate-200 last:border-b-0">
+              <tr key={p.player_id} className="border-b border-slate-200 last:border-b-0">
                 <td className="px-3 py-2 align-middle">
                   <input
-                    aria-label={`Select ${p.name}`}
+                    aria-label={`Select ${p.display_name}`}
                     type="checkbox"
-                    checked={selected.has(p.id)}
-                    onChange={() => onToggleOne(p.id)}
+                    checked={selected.has(p.player_id)}
+                    onChange={() => onToggleOne(p.player_id)}
                     className="accent-black"
                   />
                 </td>
                 <td className="px-3 py-2 align-middle">
                   <Link
-                    to={`/players/${encodeURIComponent(p.id)}`}
+                    to={`/players/${encodeURIComponent(p.player_id)}`}
                     className="font-medium text-black underline-offset-2 hover:underline"
                   >
-                    {p.name}
+                    {p.display_name}
                   </Link>
                 </td>
-                <td className="px-3 py-2 align-middle">{p.team}</td>
+                <td className="px-3 py-2 align-middle">{p.team_name}</td>
                 <td className="px-3 py-2 align-middle">
-                  {p.active ? (
+                  {p.active_flag == 'active' ? (
                     <span className="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-medium text-white">
                       Yes
                     </span>
@@ -374,8 +426,8 @@ function PlayerTable({ players, selected, onToggleOne, onToggleAll, allVisibleSe
                     </span>
                   )}
                 </td>
-                <td className="px-3 py-2 align-middle">{p.preferredPosition}</td>
-                <td className="px-3 py-2 align-middle">{p.dominantSide}</td>
+                <td className="px-3 py-2 align-middle">{p.preferred_position}</td>
+                <td className="px-3 py-2 align-middle">{p.dominant_side}</td>
                 <td className="px-3 py-2 align-middle">{p.matchesPlayedSeason ?? 0}</td>
                 <td className="px-3 py-2 align-middle">{p.minutesPlayedSeason ?? 0}</td>
               </tr>
