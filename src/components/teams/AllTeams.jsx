@@ -27,9 +27,6 @@ import { Check, Ban } from 'lucide-react';
 
 
 
-
-
-
 // --- Helpers: CSV parsing and generation (simple; does not handle quoted commas) ---
 function parseCSV(text) {
   const rows = text.replace(/\r/g, "").split("\n").filter(Boolean)
@@ -105,6 +102,8 @@ function TeamsPage() {
   const { matchesStore, homeFilterbarStore, teamsStore } = useStores()
   const navigate = useNavigate()
   const [teams, setTeams] = useState([])
+
+  
 
 
   // fetching team 
@@ -220,6 +219,7 @@ function TeamsPage() {
         <Check className="text-green-800" /><span>Team has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
+      navigate(0);
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Team not created.</span>

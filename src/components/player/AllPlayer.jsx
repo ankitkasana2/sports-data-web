@@ -27,49 +27,47 @@ import { autorun } from "mobx"
 
 
 
-// Mock data (replace with real data later)
-const initialPlayers = [
-  {
-    id: "p1",
-    name: "Aidan Murphy",
-    team: "Riverside",
-    active: true,
-    code: "Hurling",
-    preferredPosition: "Midfield",
-    dominantSide: "R",
-    matchesPlayedSeason: 12,
-    minutesPlayedSeason: 860,
-  },
-  {
-    id: "p2",
-    name: "Liam O'Connell",
-    team: "Highfield",
-    active: true,
-    code: "Football",
-    preferredPosition: "Forward",
-    dominantSide: "L",
-    matchesPlayedSeason: 8,
-    minutesPlayedSeason: 540,
-  },
-  {
-    id: "p3",
-    name: "Sean Byrne",
-    team: "Riverside",
-    active: false,
-    code: "Hurling",
-    preferredPosition: "Back",
-    dominantSide: "Ambi",
-    matchesPlayedSeason: 3,
-    minutesPlayedSeason: 110,
-  },
-]
+function validatePlayerRecord(rec) {
+  const errors = []
+
+  console.log("rec", rec)
+
+  const id = `PLAYER_${nanoid(6)}`;
+
+  const name = (rec.name || "").trim()
+  if (!name) errors.push("Missing name")
+
+  const team = (rec.team || "").trim()
+  if (!team) errors.push("Missing team")
+
+  const position = (rec.position || "").trim()
+  if (!position) errors.push("Missing player position")
+
+  const dominant_side = (rec.dominant_side || "").trim()
+  if (!dominant_side) errors.push("Missing dominant-side")
+
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    player: errors.length
+      ? null
+      : {
+        id,
+        name,
+        team,
+        position,
+        dominant_side,
+      },
+  }
+}
 
 function PlayersPage() {
   const { matchesStore, homeFilterbarStore, teamsStore, playersStore } = useStores()
   // Filters & search
   const [query, setQuery] = useState("")
-  const [team, setTeam] = useState("All")
-  const [active, setActive] = useState("All") // All | Active | Inactive
+  const [team, setTeam] = useState("all")
+  const [active, setActive] = useState("all") // All | Active | Inactive
   const [code, setCode] = useState("All") // All | Hurling | Football
 
   // Data and selection
@@ -81,6 +79,12 @@ function PlayersPage() {
   const [showImport, setShowImport] = useState(false)
   const [showMerge, setShowMerge] = useState(false)
   const [showDeactivate, setShowDeactivate] = useState(false)
+  const [addForm, setAddForm] = useState({
+    name: '',
+    team: { name: '', id: '' },
+    position: '',
+    dominant_side: '',
+  })
 
 
   // fetching players 
@@ -105,22 +109,23 @@ function PlayersPage() {
 
   // Derived values
   const teams = useMemo(() => {
-    const set = new Set(players.map((p) => p.team).filter(Boolean))
-    return ["All", ...Array.from(set).sort()]
+    teamsStore.getAllTeams()
+    const name = teamsStore.allTeams.map(team=> {return team.team_name})
+    return name
   }, [players])
 
   const filtered = useMemo(() => {
     let data = players
     if (query.trim()) {
       const q = query.trim().toLowerCase()
-      data = data.filter((p) => p.name.toLowerCase().includes(q))
+      data = data.filter((p) => p.display_name.toLowerCase().includes(q))
     }
-    if (team !== "All") {
-      data = data.filter((p) => p.team === team)
+    if (team !== "all") {
+      data = data.filter((p) => p.team_name === team)
     }
-    if (active !== "All") {
-      const isActive = active === "Active"
-      data = data.filter((p) => p.active === isActive)
+    if (active !== "all") {
+      
+      data = data.filter((p) => p.active_flag === active)
     }
     if (code !== "All") {
       data = data.filter((p) => p.code === code)
@@ -149,12 +154,43 @@ function PlayersPage() {
   }
 
   // Action handlers
-  function handleAddPlayer(newPlayer) {
-    setPlayers((prev) => [
-      { ...newPlayer, id: cryptoRandom(), matchesPlayedSeason: 0, minutesPlayedSeason: 0 },
-      ...prev,
-    ])
-    setShowAdd(false)
+  async function handleAddPlayer(e) {
+    e.preventDefault()
+
+    const rec = {
+      name: addForm.name,
+      team: addForm.team.id,
+      position: addForm.position,
+      dominant_side: addForm.dominant_side,
+    }
+    const { ok, errors, player } = validatePlayerRecord(rec)
+    if (!ok || !team) {
+      return
+    }
+
+
+    const created = await playersStore.createPlayer(player);
+
+    if (created) {
+      toast(<div className="flex gap-3">
+        <Check className="text-green-800" /><span>Player has been created Successfully.</span>
+      </div>)
+      setOpenAdd(false)
+      navigate(0);
+    } else {
+      toast(<div className="flex gap-3">
+        <Ban className="text-red-700" /><span>Player not created.</span>
+      </div>)
+    }
+
+
+    setAddForm({
+      name: '',
+      team: { name: '', id: '' },
+      position: '',
+      dominant_side: '',
+    })
+
   }
 
   function handleImportPlayers(newPlayers) {
@@ -225,7 +261,92 @@ function PlayersPage() {
         someVisibleSelected={someVisibleSelected}
       />
 
-      {showAdd && <AddPlayerDialog onClose={() => setShowAdd(false)} onSubmit={handleAddPlayer} />}
+
+      {/* add players dialog  */}
+      <Dialog open={showAdd} onOpenChange={setShowAdd}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add Player</DialogTitle>
+            <DialogDescription>Create a new player record.</DialogDescription>
+          </DialogHeader>
+
+          <form className="grid grid-cols-2 gap-4" onSubmit={handleAddPlayer}>
+            <div className="grid gap-2 col-span-2">
+              <Label htmlFor="name">Team name</Label>
+              <Input
+                id="name"
+                value={addForm.name}
+                onChange={(e) => setAddForm((f) => ({ ...f, name: e.target.value }))}
+                placeholder="e.g., Ballymore"
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Select Team</Label>
+              <Select value={addForm.team.name} onValueChange={(v) =>
+                setAddForm((f) => ({
+                  ...f,
+                  team: { ...f.team, name: v, id: teamsStore.allTeams.find(team => team.team_name == v).team_id }
+                }))
+              }>
+                <SelectTrigger aria-label="team">
+                  <SelectValue placeholder="Select team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {teamsStore.allTeams.map(team => (<SelectItem key={team.team_id} value={team.team_name}>{team.team_name}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Preferred position</Label>
+              <Select value={addForm.position} onValueChange={(v) => setAddForm((f) => ({ ...f, position: v }))}>
+                <SelectTrigger aria-label="">
+                  <SelectValue placeholder="Select player position" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Goalkeeper">Goalkeeper</SelectItem>
+                  <SelectItem value="Right Corner Back">Right Corner Back</SelectItem>
+                  <SelectItem value="Full Back">Full Back</SelectItem>
+                  <SelectItem value="Left Corner Back">Left Corner Back</SelectItem>
+                  <SelectItem value="Right Half Back">Right Half Back</SelectItem>
+                  <SelectItem value="Centre Back">Centre Back</SelectItem>
+                  <SelectItem value="Left Half Back">Left Half Back</SelectItem>
+                  <SelectItem value="Midfielders">Midfielders</SelectItem>
+                  <SelectItem value="Right Half Forward">Right Half Forward</SelectItem>
+                  <SelectItem value="Centre Half Forward">Centre Half Forward</SelectItem>
+                  <SelectItem value="Left Half Forward">Left Half Forward</SelectItem>
+                  <SelectItem value="Right Corner Forward">Right Corner Forward</SelectItem>
+                  <SelectItem value="Full Forward">Full Forward</SelectItem>
+                  <SelectItem value="Left Corner Forward">Left Corner Forward</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Dominant side</Label>
+              <Select value={addForm.dominant_side} onValueChange={(v) => setAddForm((f) => ({ ...f, dominant_side: v }))}>
+                <SelectTrigger aria-label="dominant_side">
+                  <SelectValue placeholder="Select dominant side" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Left">Left</SelectItem>
+                  <SelectItem value="Right">Right</SelectItem>
+                  <SelectItem value="Ambiguous">Ambiguous</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="gap-2 col-span-2">
+              <Button type="button" variant="secondary" onClick={() => setShowAdd(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">Save</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {showImport && <ImportCsvDialog onClose={() => setShowImport(false)} onImport={handleImportPlayers} />}
       {showMerge && canMerge && (
         <MergeDialog
@@ -266,39 +387,34 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
           />
         </div>
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4 md:pl-4 md:basis-[520px]">
-          <div>
-            <label htmlFor="team-filter" className="block text-sm font-medium text-slate-700">
+          <div className="overflow-hidden">
+            <Label htmlFor="team-filter" className="block text-sm font-medium text-slate-700">
               Team
-            </label>
-            <select
-              id="team-filter"
-              value={team}
-              onChange={(e) => setTeam(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              {teams.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
+            </Label>
+            <Select value={team} onValueChange={(v) => setTeam(v)}>
+              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+                <SelectValue className='' placeholder='Filter by team'/>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All</SelectItem>
+                {teams.map(team => (<SelectItem key={team} value={team}>{team}</SelectItem>))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <label htmlFor="active-filter" className="block text-sm font-medium text-slate-700">
+            <Label htmlFor="active-filter" className="block text-sm font-medium text-slate-700">
               Status
-            </label>
-            <select
-              id="active-filter"
-              value={active}
-              onChange={(e) => setActive(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              {["All", "Active", "Inactive"].map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
+            </Label>
+             <Select value={active} onValueChange={(v) => setActive(v)}>
+              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+                <SelectValue className='' placeholder='Filter by team'/>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All</SelectItem>
+                <SelectItem value='active'>Active</SelectItem>
+                <SelectItem value='inactive'>In-Active</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <label htmlFor="code-filter" className="block text-sm font-medium text-slate-700">
@@ -444,111 +560,6 @@ function Th({ children }) {
     <th scope="col" className="px-3 py-2 font-medium">
       {children}
     </th>
-  )
-}
-
-function AddPlayerDialog({ onClose, onSubmit }) {
-  const [form, setForm] = useState({
-    name: "",
-    team: "",
-    active: true,
-    code: "Hurling",
-    preferredPosition: "",
-    dominantSide: "R",
-  })
-  const canSave = form.name.trim() && form.team.trim()
-
-  function submit(e) {
-    e.preventDefault()
-    if (!canSave) return
-    onSubmit({
-      name: form.name.trim(),
-      team: form.team.trim(),
-      active: !!form.active,
-      code: form.code,
-      preferredPosition: form.preferredPosition.trim(),
-      dominantSide: form.dominantSide,
-    })
-  }
-
-  return (
-    <Modal title="Add Player" onClose={onClose}>
-      <form onSubmit={submit} className="space-y-3">
-        <Field label="Name">
-          <input
-            value={form.name}
-            onChange={(e) => setForm((s) => ({ ...s, name: e.target.value }))}
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="Full name"
-          />
-        </Field>
-        <Field label="Team">
-          <input
-            value={form.team}
-            onChange={(e) => setForm((s) => ({ ...s, team: e.target.value }))}
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="Team name"
-          />
-        </Field>
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <Field label="Active">
-            <select
-              value={form.active ? "true" : "false"}
-              onChange={(e) => setForm((s) => ({ ...s, active: e.target.value === "true" }))}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              <option value="true">Yes</option>
-              <option value="false">No</option>
-            </select>
-          </Field>
-          <Field label="Code">
-            <select
-              value={form.code}
-              onChange={(e) => setForm((s) => ({ ...s, code: e.target.value }))}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              <option>Hurling</option>
-              <option>Football</option>
-            </select>
-          </Field>
-          <Field label="Dominant side">
-            <select
-              value={form.dominantSide}
-              onChange={(e) => setForm((s) => ({ ...s, dominantSide: e.target.value }))}
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              <option>R</option>
-              <option>L</option>
-              <option>Ambi</option>
-            </select>
-          </Field>
-        </div>
-        <Field label="Preferred position">
-          <input
-            value={form.preferredPosition}
-            onChange={(e) => setForm((s) => ({ ...s, preferredPosition: e.target.value }))}
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            placeholder="e.g., Midfield"
-          />
-        </Field>
-        <div className="flex items-center justify-end gap-2 pt-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200/40 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={!canSave}
-            className="rounded-md bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50"
-          >
-            Save
-          </button>
-        </div>
-      </form>
-    </Modal>
   )
 }
 
@@ -752,15 +763,6 @@ function Modal({ title, onClose, children }) {
         {children}
       </div>
     </div>
-  )
-}
-
-function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
-      {children}
-    </label>
   )
 }
 

@@ -39,6 +39,24 @@ class PlayersStore {
                 });
         }, 500);
     }
+
+
+    
+    // create a player
+    async createPlayer(player) {
+        try {
+            const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/player`, player);
+
+            if (response.data.success) {
+                return true;  // success
+            } else {
+                return false; // failed
+            }
+        } catch (error) {
+            console.error("Error creating player:", error);
+            return false;
+        }
+    }
 }
 
 export const playersStore = new PlayersStore()
