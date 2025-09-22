@@ -68,7 +68,7 @@ function PlayersPage() {
   const [query, setQuery] = useState("")
   const [team, setTeam] = useState("all")
   const [active, setActive] = useState("all") // All | Active | Inactive
-  const [code, setCode] = useState("All") // All | Hurling | Football
+  const [code, setCode] = useState("all") // All | Hurling | Football
 
   // Data and selection
   const [players, setPlayers] = useState([])
@@ -110,7 +110,7 @@ function PlayersPage() {
   // Derived values
   const teams = useMemo(() => {
     teamsStore.getAllTeams()
-    const name = teamsStore.allTeams.map(team=> {return team.team_name})
+    const name = teamsStore.allTeams.map(team => { return team.team_name })
     return name
   }, [players])
 
@@ -124,24 +124,24 @@ function PlayersPage() {
       data = data.filter((p) => p.team_name === team)
     }
     if (active !== "all") {
-      
+
       data = data.filter((p) => p.active_flag === active)
     }
-    if (code !== "All") {
+    if (code !== "all") {
       data = data.filter((p) => p.code === code)
     }
     return data
   }, [players, query, team, active, code])
 
-  const allVisibleSelected = filtered.length > 0 && filtered.every((p) => selected.has(p.id))
-  const someVisibleSelected = filtered.some((p) => selected.has(p.id))
+  const allVisibleSelected = filtered.length > 0 && filtered.every((p) => selected.has(p.player_id))
+  const someVisibleSelected = filtered.some((p) => selected.has(p.player_id))
 
   function toggleAllVisible() {
     const next = new Set(selected)
     if (allVisibleSelected) {
-      filtered.forEach((p) => next.delete(p.id))
+      filtered.forEach((p) => next.delete(p.player_id))
     } else {
-      filtered.forEach((p) => next.add(p.id))
+      filtered.forEach((p) => next.add(p.player_id))
     }
     setSelected(next)
   }
@@ -393,7 +393,7 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
             </Label>
             <Select value={team} onValueChange={(v) => setTeam(v)}>
               <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
-                <SelectValue className='' placeholder='Filter by team'/>
+                <SelectValue className='' placeholder='Filter by team' />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All</SelectItem>
@@ -405,9 +405,9 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
             <Label htmlFor="active-filter" className="block text-sm font-medium text-slate-700">
               Status
             </Label>
-             <Select value={active} onValueChange={(v) => setActive(v)}>
+            <Select value={active} onValueChange={(v) => setActive(v)}>
               <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
-                <SelectValue className='' placeholder='Filter by team'/>
+                <SelectValue className='' placeholder='Filter by team' />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All</SelectItem>
@@ -417,21 +417,19 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
             </Select>
           </div>
           <div>
-            <label htmlFor="code-filter" className="block text-sm font-medium text-slate-700">
+            <Label htmlFor="code-filter" className="block text-sm font-medium text-slate-700">
               Code
-            </label>
-            <select
-              id="code-filter"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            >
-              {["All", "Hurling", "Football"].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
+            </Label>
+            <Select value={code} onValueChange={(v) => setCode(v)}>
+              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+                <SelectValue className='' placeholder='Filter by code' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All</SelectItem>
+                <SelectItem value='Hurling'>Hurling</SelectItem>
+                <SelectItem value='Football'>Football</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
