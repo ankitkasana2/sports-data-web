@@ -15,9 +15,10 @@ function MiniPitchPanel() {
   ];
 
 
+
   return (
     <div className="space-y-3">
-      <MiniPitch code={store.code} mode="view" value={ghost ?? []} />
+      <MiniPitch code={store.code} mode="view" value={ghost} />
     </div>
   )
 }

@@ -45,6 +45,7 @@ export const ShotDialog = observer(function ShotDialog() {
     store.addEvent({ type: "shot", team, result, shot_type: shotType, position })
 
     // store position 
+  
     store.setDialogXY("shot", position)
 
     // Update scoreboard if point/goal

@@ -45,11 +45,11 @@ export function MiniPitch({ code, mode, value, onChange, className}) {
         <line x1="20" y1="1" x2="20" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
         <line x1="87" y1="1" x2="87" y2="59 " stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
         <line x1="80" y1="1" x2="80" y2="59" stroke="#10b981" strokeWidth="0.2" opacity="0.4" />
-        {/* goal post  */}
-        <rect x="1" y="22" width="12" height="15" fill="none" stroke="#065f46" strokeWidth="0.3" opacity="0.6"
+        {/* lines  */}
+        <rect x="1" y="22" width="12" height="15" fill="none" stroke="#10b981" strokeWidth="0.2" opacity="0.4"
         />
-        <rect x="87" y="22" width="12" height="15" fill="none" stroke="#065f46" strokeWidth="0.3" opacity="0.6"
-        />
+        <rect x="87" y="22" width="12" height="15" fill="none" stroke="#10b981" strokeWidth="0.2" opacity="0.4"/>
+       
         {/* Code-specific arcs */}
 
         {/* 20m and 40m arcs approximated */}

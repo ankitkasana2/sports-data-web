@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { MiniPitch } from "../MiniPitch"
@@ -22,10 +22,64 @@ export const FreeDialog = observer(function FreeDialog() {
   const [is50, setIs50] = useState(false)
   const [nextAction, setNextAction] = useState('')
   const [position, setPosition] = useState(null)
+  const [calculation, setCalculation] = useState({
+    free_distance_m: '',
+    free_distance_band: '',
+    lane_sector: '',
+    arc_status: '',
+  })
+
+
+  useEffect(() => {
+    if (position != null) {
+      console.log('position', position)
+
+      let distance = 0
+      let arc = ''
+      if (awardedTeam == 'home') {
+        distance = Math.round(Math.sqrt((position.x - 2) ** 2 + (position.y - 49) ** 2))
+        arc = position.x < 30 ? 'inside_40' : position.x >= 30 && position.x <= 32 ? 'on_40' : position.x > 32 ? 'outside_40' : 'none'
+      } else {
+        distance = Math.round(Math.sqrt((position.x - 95) ** 2 + (position.y - 49) ** 2))
+        arc = position.x > 68.5 ? 'inside_40' : position.x <= 68.5 && position.x >= 67.5 ? 'on_40' : position.x < 67.5 ? 'outside_40' : 'none'
+      }
+
+      setCalculation(prev => ({
+        ...prev,
+        free_distance_m: distance, // or whatever value
+        free_distance_band: distance < 15 ? 'Very close' : distance >= 15 && distance <= 25 ? "Mid range" : distance >= 26 && distance <= 39 ? 'Long range' : distance > 39 ? "Very long range" : 'none',
+        lane_sector: Math.round(position.x == 50) ? 'Centre' : Math.round(position.x < 50) ? 'Left' : 'Right',
+        arc_status: arc
+      }));
+
+    }
+  }, [position])
+
+
+  useEffect(() => {
+    console.log('cal', calculation)
+  }, [calculation])
+
+  // handle 50m advance 
+  const handle50m = () => {
+    setIs50(prev => {
+    const newIs50 = !prev;
+
+    if (newIs50) {  // this runs with the correct new value
+      if (awardedTeam === 'home') {
+        setPosition({ x: 8, y: 49 });
+      }
+    }
+
+    return newIs50;
+  });
+  }
+
+
 
 
   const onSave = () => {
-    store.addEvent({ type: "free", team: awardedTeam })
+    store.addEvent({ type: "free", team: awardedTeam, })
 
     // store position 
     store.setDialogXY("free", position)
@@ -97,7 +151,7 @@ export const FreeDialog = observer(function FreeDialog() {
               <>
                 <div className="flex items-center justify-between rounded-md border p-2">
                   <Label htmlFor="is50">50m Advance</Label>
-                  <Switch id="is50" checked={is50} onCheckedChange={setIs50} />
+                  <Switch id="is50" checked={is50} onCheckedChange={handle50m} />
                 </div>
               </>
             )}
