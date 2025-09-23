@@ -63,16 +63,18 @@ export const FreeDialog = observer(function FreeDialog() {
   // handle 50m advance 
   const handle50m = () => {
     setIs50(prev => {
-    const newIs50 = !prev;
+      const newIs50 = !prev;
 
-    if (newIs50) {  // this runs with the correct new value
-      if (awardedTeam === 'home') {
-        setPosition({ x: 8, y: 49 });
+      if (newIs50) {  // this runs with the correct new value
+        if (awardedTeam === 'home') {
+          setPosition({ x: 3, y: 49 });
+        } else {
+          setPosition({ x: 97, y: 49 })
+        }
       }
-    }
 
-    return newIs50;
-  });
+      return newIs50;
+    });
   }
 
 
