@@ -1,5 +1,6 @@
 
 import { makeAutoObservable, computed } from "mobx"
+import axios from "axios"
 import { toJS } from "mobx"
 // Gaelic formatting helper: goals-points (total points = goals*3 + points)
 export function toTotalPoints(s) {
@@ -7,11 +8,14 @@ export function toTotalPoints(s) {
 }
 
 
+const apiUrl = import.meta.env;
+
 
 class LiveMatchStore {
   code = "football"
   clock = { period: "H1", seconds: 0, running: false }
   intervalId = null
+  match_id = null
 
   score = {
     home: { goals: 0, points: 0 },
@@ -68,9 +72,9 @@ class LiveMatchStore {
 
   initializeAutosave() {
     // Start autosave timer (every 2.5 seconds)
-    this.autosaveTimer = setInterval(() => {
-      this.saveToLocalStorage()
-    }, 2500)
+    // this.autosaveTimer = setInterval(() => {
+    //   this.saveToLocalStorage()
+    // }, 2500)
   }
 
   initializeOnlineDetection() {
@@ -203,6 +207,17 @@ class LiveMatchStore {
   }
 
   savePrematch(data) {
+
+    setTimeout(() => {
+      axios.post(`${apiUrl.VITE_BACKEND_PATH}match_context`, data)
+        .then(response => {
+          console.log("Match_context saved:", response.data);
+        })
+        .catch(error => {
+          console.error("There was an error to save match_context!", error);
+        });
+    }, 500);
+
     this.match_context = data
     this.clock.period = "H1"
     this.clock.seconds = 0

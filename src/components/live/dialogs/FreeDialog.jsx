@@ -8,6 +8,8 @@ import { Label } from "../../ui/label"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
 import { secondsToHHMMSS } from "../LiveUtils"
+import { Badge } from "@/components/ui/badge"
+
 
 export const FreeDialog = observer(function FreeDialog() {
   const { liveMatchStore } = useStores()
@@ -23,16 +25,16 @@ export const FreeDialog = observer(function FreeDialog() {
   const [nextAction, setNextAction] = useState('')
   const [position, setPosition] = useState(null)
   const [calculation, setCalculation] = useState({
-    free_distance_m: '',
-    free_distance_band: '',
-    lane_sector: '',
-    arc_status: '',
+    free_distance_m: 'none',
+    free_distance_band: 'none',
+    lane_sector: 'none',
+    arc_status: 'none',
   })
+
 
 
   useEffect(() => {
     if (position != null) {
-      console.log('position', position)
 
       let distance = 0
       let arc = ''
@@ -53,6 +55,7 @@ export const FreeDialog = observer(function FreeDialog() {
       }));
 
     }
+
   }, [position])
 
 
@@ -108,9 +111,35 @@ export const FreeDialog = observer(function FreeDialog() {
               code={store.code}
               mode="select"
               value={position}
-              onChange={(xy) => setPosition(xy)}
+              onChange={(xy) => (setPosition(xy),setIs50(false))}
             />
             <div className="text-xs text-muted-foreground">Click pitch to set XY.</div>
+
+            <div className="grid grid-cols-2">
+              {/* free_distance_m   */}
+              <div>
+                <Label className="text-sm font-medium">Free_distance_m</Label>
+                <Badge>{calculation.free_distance_m}</Badge>
+              </div>
+
+               {/* free_distance_band   */}
+              <div>
+                <Label className="text-sm font-medium">Free_distance_band</Label>
+                <Badge>{calculation.free_distance_band}</Badge>
+              </div>
+
+               {/* lane sector   */}
+              <div>
+                <Label className="text-sm font-medium">Lane sector</Label>
+                <Badge>{calculation.lane_sector}</Badge>
+              </div>
+
+              {/* arc_status  */}
+              {store.code == 'football' && <div className="grid gap-1">
+                <Label className="text-sm font-medium">Arc Status</Label>
+                <Badge>{calculation.arc_status}</Badge>
+              </div>}
+            </div>
           </div>
 
           <div className="space-y-3">

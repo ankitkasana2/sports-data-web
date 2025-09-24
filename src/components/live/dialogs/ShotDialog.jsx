@@ -8,6 +8,48 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { Check, ChevronsUpDown } from "lucide-react"
+import { cn } from "@/lib/utils"
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+
+
+const frameworks = [
+  {
+    value: "player-1",
+    label: "Player-1",
+  },
+  {
+    value: "player-2",
+    label: "Player-2",
+  },
+  {
+    value: "player-3",
+    label: "Player-3",
+  },
+  {
+    value: "player-4",
+    label: "Player-4",
+  },
+]
+
+
+
+
+
+
 
 export const ShotDialog = observer(function ShotDialog() {
   const { liveMatchStore } = useStores()
@@ -19,8 +61,11 @@ export const ShotDialog = observer(function ShotDialog() {
   const [team, setTeam] = useState("teamA")
   const [arcStatus, setArcStatus] = useState("none")
   const [shooter, setShooter] = useState('')
+  const [openShooter, setOpenShooter] = useState(false)
   const [pressure, setPressure] = useState('')
   const [badge, setBadge] = useState('none')
+  const [assist, setAssist] = useState('')
+  const [openAssist, setOpenAssist] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -45,7 +90,7 @@ export const ShotDialog = observer(function ShotDialog() {
     store.addEvent({ type: "shot", team, result, shot_type: shotType, position })
 
     // store position 
-  
+
     store.setDialogXY("shot", position)
 
     // Update scoreboard if point/goal
@@ -106,6 +151,7 @@ export const ShotDialog = observer(function ShotDialog() {
                 </Select>
               </div>
 
+              {/* result  */}
               <div className="grid gap-1">
                 <label className="text-sm font-medium">Result</label>
                 <Select value={result} onValueChange={(v) => setResult(v)}>
@@ -125,7 +171,7 @@ export const ShotDialog = observer(function ShotDialog() {
               </div>
             </div>
 
-
+            {/* shot type  */}
             <div className="grid gap-1">
               <label className="text-sm font-medium">Shot Type</label>
               <Select value={shotType} onValueChange={(v) => setShotType(v)}>
@@ -147,15 +193,49 @@ export const ShotDialog = observer(function ShotDialog() {
               {/* shooter  */}
               <div className="grid gap-1">
                 <label className="text-sm font-medium">Shooter</label>
-                <Select value={shooter} onValueChange={(v) => setShooter(v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select player" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="goal">Goal</SelectItem>
-                    <SelectItem value="point">Point</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Popover open={openShooter} onOpenChange={setOpenShooter}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openShooter}
+                      className=" justify-between"
+                    >
+                      {shooter
+                        ? frameworks.find((framework) => framework.value === shooter)?.label
+                        : "Select player"}
+                      <ChevronsUpDown className="opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-0">
+                    <Command>
+                      <CommandInput placeholder="Search player..." className="h-9" />
+                      <CommandList>
+                        <CommandEmpty>No player found.</CommandEmpty>
+                        <CommandGroup>
+                          {frameworks.map((framework) => (
+                            <CommandItem
+                              key={framework.value}
+                              value={framework.value}
+                              onSelect={(currentValue) => {
+                                setShooter(currentValue === shooter ? "" : currentValue)
+                                setOpenShooter(false)
+                              }}
+                            >
+                              {framework.label}
+                              <Check
+                                className={cn(
+                                  "ml-auto",
+                                  shooter === framework.value ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* pressure  */}
@@ -175,6 +255,53 @@ export const ShotDialog = observer(function ShotDialog() {
             </div>
 
 
+            {/* assist  */}
+            <div className="grid gap-1">
+              <label className="text-sm font-medium">Assist</label>
+              <Popover open={openAssist} onOpenChange={setOpenAssist}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openAssist}
+                    className=" justify-between"
+                  >
+                    {assist
+                      ? frameworks.find((framework) => framework.value === assist)?.label
+                      : "Select player"}
+                    <ChevronsUpDown className="opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[200px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search player.." className="h-9" />
+                    <CommandList>
+                      <CommandEmpty>No player found.</CommandEmpty>
+                      <CommandGroup>
+                        {frameworks.map((framework) => (
+                          <CommandItem
+                            key={framework.value}
+                            value={framework.value}
+                            onSelect={(currentValue) => {
+                              setAssist(currentValue === assist ? "" : currentValue)
+                              setOpenAssist(false)
+                            }}
+                          >
+                            {framework.label}
+                            <Check
+                              className={cn(
+                                "ml-auto",
+                                assist === framework.value ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
 
           </div>
         </div>

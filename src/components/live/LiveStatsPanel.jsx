@@ -3,6 +3,8 @@ import { Card } from "../ui/card"
 import { toTotalPoints } from "../../stores/LiveMatchStore"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
+import { Settings } from 'lucide-react';
+import { Button } from "../ui/button"
 
 export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false }) {
   const { liveMatchStore } = useStores()
@@ -42,6 +44,11 @@ export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false
           value={restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}
         />
         <StatPill label="PPP" value={shots.pps.toFixed(2)} />
+
+        <Button size="sm" className='ml-auto'>
+          <Settings className="h-3 w-3 mr-1" />
+          Setting
+        </Button>
       </div>
     )
   }

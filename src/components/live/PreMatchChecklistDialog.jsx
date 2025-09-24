@@ -21,6 +21,9 @@ import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Lock, Unlock, Users, Replace, Search, Wind, Goal, Flag, Ruler, MapPin } from "lucide-react"
+import { nanoid } from 'nanoid';
+
+
 
 const FOOTBALL = "football"
 const HURLING = "hurling"
@@ -234,16 +237,27 @@ export default function PreMatchChecklistDialog({ open, onOpenChange, initialMat
 
     function handleSave() {
         const match_context = {
-            metadata: { id: initialMatch?.id, season, competition, round, dateTime, venue, referee, code, rulesetId, venueType },
-            rules: code === FOOTBALL ? { ...footballToggles } : { ...hurlingToggles },
-            field: {
-                endA_H1,
-                endB_H1: endA_H1 === "left" ? "right" : "left",
-                wind: windStrength === "none" ? { strength: "none" } : { strength: windStrength, direction: windDirection },
-            },
-            teams: { teamA, teamB, startersOnAt: "H1 00:00" },
-            flags: { savePanelDefaults: { teamA: saveAdefault, teamB: saveBdefault } },
-            readOnlyAfterFirstEvent: true,
+            context_id : `Context_${nanoid(6)}`,
+            match_id: '',
+            season : '',
+            competition_season_id : '',
+            round_id : '',
+            match_date_time : '',
+            venue_id : '',
+            referee_id: '',
+            code : '',
+            ruleset_version: '',
+            periods_json: '',
+            environment_json : '',
+            ends_json: '',
+            teamA_json: '',
+            teamB_json: '',
+            status: '',
+            locked: false,
+            locked_at: '',
+            locked_by: '',
+            created_by: '',
+            updated_by: '',
         }
 
         onSave?.(match_context)
