@@ -254,7 +254,6 @@ export default function PreMatchChecklistDialog({ open, onOpenChange, initialMat
             teamB_json: '',
             status: '',
             locked: false,
-            locked_at: '',
             locked_by: '',
             created_by: '',
             updated_by: '',

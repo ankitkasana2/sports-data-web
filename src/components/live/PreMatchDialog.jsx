@@ -22,10 +22,6 @@ export const PreMatchDialog = observer(function PreMatchDialog() {
     [store.code]
   )
 
-  function toLivePreMatch(mc) {
-   
-    return preMatch
-  }
 
   return (
     <PreMatchChecklistDialog

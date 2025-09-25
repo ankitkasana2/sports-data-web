@@ -2,6 +2,7 @@
 import { makeAutoObservable, computed } from "mobx"
 import axios from "axios"
 import { toJS } from "mobx"
+import { nanoid } from 'nanoid';
 // Gaelic formatting helper: goals-points (total points = goals*3 + points)
 export function toTotalPoints(s) {
   return s.goals * 3 + s.points
@@ -268,9 +269,10 @@ class LiveMatchStore {
     this.pushHistory()
     const evt = {
       id: crypto.randomUUID(),
-      ts: this.clock.seconds,
+      ts: this.clock.seconds + 's',
       ...e,
     }
+
     this.applyPossessionRules(evt)
     this.events.push(evt)
   }
@@ -279,17 +281,31 @@ class LiveMatchStore {
     return this.possessions[this.possessions.length - 1]
   }
 
-  startPossession(team, start_type, restart_event_id) {
-    const p = {
-      id: crypto.randomUUID(),
-      team,
-      start: this.clock.seconds,
-      start_type,
-      restart_event_id: restart_event_id ?? null,
-    }
-    this.possessions.push(p)
-    return p
+  startPossession(evt, start_cause = "touch", start_restart_type = null) {
+
+    console.log('eve',evt)
+  const p = {
+    possession_id: `Possession_${nanoid(6)}`,       // unique ID
+    match_id: this.match_id ?? null,           // match identifier
+    team_id: evt.team ?? null,                 // controlling team
+    period: this.clock.period ?? null,         // current period (H1/H2/etc.)
+    start_time_sec: this.clock.seconds,        // start time
+    end_time_sec: null,                         // end time (to be filled on close)
+    duration_sec: null,                         // duration (computed on close)
+    start_event_id: evt.id ?? null,             // first event in possession
+    start_cause: start_cause,                   // "touch", "restart", etc.
+    start_restart_type: start_restart_type,     // e.g., "kickout", "throwin", "free"
+    end_event_id: null,                         // to be filled when possession ends
+    end_cause: null,                             // reason possession ended
+    shot_event_id: null,                         // linked shot event (if any)
+    points_for: 0,                               // points scored in this possession
+    sequence_id: null,                            // optional sequence
   }
+
+  this.possessions.push(p)
+  return p
+}
+
 
   endPossession() {
     const p = this.currentPossession()
@@ -303,25 +319,55 @@ class LiveMatchStore {
   }
 
   applyPossessionRules(evt) {
-    const p = this.currentPossession()
+  const p = this.currentPossession()
 
-    if (!p && evt.team) {
-      if (evt.type !== "strike") {
-        const st = ["puckout", "kickout", "throwin", "sideline", "free", "65", "45", "penalty"]
-        const isRestart = st.includes(evt.type)
-        const restartId = isRestart ? (evt.restart_event_id ?? evt.id) : null
-        const poss = this.startPossession(evt.team, isRestart ? evt.type : undefined, restartId)
-        evt.possession_id = poss.id
-      }
-    } else if (p) {
-      evt.possession_id = p.id
+  // --- CASE 1: No possession yet, and a team has controlled touch ---
+  if (!p && evt.team) {
+    if (evt.type !== "strike") {
+      const restartTypes = ["puckout", "kickout", "throwin", "sideline", "free", "65", "45", "penalty"]
+      const isRestart = restartTypes.includes(evt.type)
+      const restartId = isRestart ? (evt.restart_event_id ?? evt.id) : null
+
+      const poss = this.startPossession(evt, isRestart ? evt.type : undefined, restartId)
+      evt.possession_id = poss.id
+    }
+  } 
+  // --- CASE 2: Possession is ongoing ---
+  else if (p) {
+    evt.possession_id = p.id
+
+    // 🚨 END-TYPE EVENTS (normal close)
+    const endTypes = new Set(["score", "wide_loss", "short_loss", "whistle", "turnover"])
+    if (endTypes.has(evt.type)) {
+      this.endPossession(evt.type, evt.id)
     }
 
-    const endTypes = new Set(["score", "wide_loss", "short_loss", "whistle", "foul", "turnover"])
-    if (endTypes.has(evt.type)) {
-      this.endPossession(evt.type)
+    // 🚨 SPECIAL CASE: FOUL
+    if (evt.type === "foul") {
+      if (evt.against_team === p.team) {
+        // ❌ foul against controlling team → possession ends
+        this.endPossession("foul", evt.id)
+      } else {
+        // ✅ foul against opponent → possession continues
+        // keep same possession_id
+        // (the following free event stays in this possession)
+      }
+    }
+
+    // 🚨 SPECIAL CASE: FREE
+    if (evt.type === "free") {
+      if (evt.team === p.team) {
+        // ✅ awarded team == current possession → possession continues
+        // nothing to close
+      } else {
+        // ❌ if somehow free is awarded to the other team → possession flips
+        this.endPossession("free_lost", evt.id)
+        this.startPossession(evt.team, "free", evt.restart_event_id ?? evt.id)
+      }
     }
   }
+}
+
 
   // computed metrics
   get pppHome() {

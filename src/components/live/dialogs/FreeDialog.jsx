@@ -9,6 +9,7 @@ import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
 import { secondsToHHMMSS } from "../LiveUtils"
 import { Badge } from "@/components/ui/badge"
+import { toJS } from "mobx"
 
 
 export const FreeDialog = observer(function FreeDialog() {
@@ -30,6 +31,12 @@ export const FreeDialog = observer(function FreeDialog() {
     lane_sector: 'none',
     arc_status: 'none',
   })
+
+
+  useEffect(() => {
+    console.log("possession",toJS(liveMatchStore.possessions))
+  }, [toJS(liveMatchStore.possessions)])
+  
 
 
 
@@ -111,7 +118,7 @@ export const FreeDialog = observer(function FreeDialog() {
               code={store.code}
               mode="select"
               value={position}
-              onChange={(xy) => (setPosition(xy),setIs50(false))}
+              onChange={(xy) => (setPosition(xy), setIs50(false))}
             />
             <div className="text-xs text-muted-foreground">Click pitch to set XY.</div>
 
@@ -122,13 +129,13 @@ export const FreeDialog = observer(function FreeDialog() {
                 <Badge>{calculation.free_distance_m}</Badge>
               </div>
 
-               {/* free_distance_band   */}
+              {/* free_distance_band   */}
               <div>
                 <Label className="text-sm font-medium">Free_distance_band</Label>
                 <Badge>{calculation.free_distance_band}</Badge>
               </div>
 
-               {/* lane sector   */}
+              {/* lane sector   */}
               <div>
                 <Label className="text-sm font-medium">Lane sector</Label>
                 <Badge>{calculation.lane_sector}</Badge>
