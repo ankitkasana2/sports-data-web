@@ -10,11 +10,11 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
   const store = liveMatchStore
   const open = !!store.ui.currentThrowIn.open
 
-  const [wonTeam, setWonTeam] = useState('teamA')
+  const [wonTeam, setWonTeam] = useState('Team_A')
 
   const onSave = () => {
-    const type = store.code === "football" ? "kickout" : "puckout"
-    store.addEvent({ type, team: executing })
+    const type = 'throw_in'
+    store.addEvent({ type, won_team: wonTeam })
 
     store.closeDialogs()
   }
@@ -34,8 +34,8 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="teamA">Team A</SelectItem>
-                <SelectItem value="teamB">Team B</SelectItem>
+                <SelectItem value="Team_A">Team A</SelectItem>
+                <SelectItem value="Team_B">Team B</SelectItem>
               </SelectContent>
             </Select>
           </div>

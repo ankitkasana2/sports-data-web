@@ -11,7 +11,9 @@ function MiniPitchPanel() {
 
   const ghost = [
     ...(toJS(store.ui.currentShot)?.xy ?? []),
-    ...(toJS(store.ui.currentFree)?.xy ?? [])
+    ...(toJS(store.ui.currentFree)?.xy ?? []),
+    ...(toJS(store.ui.currentSideline)?.xy ?? []),
+    
   ];
 
 

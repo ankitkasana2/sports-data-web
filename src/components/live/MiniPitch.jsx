@@ -1,8 +1,13 @@
-import React from "react"
+import React, {useEffect} from "react"
 import { cn } from "@/lib/utils"
 
 export function MiniPitch({ code, mode, value, onChange, className}) {
   const ref = React.useRef(null)
+
+  useEffect(() => {
+    console.log("val",value)
+  }, [value])
+  
 
   const handleClick = (e) => {
     if (mode !== "select" || !ref.current || !onChange) return
@@ -87,7 +92,7 @@ export function MiniPitch({ code, mode, value, onChange, className}) {
 
       {/* Selection crosshair */}
       {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (
-        <div
+        v!=null &&<div
           key={index} // use index if coordinates are not unique
           className="absolute pointer-events-none"
           style={{

@@ -32,10 +32,6 @@ export const FreeDialog = observer(function FreeDialog() {
     arc_status: 'none',
   })
 
-
-  useEffect(() => {
-    console.log("possession",toJS(liveMatchStore.possessions))
-  }, [toJS(liveMatchStore.possessions)])
   
 
 
@@ -65,10 +61,6 @@ export const FreeDialog = observer(function FreeDialog() {
 
   }, [position])
 
-
-  useEffect(() => {
-    console.log('cal', calculation)
-  }, [calculation])
 
   // handle 50m advance 
   const handle50m = () => {

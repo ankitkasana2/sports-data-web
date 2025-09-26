@@ -23,6 +23,14 @@ export const EventFeed = observer(function EventFeed() {
     return sorted
   }, [store.events.length])
 
+  const details = (e) => {
+    if (e.type === "throw_in") {
+      return `Throw-in • Won by ${e.won_team}`
+    }else if(e.type === 'free'){
+      return `${e.free_type} • ${e.won_team} • ${e.free_outcome}`
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -46,11 +54,11 @@ export const EventFeed = observer(function EventFeed() {
               return (
                 <TableRow key={e.id}>
                   <TableCell className="tabular-nums">{e.period} {e.hhmmss}</TableCell>
-                  <TableCell className="capitalize">{"team A"}</TableCell>
+                  <TableCell className="capitalize">{e.won_team}</TableCell>
                   <TableCell className="uppercase">{e.type}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <code>{e.result} • {"From Play"} </code>
+                    <div className="flex items-center gap-2 w-full">
+                      <div className="text-green-800">{details(e)}</div>
                       {/* Simple inline edit: change a result from wide->point, etc. */}
                       {e.type === "shot" && (
                         <Select
@@ -71,21 +79,21 @@ export const EventFeed = observer(function EventFeed() {
                     </div>
                   </TableCell>
                   <TableCell className="uppercase">{e.type == "shot" ? "+1" : "0"}</TableCell>
-                  <TableCell className="capitalize">101</TableCell>
+                  <TableCell className="capitalize">{e.possession_id}</TableCell>
                   <TableCell className="capitalize">
                     <Popover>
                       <PopoverTrigger asChild>
                         <EllipsisVertical className="h-4 w-4 hover:cursor-pointer" />
                       </PopoverTrigger>
-                      <PopoverContent className="flex flex-col gap-2">
-                        <div className="flex items-center gap-3 hover:cursor-pointer">
-                          <Pencil className="h-4 w-4" />
-                          <div className="text-sm">Edit time</div>
+                      <PopoverContent className="flex flex-col w-[200px] p-0">
+                        <div className="flex items-center gap-3 hover:cursor-pointer hover:bg-gray-100 w-full h-full p-3">
+                          <Pencil className="h-3 w-3" />
+                          <div className="text-xs">Edit time</div>
                         </div>
-                        <Separator />
-                        <div className="flex items-center gap-3  hover:cursor-pointer">
-                          <Clock className="h-4 w-4" />
-                          <div className="text-sm">Jump clock to 00:00</div>
+                        <Separator className='' />
+                        <div className="flex items-center gap-3  hover:cursor-pointer p-3 hover:bg-gray-100 w-full h-full">
+                          <Clock className="h-3 w-3" />
+                          <div className="text-xs">Jump clock to 00:00</div>
                         </div>
                       </PopoverContent>
                     </Popover>
