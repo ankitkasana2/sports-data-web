@@ -53,7 +53,7 @@ export const EventFeed = observer(function EventFeed() {
             {rows.map((e, idx) => {
               return (
                 <TableRow key={e.id}>
-                  <TableCell className="tabular-nums">{e.period} {e.hhmmss}</TableCell>
+                  <TableCell className="tabular-nums">{secondsToHHMMSS(store.clock.seconds)}</TableCell>
                   <TableCell className="capitalize">{e.won_team}</TableCell>
                   <TableCell className="uppercase">{e.type}</TableCell>
                   <TableCell>

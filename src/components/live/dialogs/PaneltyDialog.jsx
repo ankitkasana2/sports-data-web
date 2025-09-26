@@ -4,22 +4,51 @@ import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { toast } from "sonner"
+import { CircleAlert } from 'lucide-react';
 
 export const PaneltyDialog = observer(function PaneltyDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
   const open = !!store.ui.currentPanelty.open
 
-  const [awardedTeam, setAwardedTeam] = useState("teamA")
+  const [awardedTeam, setAwardedTeam] = useState("Team_A")
   const [fouledPlayer, setFouledPlayer] = useState("")
-  const [takeNow, setTakeNow] = useState("yes")
+  const [takeNow, setTakeNow] = useState("set_shot")
 
 
   const onSave = () => {
-    // const type = store.code === "football" ? "kickout" : "puckout"
-    // store.addEvent({ type, team: awardedTeam })
+
+    if (awardedTeam == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select a team.</span>
+      </div>)
+      return
+    } else if (takeNow == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Select if the penalty is taken.</span>
+      </div>)
+      return
+    }
+
+    // store event 
+    store.addEvent({
+      type: 'free',
+      free_type: 'Penalty',
+      free_outcome: takeNow,
+      won_team: awardedTeam,
+    })
 
     store.closeDialogs()
+
+    // if set shot 
+    if (takeNow == 'set_shot') {
+      setTimeout(() => {
+        store.openDialog('shot')
+      }, 500);
+    }
   }
 
   return (
@@ -37,8 +66,8 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="teamA">Team A</SelectItem>
-                <SelectItem value="teamB">Team B</SelectItem>
+                <SelectItem value="Team_A">Team A</SelectItem>
+                <SelectItem value="Team_B">Team B</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -48,7 +77,7 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
             <label className="text-sm font-medium">Fouled Player</label>
             <Select value={fouledPlayer} onValueChange={(v) => setFouledPlayer(v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Select fouled player"/>
+                <SelectValue placeholder="Select fouled player" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="player1">Player 1</SelectItem>
@@ -65,8 +94,8 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
                 <SelectValue placeholder="select an outcome" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="yes">Yes</SelectItem>
-                <SelectItem value="no">No</SelectItem>
+                <SelectItem value="set_shot">Yes</SelectItem>
+                <SelectItem value="play_on">No</SelectItem>
               </SelectContent>
             </Select>
           </div>

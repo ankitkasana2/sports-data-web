@@ -38,7 +38,7 @@ export const SidelineDialog = observer(function SidelineDialog() {
     // store event 
     store.addEvent({
       type: 'free',
-      free_type: 'sideline',
+      free_type: 'Sideline',
       free_outcome: outcome,
       won_team: awardedTeam,
       spot_x: position ? position.x : null,
@@ -50,13 +50,11 @@ export const SidelineDialog = observer(function SidelineDialog() {
     store.closeDialogs()
 
     // if set shot 
-    setTimeout(() => {
-      if (outcome == 'set_shot') {
+    if (outcome == 'set_shot') {
+      setTimeout(() => {
         store.openDialog('shot')
-      }
-    }, 500);
-
-
+      }, 500);
+    }
 
   }
 
