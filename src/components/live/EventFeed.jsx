@@ -26,8 +26,12 @@ export const EventFeed = observer(function EventFeed() {
   const details = (e) => {
     if (e.type === "throw_in") {
       return `Throw-in • Won by ${e.won_team}`
-    }else if(e.type === 'free'){
+    } else if (e.type === 'free') {
       return `${e.free_type} • ${e.won_team} • ${e.free_outcome}`
+    } else if (e.type === 'card') {
+      return `${e.type} • ${e.card_type} • ${e.card_player_id}`
+    } else if (e.type === 'note') {
+      return `${e.type} • ${e.note_text} `
     }
   }
 
@@ -54,7 +58,7 @@ export const EventFeed = observer(function EventFeed() {
               return (
                 <TableRow key={e.id}>
                   <TableCell className="tabular-nums">{secondsToHHMMSS(store.clock.seconds)}</TableCell>
-                  <TableCell className="capitalize">{e.won_team}</TableCell>
+                  <TableCell className="capitalize">{e.won_team ? e.won_team : '—'}</TableCell>
                   <TableCell className="uppercase">{e.type}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 w-full">
@@ -79,7 +83,7 @@ export const EventFeed = observer(function EventFeed() {
                     </div>
                   </TableCell>
                   <TableCell className="uppercase">{e.type == "shot" ? "+1" : "0"}</TableCell>
-                  <TableCell className="capitalize">{e.possession_id}</TableCell>
+                  <TableCell className="capitalize">{e.possession_id ? e.possession_id : '—'}</TableCell>
                   <TableCell className="capitalize">
                     <Popover>
                       <PopoverTrigger asChild>

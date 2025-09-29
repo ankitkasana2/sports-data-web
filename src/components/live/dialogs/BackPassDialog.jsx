@@ -4,6 +4,8 @@ import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { toast } from "sonner"
+import { CircleAlert } from 'lucide-react';
 
 export const BackPassDialog = observer(function BackPassDialog() {
   const { liveMatchStore } = useStores()
@@ -14,8 +16,25 @@ export const BackPassDialog = observer(function BackPassDialog() {
 
 
   const onSave = () => {
-    // const type = store.code === "football" ? "kickout" : "puckout"
-    // store.addEvent({ type, team: executing })
+
+    if (awardedTeam == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select a team.</span>
+      </div>)
+      return
+    }
+
+
+    // store event 
+    // store.addEvent({
+    //   type: 'free',
+    //   free_type: 'ordinary',
+    //   free_outcome: outcome,
+    //   won_team: awardedTeam,
+    //   spot_x: position ? position.x : null,
+    //   spot_y: position ? position.y : null
+    // })
 
     store.closeDialogs()
   }

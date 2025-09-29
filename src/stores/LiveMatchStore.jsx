@@ -276,9 +276,9 @@ class LiveMatchStore {
       ...e,
     }
 
-    console.log('evt', evt)
-
-    this.applyPossessionRules(evt)
+    if (e.type != 'note') {
+      this.applyPossessionRules(evt)
+    }
     this.events.push(evt)
   }
 
@@ -415,7 +415,6 @@ class LiveMatchStore {
   }
 
   closeDialogs() {
-
     this.ui.currentShot.open = false
     this.ui.currentFree.open = false
     this.ui.currentRestart.open = false

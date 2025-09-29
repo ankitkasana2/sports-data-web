@@ -4,6 +4,9 @@ import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Textarea } from "@/components/ui/textarea"
+import { toast } from "sonner"
+import { CircleAlert } from 'lucide-react';
+
 
 export const NoteDialog = observer(function NoteDialog() {
   const { liveMatchStore } = useStores()
@@ -13,8 +16,19 @@ export const NoteDialog = observer(function NoteDialog() {
   const [message, setMessage] = useState('')
 
   const onSave = () => {
-    // const type = store.code === "football" ? "kickout" : "puckout"
-    // store.addEvent({ type, team: executing })
+    if (message == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please write message.</span>
+      </div>)
+      return
+    }
+
+    // store event 
+    store.addEvent({
+      type: 'note',
+      note_text: message
+    })
 
     store.closeDialogs()
   }

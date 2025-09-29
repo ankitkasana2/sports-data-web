@@ -29,15 +29,15 @@ export default function QuickActionCard() {
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-                <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Button className="w-full justify-start bg-transparent" variant="outline" onClick={() => navigate("/live")}>
                     <BarChart3 className="h-4 w-4 mr-2" />
                     Continue Tagging
                 </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Button className="w-full justify-start bg-transparent" variant="outline" onClick={() => navigate("/matches")}>
                     <CalendarDays className="h-4 w-4 mr-2" />
                     Schedule New Match
                 </Button>
-                <Button className="w-full justify-start bg-transparent" variant="outline">
+                <Button className="w-full justify-start bg-transparent" variant="outline" onClick={() => navigate("/teams")}>
                     <Users className="h-4 w-4 mr-2" />
                     Add Team
                 </Button>

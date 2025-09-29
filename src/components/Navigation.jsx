@@ -4,7 +4,8 @@ import { Button } from "./ui/button"
 import { useNavigate } from "react-router-dom"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../stores/StoresProvider"
-import { useEffect,useState } from "react"
+import { useEffect, useState } from "react"
+import { Settings } from 'lucide-react';
 
 function Navigation() {
   const location = useLocation()
@@ -55,10 +56,15 @@ function Navigation() {
                 <span>{label}</span>
               </Link>
             ))}
-            <Button size="sm" onClick={()=>navigate(`live/${match.match_id}`)}>
+
+            {/* resume match button  */}
+            <Button size="sm" onClick={() => navigate(`live/${match.match_id}`)}>
               <RotateCcw className="h-3 w-3 mr-1" />
               Resume
             </Button>
+
+            {/* admin button  */}
+            <Button  onClick={() => navigate(`/admin/reference/venues`)} variant="secondary" className='hover:cursor-pointer'><Settings/>Admin</Button>
           </div>
         </div>
       </div>

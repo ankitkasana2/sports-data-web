@@ -4,6 +4,9 @@ import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { toast } from "sonner"
+import { CircleAlert } from 'lucide-react';
+import { Textarea } from "@/components/ui/textarea"
 
 export const CardDialog = observer(function CardDialog() {
   const { liveMatchStore } = useStores()
@@ -13,11 +16,38 @@ export const CardDialog = observer(function CardDialog() {
   const [cardType, setCardType] = useState("")
   const [team, setTeam] = useState("teamA")
   const [player, setPlayer] = useState("")
+  const [message, setMessage] = useState('')
 
 
   const onSave = () => {
-    // const type = store.code === "football" ? "kickout" : "puckout"
-    // store.addEvent({ type, team: executing })
+    if (team == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select a team.</span>
+      </div>)
+      return
+    } else if (player == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select player.</span>
+      </div>)
+      return
+    } else if (cardType == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select card.</span>
+      </div>)
+      return
+    }
+
+    // store event 
+    store.addEvent({
+      type: 'card',
+      card_player_id: player,
+      card_type: cardType,
+      card_reason: message,
+      won_team: team,
+    })
 
     store.closeDialogs()
   }
@@ -29,7 +59,7 @@ export const CardDialog = observer(function CardDialog() {
           <DialogTitle>Card</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-3">
+        <div className="grid sm:grid-cols-2 gap-3">
           <div className="grid gap-1">
             <label className="text-sm font-medium">Team</label>
             <Select value={team} onValueChange={(v) => setTeam(v)}>
@@ -57,6 +87,7 @@ export const CardDialog = observer(function CardDialog() {
             </Select>
           </div>
 
+          {/* card  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Card Type</label>
             <Select value={cardType} onValueChange={(v) => setCardType(v)}>
@@ -64,11 +95,19 @@ export const CardDialog = observer(function CardDialog() {
                 <SelectValue placeholder="Select card type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="yellow">Yellow</SelectItem>
-                <SelectItem value="red">Red</SelectItem>
-                <SelectItem value="black">Black</SelectItem>
+                <SelectItem value="Y">Yellow</SelectItem>
+                <SelectItem value="R">Red</SelectItem>
+                <SelectItem value="B">Black</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid gap-3 col-span-2">
+            <div className="grid gap-1">
+              <label className="text-sm font-medium">Reason</label>
+              <Textarea placeholder="Type your message here." value={message}
+                onChange={(e) => setMessage(e.target.value)} />
+            </div>
           </div>
         </div>
 
