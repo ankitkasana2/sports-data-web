@@ -92,7 +92,7 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
           {/* team  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Taking team</label>
-            <Select value={executingTeam} onValueChange={(v) => setExecutingTeam(v)}>
+            <Select value={executingTeam} onValueChange={(v) => (setExecutingTeam(v), v==wonTeam?setRetained('true'):setRetained('false'))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -202,7 +202,7 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
           {/* won by  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => setWonTeam(v)}>
+            <Select value={wonTeam} onValueChange={(v) => (setWonTeam(v), v==executingTeam?setRetained('true'):setRetained('false'))}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

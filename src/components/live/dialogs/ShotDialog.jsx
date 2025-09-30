@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Check, ChevronsUpDown } from "lucide-react"
+import { Textarea } from "../../ui/textarea"
+import { toast } from "sonner"
+import { CircleAlert, FileWarning } from 'lucide-react';
 import { cn } from "@/lib/utils"
 import {
   Command,
@@ -47,25 +50,24 @@ const frameworks = [
 
 
 
-
-
-
-
 export const ShotDialog = observer(function ShotDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
   const open = !!store.ui.currentShot.open
-  const [result, setResult] = useState("point")
+  const [result, setResult] = useState("")
   const [shotType, setShotType] = useState("open_play")
   const [position, setPosition] = useState(null)
-  const [team, setTeam] = useState("teamA")
-  const [arcStatus, setArcStatus] = useState("none")
+  const [team, setTeam] = useState("home")
   const [shooter, setShooter] = useState('')
   const [openShooter, setOpenShooter] = useState(false)
-  const [pressure, setPressure] = useState('')
-  const [badge, setBadge] = useState('none')
+  const [pressure, setPressure] = useState()
   const [assist, setAssist] = useState('')
   const [openAssist, setOpenAssist] = useState(false)
+  const [calculation, setCalculation] = useState({
+    shot_distance_m: 'none',
+    shot_distance_band: 'none',
+    arc_status: 'none',
+  })
 
   useEffect(() => {
     if (!open) return
@@ -81,23 +83,99 @@ export const ShotDialog = observer(function ShotDialog() {
     return () => window.removeEventListener("keydown", h)
   }, [open])
 
+
+  // calculation 
+  useEffect(() => {
+    if (position != null) {
+
+      let distance = 0
+      let arc = ''
+      if (team == 'home') {
+        distance = Math.round(Math.sqrt((position.x - 2) ** 2 + (position.y - 49) ** 2))
+        arc = position.x < 30 ? 'inside_40' : position.x >= 30 && position.x <= 32 ? 'on_40' : position.x > 32 ? 'outside_40' : 'none'
+      } else {
+        distance = Math.round(Math.sqrt((position.x - 95) ** 2 + (position.y - 49) ** 2))
+        arc = position.x > 68.5 ? 'inside_40' : position.x <= 68.5 && position.x >= 67.5 ? 'on_40' : position.x < 67.5 ? 'outside_40' : 'none'
+      }
+
+      setCalculation(prev => ({
+        ...prev,
+        shot_distance_m: distance, // or whatever value
+        shot_distance_band: distance <= 20 ? '0-20' : distance > 20 && distance <= 35 ? "21-35" : distance > 36 && distance <= 55 ? '36-55' : distance > 55 ? "56+" : 'none',
+        arc_status: arc,
+      }));
+
+    }
+
+  }, [position, team])
+
+
   const onSave = () => {
+
+    if (team == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select a team.</span>
+      </div>)
+      return
+    } else if (result == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select result.</span>
+      </div>)
+      return
+    } else if (shotType == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select shot-type.</span>
+      </div>)
+      return
+    } else if (position == null) {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select position.</span>
+      </div>)
+      return
+    }
+
     // Simple alternation for team side demo: home/away
     const shotCount = store.events.filter((e) => e.type === "shot").length
-    const team = shotCount % 2 === 0 ? "home" : "away"
+    const team2 = shotCount % 2 === 0 ? "home" : "away"
 
-    // Record the shot event
-    store.addEvent({ type: "shot", team, result, shot_type: shotType, position })
-
-    // store position 
-
+    // store position
     store.setDialogXY("shot", position)
 
     // Update scoreboard if point/goal
-    if (result === "goal") store.addScore(team, "goal")
-    if (result === "point") store.addScore(team, "point")
+    if (store.code == 'football') {
+      if (result === "goal") store.addScore(team, "goal")
+      if (result === "point") store.addScore(team, "point")
+    } else {
+
+    }
+
+
+    // Record the shot event
+    store.addEvent({ type: "shot", team2, result, shot_type: shotType, position })
+
+
+
 
     store.closeDialogs()
+
+    setResult('')
+    setShotType('open_play')
+    setPosition(null)
+    setTeam('home')
+    setShooter('')
+    setOpenShooter(false)
+    setPressure('')
+    setAssist('')
+    setOpenAssist(false)
+    setCalculation({
+      shot_distance_m: 'none',
+      shot_distance_band: 'none',
+      arc_status: 'none',
+    })
   }
 
   return (
@@ -119,17 +197,23 @@ export const ShotDialog = observer(function ShotDialog() {
               Click pitch to set XY. Quick keys: G goal, P point, W wide, V saved, B blocked, D dropped.
             </div>
 
-            <div className="flex justify-between">
-              {/* distance band  */}
+            <div className="grid grid-cols-2">
+              {/* shot_distance_m   */}
               <div>
-                <Label className="text-sm font-medium">Distance band</Label>
-                <Badge>{badge}</Badge>
+                <Label className="text-sm font-medium">Shot_distance_m</Label>
+                <Badge>{calculation.shot_distance_m}</Badge>
               </div>
 
-              {/* arc_status  */}
+              {/* shot_distance_band   */}
+              <div>
+                <Label className="text-sm font-medium">Shot_distance_band</Label>
+                <Badge>{calculation.shot_distance_band}</Badge>
+              </div>
+
+              {/* arcstatus */}
               {store.code == 'football' && <div className="grid gap-1">
-                <Label className="text-sm font-medium">Arc Status</Label>
-                <Badge>{arcStatus}</Badge>
+                <Label className="text-sm font-medium">Arc status</Label>
+                <Badge>{calculation.arc_status}</Badge>
               </div>}
             </div>
 
@@ -145,8 +229,8 @@ export const ShotDialog = observer(function ShotDialog() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="teamA">Team A</SelectItem>
-                    <SelectItem value="teamB">Team B</SelectItem>
+                    <SelectItem value="home">Home</SelectItem>
+                    <SelectItem value="away">Away</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

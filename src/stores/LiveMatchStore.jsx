@@ -259,8 +259,11 @@ class LiveMatchStore {
 
   addScore(team, kind) {
     this.pushHistory()
-    if (kind === "goal") this.score[team].goals += 1
-    else this.score[team].points += 1
+    if (kind === "goal") {
+      this.score[team].goals += 1;
+    } else {
+      this.score[team].points += 1;
+    }
     // close current possession on score (per rules)
     this.closeCurrentPossessionOn(team)
   }
