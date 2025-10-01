@@ -13,7 +13,7 @@ import { useEffect } from "react"
 import path from "path"
 
 const tabs = [
-    { value: "venues", label: "Venues", path: "/admin/reference/venues" },
+    { value: "venues", label: "Venues", path: "/admin/reference/Venues" },
     { value: "referees", label: "Referees", path: "/admin/reference/referees" },
     { value: "competitions", label: "Competitions", path: "/admin/reference/competitions" },
     { value: "stages", label: "Stages", path: "/admin/reference/stages" },

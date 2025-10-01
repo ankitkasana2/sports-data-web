@@ -8,7 +8,7 @@ import Matches from "./pages/matches/Matches"
 import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
 import Analytics from "./pages/analytics/Analytics"
-import VenuesPage from "./pages/admin/reference/venues"
+import VenuesPage from "./pages/admin/reference/Venues"
 
 
 function App() {
