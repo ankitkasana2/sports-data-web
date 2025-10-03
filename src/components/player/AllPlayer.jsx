@@ -174,7 +174,7 @@ function PlayersPage() {
         <Check className="text-green-800" /><span>Player has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
-      navigate('/players')
+      navigate(0)
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Player not created.</span>

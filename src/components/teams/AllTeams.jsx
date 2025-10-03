@@ -103,7 +103,7 @@ function TeamsPage() {
   const navigate = useNavigate()
   const [teams, setTeams] = useState([])
 
-  
+
 
 
   // fetching team 
@@ -219,7 +219,7 @@ function TeamsPage() {
         <Check className="text-green-800" /><span>Team has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
-      navigate('/teams')
+      navigate(0)
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Team not created.</span>
