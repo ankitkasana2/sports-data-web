@@ -23,7 +23,6 @@ import { Badge } from "@/components/ui/badge"
 import { nanoid } from 'nanoid';
 import { toast } from "sonner"
 import { Check, Ban } from 'lucide-react';
-import { env } from "process"
 
 
 
@@ -220,7 +219,7 @@ function TeamsPage() {
         <Check className="text-green-800" /><span>Team has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
-      navigate(`${FRONT_END_PATH}/teams`);
+      navigate(0);
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Team not created.</span>
