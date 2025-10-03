@@ -30,8 +30,6 @@ import { autorun } from "mobx"
 function validatePlayerRecord(rec) {
   const errors = []
 
-  console.log("rec", rec)
-
   const id = `PLAYER_${nanoid(6)}`;
 
   const name = (rec.name || "").trim()
@@ -176,7 +174,7 @@ function PlayersPage() {
         <Check className="text-green-800" /><span>Player has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
-      navigate(0);
+      window.location.reload()
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Player not created.</span>
