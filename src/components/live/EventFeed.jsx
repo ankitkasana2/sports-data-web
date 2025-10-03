@@ -57,7 +57,7 @@ export const EventFeed = observer(function EventFeed() {
             {rows.map((e, idx) => {
               return (
                 <TableRow key={e.id}>
-                  <TableCell className="tabular-nums">{secondsToHHMMSS(store.clock.seconds)}</TableCell>
+                  <TableCell className="tabular-nums">{e.ts}</TableCell>
                   <TableCell className="capitalize">{e.won_team ? e.won_team : '—'}</TableCell>
                   <TableCell className="uppercase">{e.type}</TableCell>
                   <TableCell>
@@ -82,7 +82,7 @@ export const EventFeed = observer(function EventFeed() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="uppercase">{e.type == "shot" ? "+1" : "0"}</TableCell>
+                  <TableCell className="uppercase">{'1'}</TableCell>
                   <TableCell className="capitalize">{e.possession_id ? e.possession_id : '—'}</TableCell>
                   <TableCell className="capitalize">
                     <Popover>

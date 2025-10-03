@@ -64,7 +64,7 @@ function Navigation() {
             </Button>
 
             {/* admin button  */}
-            <Button  onClick={() => navigate(`/admin/reference/venues`)} variant="secondary" className='hover:cursor-pointer'><Settings/>Admin</Button>
+            <Button  onClick={() => navigate(`/admin/reference/Venues`)} variant="secondary" className='hover:cursor-pointer'><Settings/>Admin</Button>
           </div>
         </div>
       </div>

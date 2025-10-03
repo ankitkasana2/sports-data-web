@@ -25,7 +25,7 @@ export default function TopBar() {
     const pathname = location.pathname
 
     useEffect(() => {
-      console.log(location)
+      console.log(tabs)
     }, [])
     
 
