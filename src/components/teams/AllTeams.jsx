@@ -219,7 +219,7 @@ function TeamsPage() {
         <Check className="text-green-800" /><span>Team has been created Successfully.</span>
       </div>)
       setOpenAdd(false)
-      window.location.reload()
+      navigate('/teams')
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Team not created.</span>
