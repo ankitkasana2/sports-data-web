@@ -277,6 +277,8 @@ class LiveMatchStore {
       ...e,
     }
 
+    console.log("evt", evt)
+
     if ((e.type && e.type !== 'note') || (e.event_type && e.event_type !== 'note')) {
       this.applyPossessionRules(evt)
     }

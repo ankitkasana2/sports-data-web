@@ -1,83 +1,55 @@
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ArrowUpDown, MapPin } from "lucide-react"
 import { Button } from "../../../components/ui/button"
 import { Badge } from "../../../components/ui/badge"
 import { DataTable, createActionsColumn } from "../../../components/admin/dataTable"
 import { FormDialog } from "../../../components/admin/formDialog"
 import TopBar from "../../../components/admin/TabBar"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@/stores/StoresProvider"
+import { toJS } from "mobx"
+import { nanoid } from 'nanoid';
+import { toast } from "sonner"
+import { Check, Ban } from 'lucide-react';
 
-// Mock data - in real app this would come from API/database
-const mockVenues = [
-  {
-    id: "1",
-    name: "Croke Park",
-    type: "Stadium",
-    location: "Dublin",
-    capacity: 82300,
-    notes: "GAA Headquarters",
-    status: "active",
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-01-15T10:00:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "2",
-    name: "Wexford Park",
-    type: "County Ground",
-    location: "Wexford",
-    capacity: 25000,
-    notes: "Home of Wexford GAA",
-    status: "active",
-    created_at: "2024-01-16T14:30:00Z",
-    updated_at: "2024-01-16T14:30:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "3",
-    name: "Semple Stadium",
-    type: "Provincial Ground",
-    location: "Thurles, Tipperary",
-    capacity: 45000,
-    notes: "Munster GAA Headquarters",
-    status: "active",
-    created_at: "2024-01-17T09:15:00Z",
-    updated_at: "2024-01-17T09:15:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-]
 
-const venueFormFields = [
-  { key: "name", label: "Name", type: "text", required: true },
-  {
-    key: "type",
-    label: "Type",
-    type: "select",
-    required: true,
-    options: [
-      { value: "Stadium", label: "Stadium" },
-      { value: "County Ground", label: "County Ground" },
-      { value: "Provincial Ground", label: "Provincial Ground" },
-      { value: "Club Ground", label: "Club Ground" },
-      { value: "Training Ground", label: "Training Ground" },
-    ],
-  },
-  { key: "location", label: "Location", type: "text", required: true },
-  { key: "capacity", label: "Capacity", type: "text" },
-  { key: "notes", label: "Notes", type: "textarea" },
-]
 
-export default function VenuesPage() {
-  const [venues, setVenues] = useState(mockVenues)
+const VenuesPage = () => {
+  const { venuesStore, teamsStore } = useStores()
+  const [venues, setVenues] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingVenue, setEditingVenue] = useState(null)
+
+
+  const venueFormFields = [
+    { key: "name", label: "Name", type: "text", required: true },
+    {
+      key: "type",
+      label: "Type",
+      type: "select",
+      required: true,
+      options: [
+        { value: "Grass", label: "Grass" },
+        { value: "Artificial", label: "Artificial" },
+      ],
+    },
+    { key: "location", label: "Location", type: "text", required: true },
+    { key: "capacity", label: "Capacity", type: "text" },
+    {
+      key: "home_team", label: "Home Team", type: "select", options: teamsStore.allTeams.map(team => ({
+        value: team.team_name,
+        label: team.team_name
+      }))
+
+    },
+  ]
+
 
   const handleAdd = () => {
     setEditingVenue(null)
     setDialogOpen(true)
+    teamsStore.getAllTeams()
   }
 
   const handleEdit = (venue) => {
@@ -92,7 +64,7 @@ export default function VenuesPage() {
     )
   }
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     const now = new Date().toISOString()
 
     if (editingVenue) {
@@ -113,25 +85,39 @@ export default function VenuesPage() {
     } else {
       // Add new venue
       const newVenue = {
-        id: (venues.length + 1).toString(),
+        id: `Venue_${nanoid(6)}`,
         name: data.name,
         type: data.type,
         location: data.location,
-        capacity: data.capacity ? Number.parseInt(data.capacity) : undefined,
-        notes: data.notes,
-        status: "active",
-        created_at: now,
-        updated_at: now,
-        created_by: "current_user",
-        updated_by: "current_user",
+        capacity: data.capacity || undefined,
+        home_team: data.home_team,
       }
-      setVenues((prev) => [...prev, newVenue])
+
+      const created = await venuesStore.createVenue(newVenue)
+
+      if (created) {
+        toast(<div className="flex gap-3">
+          <Check className="text-green-800" /><span>Venue has been created Successfully.</span>
+        </div>)
+        navigate(0)
+      } else {
+        toast(<div className="flex gap-3">
+          <Ban className="text-red-700" /><span>Venue not created.</span>
+        </div>)
+      }
     }
   }
 
   const columns = [
     {
-      accessorKey: "name",
+      accessorKey: "venue_id",
+      header: "Id",
+      cell: ({ row }) => (
+        <div className="text-xs">{row.getValue("venue_id")}</div>
+      ),
+    },
+    {
+      accessorKey: "venue_name",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -143,10 +129,10 @@ export default function VenuesPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
+      cell: ({ row }) => <div className="font-medium">{row.getValue("venue_name")}</div>,
     },
     {
-      accessorKey: "type",
+      accessorKey: "surface_type",
       header: ({ column }) => (
         <Button
           variant="ghost"
@@ -157,7 +143,7 @@ export default function VenuesPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <Badge variant="secondary">{row.getValue("type")}</Badge>,
+      cell: ({ row }) => <Badge variant="secondary">{row.getValue("surface_type")}</Badge>,
     },
     {
       accessorKey: "location",
@@ -181,18 +167,6 @@ export default function VenuesPage() {
       cell: ({ row }) => {
         const capacity = row.getValue("capacity")
         return capacity ? capacity.toLocaleString() : "—"
-      },
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("status")
-        return (
-          <Badge variant={status === "active" ? "default" : "secondary"}>
-            {status}
-          </Badge>
-        )
       },
     },
     {
@@ -221,7 +195,7 @@ export default function VenuesPage() {
 
   return (
     <div className="space-y-6 p-10">
-      <TopBar/>
+      <TopBar />
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Venues</h2>
@@ -233,8 +207,8 @@ export default function VenuesPage() {
 
       <DataTable
         columns={columns}
-        data={venues.filter((v) => v.status === "active")}
-        searchKey="name"
+        data={venuesStore.allVenues}
+        searchKey="venue_name"
         onAdd={handleAdd}
         addLabel="Add Venue"
       />
@@ -256,3 +230,5 @@ export default function VenuesPage() {
     </div>
   )
 }
+
+export default observer(VenuesPage)

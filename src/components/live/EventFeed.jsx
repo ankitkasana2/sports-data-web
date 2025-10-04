@@ -67,7 +67,7 @@ export const EventFeed = observer(function EventFeed() {
                       {e.type === "shot" && (
                         <Select
                           onValueChange={() => { }}
-                          defaultValue={e.result}
+                          defaultValue={e.shot_result}
                         >
                           <SelectTrigger className="h-8 w-[90px]">
                             <SelectValue />
@@ -82,7 +82,7 @@ export const EventFeed = observer(function EventFeed() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="uppercase">{'1'}</TableCell>
+                  <TableCell className="uppercase">{e.shot_result == 'goal' ? '+3' : e.shot_result == 'point' ? '+1' : '0'}</TableCell>
                   <TableCell className="capitalize">{e.possession_id ? e.possession_id : '—'}</TableCell>
                   <TableCell className="capitalize">
                     <Popover>

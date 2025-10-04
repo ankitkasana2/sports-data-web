@@ -9,6 +9,9 @@ import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
 import Analytics from "./pages/analytics/Analytics"
 import VenuesPage from "./pages/admin/reference/Venues"
+import RefereesPage from "./pages/admin/reference/referees"
+import StagesPage from "./pages/admin/reference/stages"
+import CompetitionsPage from "./pages/admin/reference/competitions"
 
 
 function App() {
@@ -23,6 +26,9 @@ function App() {
         <Route path="/analytics" element={<Analytics />} />
         <Route path="/players" element={<Players />} />
         <Route path="/admin/reference/venues" element={<VenuesPage />} />
+        <Route path="/admin/reference/referees" element={<RefereesPage/>}/>
+        <Route path="/admin/reference/stages" element={<StagesPage/>}/>
+        <Route path="/admin/reference/competitions" element={<CompetitionsPage/>}/>
       </Routes>
     </div>
   )

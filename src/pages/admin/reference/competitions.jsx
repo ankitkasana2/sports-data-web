@@ -3,8 +3,9 @@ import { useState } from "react"
 import { ArrowUpDown, Trophy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DataTable, createActionsColumn } from "@/components/admin/data-table"
-import { FormDialog } from "@/components/admin/form-dialog"
+import { DataTable, createActionsColumn } from "@/components/admin/dataTable"
+import { FormDialog } from "@/components/admin/formDialog"
+import TopBar from "../../../components/admin/TabBar"
 
 // Mock data - in real app this would come from API/database
 const mockCompetitions = [
@@ -126,14 +127,14 @@ export default function CompetitionsPage() {
         prev.map((c) =>
           c.id === editingCompetition.id
             ? {
-                ...c,
-                ...data,
-                half_length_sec: Number.parseInt(data.half_length_sec),
-                extra_time_possible: data.extra_time_possible || false,
-                penalty_shootout_possible: data.penalty_shootout_possible || false,
-                updated_at: now,
-                updated_by: "current_user",
-              }
+              ...c,
+              ...data,
+              half_length_sec: Number.parseInt(data.half_length_sec),
+              extra_time_possible: data.extra_time_possible || false,
+              penalty_shootout_possible: data.penalty_shootout_possible || false,
+              updated_at: now,
+              updated_by: "current_user",
+            }
             : c,
         ),
       )
@@ -271,7 +272,8 @@ export default function CompetitionsPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-10">
+      <TopBar/>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Competitions</h2>

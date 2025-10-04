@@ -3,8 +3,9 @@ import { useState } from "react"
 import { ArrowUpDown, Castle as Whistle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { DataTable, createActionsColumn } from "@/components/admin/data-table"
-import { FormDialog } from "@/components/admin/form-dialog"
+import { DataTable, createActionsColumn } from "@/components/admin/dataTable"
+import { FormDialog } from "@/components/admin/formDialog"
+import TopBar from "../../../components/admin/TabBar"
 
 // Mock data - in real app this would come from API/database
 const mockReferees = [
@@ -248,7 +249,8 @@ export default function RefereesPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-10">
+      <TopBar/>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Referees</h2>

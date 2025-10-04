@@ -155,7 +155,7 @@ export const ShotDialog = observer(function ShotDialog() {
 
 
     // Record the shot event
-    store.addEvent({ type: "shot", team2, result, shot_type: shotType, position })
+    store.addEvent({ type: "shot", won_team:team, shot_result: result, shot_type: shotType, position })
 
 
 
