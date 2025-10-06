@@ -12,7 +12,7 @@ import { toJS } from "mobx"
 import { nanoid } from 'nanoid';
 import { toast } from "sonner"
 import { Check, Ban } from 'lucide-react';
-
+import { useNavigate } from "react-router-dom"
 
 
 const VenuesPage = () => {
@@ -20,6 +20,7 @@ const VenuesPage = () => {
   const [venues, setVenues] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingVenue, setEditingVenue] = useState(null)
+  const navigate = useNavigate()
 
 
   const venueFormFields = [

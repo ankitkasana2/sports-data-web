@@ -26,6 +26,23 @@ class RefereesStore {
                 });
         }, 500);
     }
+
+
+    // create referee
+    async createReferee(referee) {
+        try {
+            const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/createReferee`, referee);
+
+            if (response.data.success) {
+                return true;  // success
+            } else {
+                return false; // failed
+            }
+        } catch (error) {
+            console.error("Error creating referee:", error);
+            return false;
+        }
+    }
 }
 
 export const refereesStore = new RefereesStore()

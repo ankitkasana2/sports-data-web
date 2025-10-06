@@ -14,7 +14,7 @@ import { useEffect } from "react"
 
 const tabs = [
     { value: "venues", label: "Venues", path: "/admin/reference/Venues" },
-    { value: "referees", label: "Referees", path: "/admin/reference/referees" },
+    { value: "referees", label: "Referees", path: "/admin/reference/Referees" },
     { value: "competitions", label: "Competitions", path: "/admin/reference/competitions" },
     { value: "stages", label: "Stages", path: "/admin/reference/stages" },
 ]

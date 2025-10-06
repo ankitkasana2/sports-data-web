@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { DataTable, createActionsColumn } from "@/components/admin/dataTable"
 import { FormDialog } from "@/components/admin/formDialog"
 import TopBar from "../../../components/admin/TabBar"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@/stores/StoresProvider"
+import { toJS } from "mobx"
+import { nanoid } from 'nanoid';
+import { toast } from "sonner"
+import { Check, Ban } from 'lucide-react';
+import { useNavigate } from "react-router-dom"
 
 // Mock data - in real app this would come from API/database
 const mockReferees = [
@@ -59,39 +66,28 @@ const mockReferees = [
 const refereeFormFields = [
   { key: "name", label: "Full Name", type: "text", required: true },
   {
-    key: "grade",
-    label: "Grade",
-    type: "select",
+    key: "association",
+    label: "Association",
+    type: "text",
     required: true,
-    options: [
-      { value: "National", label: "National" },
-      { value: "Provincial", label: "Provincial" },
-      { value: "County", label: "County" },
-      { value: "Club", label: "Club" },
-      { value: "Development", label: "Development" },
-    ],
   },
-  { key: "county", label: "County", type: "text", required: true },
-  { key: "phone", label: "Phone", type: "text" },
-  { key: "email", label: "Email", type: "text" },
-  { key: "experience_years", label: "Years Experience", type: "text" },
   {
-    key: "specialization",
-    label: "Specialization",
-    type: "select",
-    options: [
-      { value: "Hurling", label: "Hurling" },
-      { value: "Football", label: "Football" },
-      { value: "Camogie", label: "Camogie" },
-      { value: "Ladies Football", label: "Ladies Football" },
+    key: "level", label: "Level", type: "select", required: true, options: [
+      { value: "National", label: "National" },
+      { value: "Club", label: "Club" },
+      { value: "County", label: "County" },
+      { value: "Provincial", label: "Provincial" },
     ],
   },
+  { key: "experience_years", label: "Years Experience", type: "text", required: true },
 ]
 
-export default function RefereesPage() {
+const RefereesPage = () => {
+  const { venuesStore, teamsStore, refereesStore } = useStores()
   const [referees, setReferees] = useState(mockReferees)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingReferee, setEditingReferee] = useState(null)
+  const navigate = useNavigate()
 
   const handleAdd = () => {
     setEditingReferee(null)
@@ -108,7 +104,7 @@ export default function RefereesPage() {
     setReferees((prev) => prev.map((r) => (r.id === referee.id ? { ...r, status: "inactive" } : r)))
   }
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     const now = new Date().toISOString()
 
     if (editingReferee) {
@@ -117,38 +113,48 @@ export default function RefereesPage() {
         prev.map((r) =>
           r.id === editingReferee.id
             ? {
-                ...r,
-                ...data,
-                experience_years: data.experience_years ? Number.parseInt(data.experience_years) : undefined,
-                specialization: data.specialization ? [data.specialization] : [],
-                updated_at: now,
-                updated_by: "current_user",
-              }
+              ...r,
+              ...data,
+              experience_years: data.experience_years ? Number.parseInt(data.experience_years) : undefined,
+              specialization: data.specialization ? [data.specialization] : [],
+              updated_at: now,
+              updated_by: "current_user",
+            }
             : r,
         ),
       )
     } else {
       // Add new referee
       const newReferee = {
-        id: (referees.length + 1).toString(),
+        id: `Referee_${nanoid(6)}`,
         name: data.name,
-        grade: data.grade,
-        county: data.county,
-        phone: data.phone,
-        email: data.email,
-        experience_years: data.experience_years ? Number.parseInt(data.experience_years) : undefined,
-        specialization: data.specialization ? [data.specialization] : [],
-        status: "active",
-        created_at: now,
-        updated_at: now,
-        created_by: "current_user",
-        updated_by: "current_user",
+        association: data.association,
+        level: data.level,
+        experience_years: data.experience_years,
       }
-      setReferees((prev) => [...prev, newReferee])
+      const created = await refereesStore.createReferee(newReferee)
+
+      if (created) {
+        toast(<div className="flex gap-3">
+          <Check className="text-green-800" /><span>Referee has been created Successfully.</span>
+        </div>)
+        navigate(0)
+      } else {
+        toast(<div className="flex gap-3">
+          <Ban className="text-red-700" /><span>Referee not created.</span>
+        </div>)
+      }
     }
   }
 
   const columns = [
+    {
+      accessorKey: "referee_id",
+      header: "Id",
+      cell: ({ row }) => (
+        <div className="text-xs">{row.getValue("referee_id")}</div>
+      ),
+    },
     {
       accessorKey: "name",
       header: ({ column }) => (
@@ -165,43 +171,23 @@ export default function RefereesPage() {
       cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
     },
     {
-      accessorKey: "grade",
+      accessorKey: "association",
       header: ({ column }) => (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           className="h-8 px-2"
         >
-          Grade
+          Association
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => {
-        const grade = row.getValue("grade")
-        const variant = grade === "National" ? "default" : grade === "Provincial" ? "secondary" : "outline"
-        return <Badge variant={variant}>{grade}</Badge>
-      },
+      cell: ({ row }) => <div className="font-medium">{row.getValue("association")}</div>,
     },
     {
-      accessorKey: "county",
-      header: "County",
-      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("county")}</div>,
-    },
-    {
-      accessorKey: "specialization",
-      header: "Specialization",
-      cell: ({ row }) => {
-        const specializations = row.getValue("specialization") || []
-        return (
-          <div className="flex gap-1">
-            {specializations.map((spec, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {spec}
-              </Badge>
-            ))}
-          </div>
-        )
-      },
+      accessorKey: "level",
+      header: "Level",
+      cell: ({ row }) => <div className="font-medium">{row.getValue("level")}</div>,
     },
     {
       accessorKey: "experience_years",
@@ -221,10 +207,10 @@ export default function RefereesPage() {
       },
     },
     {
-      accessorKey: "status",
+      accessorKey: "active_flag",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.getValue("status")
+        const status = row.getValue("active_flag")
         return <Badge variant={status === "active" ? "default" : "secondary"}>{status}</Badge>
       },
     },
@@ -250,7 +236,7 @@ export default function RefereesPage() {
 
   return (
     <div className="space-y-6 p-10">
-      <TopBar/>
+      <TopBar />
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Referees</h2>
@@ -260,7 +246,7 @@ export default function RefereesPage() {
 
       <DataTable
         columns={columns}
-        data={referees.filter((r) => r.status === "active")}
+        data={refereesStore.allRefrees}
         searchKey="name"
         onAdd={handleAdd}
         addLabel="Add Referee"
@@ -279,3 +265,5 @@ export default function RefereesPage() {
     </div>
   )
 }
+
+export default observer(RefereesPage)
