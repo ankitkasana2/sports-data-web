@@ -1,4 +1,7 @@
-import { Routes, Route } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
+import AnalyticsLayout from "./pages/analytics/Layout"
+import AnalyticsPage from '@/components/analytics/AnalyticsPage'
+import TeamsAnalyticsPage from "./pages/analytics/Teams"
 import Navigation from "./components/Navigation"
 import Home from "./pages/Home"
 import HomePage from "./pages/Home"
@@ -23,12 +26,21 @@ function App() {
         <Route path="/matches" element={<Matches />} />
         <Route path="/live" element={<LiveMatchesList />} />
         <Route path="/live/:matchId" element={<MatchTagging />} />
-        <Route path="/analytics" element={<Analytics />} />
         <Route path="/players" element={<Players />} />
         <Route path="/admin/reference/venues" element={<VenuesPage />} />
-        <Route path="/admin/reference/referees" element={<RefereesPage/>}/>
-        <Route path="/admin/reference/stages" element={<StagesPage/>}/>
-        <Route path="/admin/reference/competitions" element={<CompetitionsPage/>}/>
+        <Route path="/admin/reference/referees" element={<RefereesPage />} />
+        <Route path="/admin/reference/stages" element={<StagesPage />} />
+        <Route path="/admin/reference/competitions" element={<CompetitionsPage />} />
+
+
+        {/* ✅ Analytics Section (with shared LeftMenu) */}
+        <Route path="/analytics" element={<AnalyticsLayout />}>
+          <Route index element={<AnalyticsPage />} />
+          <Route path="teams" element={<TeamsAnalyticsPage />} />
+          {/* <Route path="venues" element={<VenuesPage />} />
+          <Route path="referees" element={<RefereesPage />} /> */}
+          {/* add more analytics subpages as needed */}
+        </Route>
       </Routes>
     </div>
   )
