@@ -9,7 +9,7 @@ import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
 import Analytics from "./pages/analytics/Analytics"
 import VenuesPage from "./pages/admin/reference/Venues"
-import RefereesPage from "./pages/admin/reference/referees"
+import RefereesPage from "./pages/admin/reference/Referees"
 import StagesPage from "./pages/admin/reference/stages"
 import CompetitionsPage from "./pages/admin/reference/competitions"
 
