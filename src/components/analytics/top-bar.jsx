@@ -25,29 +25,8 @@ export default function TopBar({
 }) {
   const sampleOptions = useMemo(() => ["Season", "Last 5", "Last 10", "Custom"], [])
   return (
-    <div className="sticky top-0 z-30 border-b bg-background/80 backdrop-blur">
+    <div className="sticky top-30 z-30 border-b bg-background/80 backdrop-blur">
       <div className="px-3 md:px-4 py-2 flex flex-col gap-2 md:gap-3">
-        <div className="flex items-center gap-2 md:gap-3">
-          <Select value={sampleWindow} onValueChange={onSampleWindowChange}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Sample window" />
-            </SelectTrigger>
-            <SelectContent>
-              {sampleOptions.map((opt) => (
-                <SelectItem key={opt} value={opt}>
-                  {opt}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <div className="hidden md:flex items-center gap-2 ml-auto">
-            <Badge variant="outline">Code: Auto</Badge>
-            <Badge variant="outline">Stage: All</Badge>
-            <Badge variant="outline">Grade: A</Badge>
-          </div>
-        </div>
-
         <div className="flex items-center gap-2 md:gap-3">
           <ViewToggle value={view} onChange={onViewChange} />
           <RateModeToggle value={rateMode} onChange={onRateModeChange} />

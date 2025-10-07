@@ -7,8 +7,53 @@ import ProfilePanel from "@/components/analytics/profile-panel"
 import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/analytics/data/mock"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import RefereeAnalyticsTable from "../../components/analytics/referees/referee-table"
 
-export default function TeamsAnalyticsPage() {
+const refereeData = [
+  {
+    name: "Ref A",
+    matches: 6,
+    freesPer100: 12,
+    cardsPer100: 1.5,
+    pointsFromFreesPer100: 8,
+    advances50mPer10OppKickouts: 3,
+    kickoutNonCrossing40mPct: 60,
+    pace: 35,
+    addedTimePerHalf: 90,
+    closeGamePct: 40,
+    overUnderTendency: "Over",
+  },
+  {
+    name: "Ref B",
+    matches: 2, // small sample
+    freesPer100: 10,
+    cardsPer100: 1.0,
+    pointsFromFreesPer100: 6,
+    advances50mPer10OppKickouts: 2,
+    kickoutNonCrossing40mPct: 55,
+    pace: 32,
+    addedTimePerHalf: 85,
+    closeGamePct: 35,
+    overUnderTendency: "Under",
+  },
+  {
+    name: "Ref C",
+    matches: 5,
+    freesPer100: 14,
+    cardsPer100: 2.0,
+    pointsFromFreesPer100: 9,
+    advances50mPer10OppKickouts: 4,
+    kickoutNonCrossing40mPct: 65,
+    pace: 38,
+    addedTimePerHalf: 95,
+    closeGamePct: 45,
+    overUnderTendency: "Over",
+  },
+];
+
+
+
+export default function RefereeAnalyticsPage() {
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
@@ -82,7 +127,7 @@ export default function TeamsAnalyticsPage() {
     setSavedViews(next)
     try {
       localStorage.setItem("analytics_saved_views", JSON.stringify(next))
-    } catch { }
+    } catch {}
   }
 
   function applySavedView(v) {
@@ -102,6 +147,7 @@ export default function TeamsAnalyticsPage() {
 
   return (
     <>
+
       <Card className="border-0 rounded-none">
         <div className="p-3 md:p-4">
           <Controls
@@ -131,20 +177,7 @@ export default function TeamsAnalyticsPage() {
       </Card>
 
       <div className="p-3 md:p-4">
-        <TeamsTable
-          rows={rows}
-          view={view}
-          rateMode={rateMode}
-          opponentAdjusted={opponentAdjusted}
-          activeGroups={activeGroups}
-          showDiff={showDiff}
-          showDelta={showDelta}
-          showPercentile={showPercentile}
-          visibleColumns={visibleColumns}
-          sort={sort}
-          onSortChange={setSort}
-          onRowClick={setSelectedTeam}
-        />
+        <RefereeAnalyticsTable data={refereeData}/>
       </div>
 
       <ProfilePanel

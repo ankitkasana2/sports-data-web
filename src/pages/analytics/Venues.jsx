@@ -2,13 +2,63 @@ import { useMemo, useState } from "react"
 import TopBar from "@/components/analytics/top-bar"
 import Controls from "@/components/analytics/controls"
 import ColumnGroups from "@/components/analytics/column-groups"
-import TeamsTable from "@/components/analytics/teams-table"
+import VenueAnalyticsTable from "../../components/analytics/venues/venue-table"
 import ProfilePanel from "@/components/analytics/profile-panel"
 import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/analytics/data/mock"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
-export default function TeamsAnalyticsPage() {
+const venueData = [
+  {
+    name: "Croke Park",
+    matches: 5,
+    scoringIndex: 102,
+    pointsPer100: 45,
+    goalsPer100: 5,
+    freeConversionPct: 80,
+    twoPtAttemptRatePct: 30,
+    pace: 55,
+    ballInPlayPct: 60,
+    closeGamePct: 40,
+    refInteractions: 3,
+    nightDay: "Night",
+    earlyLateSeason: "Early",
+  },
+  {
+    name: "Semple Stadium",
+    matches: 2, // <3 matches → greyed out
+    scoringIndex: 98,
+    pointsPer100: 42,
+    goalsPer100: 4,
+    freeConversionPct: 75,
+    twoPtAttemptRatePct: 25,
+    pace: 50,
+    ballInPlayPct: 58,
+    closeGamePct: 35,
+    refInteractions: 2,
+    nightDay: "Day",
+    earlyLateSeason: "Late",
+  },
+  {
+    name: "Pearse Stadium",
+    matches: 6,
+    scoringIndex: 105,
+    pointsPer100: 48,
+    goalsPer100: 6,
+    freeConversionPct: 82,
+    twoPtAttemptRatePct: 28,
+    pace: 57,
+    ballInPlayPct: 62,
+    closeGamePct: 45,
+    refInteractions: 4,
+    nightDay: "Day",
+    earlyLateSeason: "Early",
+  },
+];
+
+
+
+export default function VenueAnalyticsPage() {
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
@@ -82,7 +132,7 @@ export default function TeamsAnalyticsPage() {
     setSavedViews(next)
     try {
       localStorage.setItem("analytics_saved_views", JSON.stringify(next))
-    } catch { }
+    } catch {}
   }
 
   function applySavedView(v) {
@@ -131,20 +181,7 @@ export default function TeamsAnalyticsPage() {
       </Card>
 
       <div className="p-3 md:p-4">
-        <TeamsTable
-          rows={rows}
-          view={view}
-          rateMode={rateMode}
-          opponentAdjusted={opponentAdjusted}
-          activeGroups={activeGroups}
-          showDiff={showDiff}
-          showDelta={showDelta}
-          showPercentile={showPercentile}
-          visibleColumns={visibleColumns}
-          sort={sort}
-          onSortChange={setSort}
-          onRowClick={setSelectedTeam}
-        />
+        <VenueAnalyticsTable data={venueData}/>
       </div>
 
       <ProfilePanel

@@ -8,7 +8,7 @@ import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/ana
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
-export default function TeamsAnalyticsPage() {
+export default function MatchDashboardPage() {
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
@@ -82,7 +82,7 @@ export default function TeamsAnalyticsPage() {
     setSavedViews(next)
     try {
       localStorage.setItem("analytics_saved_views", JSON.stringify(next))
-    } catch { }
+    } catch {}
   }
 
   function applySavedView(v) {
@@ -102,6 +102,23 @@ export default function TeamsAnalyticsPage() {
 
   return (
     <>
+      <TopBar
+        sampleWindow={sampleWindow}
+        onSampleWindowChange={setSampleWindow}
+        view={view}
+        onViewChange={setView}
+        rateMode={rateMode}
+        onRateModeChange={setRateMode}
+        opponentAdjusted={opponentAdjusted}
+        onOpponentAdjustedChange={setOpponentAdjusted}
+        showDiff={showDiff}
+        onShowDiffChange={setShowDiff}
+        showDelta={showDelta}
+        onShowDeltaChange={setShowDelta}
+        showPercentile={showPercentile}
+        onShowPercentileChange={setShowPercentile}
+      />
+
       <Card className="border-0 rounded-none">
         <div className="p-3 md:p-4">
           <Controls

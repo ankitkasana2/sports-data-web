@@ -10,11 +10,15 @@ import TeamsPage from "./pages/teams/Teams"
 import Matches from "./pages/matches/Matches"
 import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
-import Analytics from "./pages/analytics/Analytics"
 import VenuesPage from "./pages/admin/reference/Venues"
 import RefereesPage from "./pages/admin/reference/Referees"
 import StagesPage from "./pages/admin/reference/stages"
 import CompetitionsPage from "./pages/admin/reference/competitions"
+import PlayerAnalyticsPage from "./pages/analytics/Player"
+import VenueAnalyticsPage from "./pages/analytics/Venues"
+import RefereeAnalyticsPage from "./pages/analytics/Referees"
+import MatchDashboardPage from "./pages/analytics/MatchDashboard"
+
 
 
 function App() {
@@ -37,8 +41,9 @@ function App() {
         <Route path="/analytics" element={<AnalyticsLayout />}>
           <Route index element={<AnalyticsPage />} />
           <Route path="teams" element={<TeamsAnalyticsPage />} />
-          {/* <Route path="venues" element={<VenuesPage />} />
-          <Route path="referees" element={<RefereesPage />} /> */}
+          <Route path="players" element={<PlayerAnalyticsPage />} />
+          <Route path="venues" element={<VenueAnalyticsPage />} />
+          <Route path="referees" element={<RefereeAnalyticsPage />} />
           {/* add more analytics subpages as needed */}
         </Route>
       </Routes>

@@ -70,6 +70,14 @@ export const TEAMS = [
   },
 ]
 
+export const mockPlayers = [
+  { id: "p1", name: "Aidan O'Connell", team: "Dublin", pos: "F", mins: 980, goals: 12, assists: 7 },
+  { id: "p2", name: "Sean Murphy", team: "Kerry", pos: "M", mins: 1020, goals: 8, assists: 10 },
+  { id: "p3", name: "Liam Walsh", team: "Galway", pos: "D", mins: 1100, goals: 2, assists: 5 },
+  { id: "p4", name: "Colm Byrne", team: "Mayo", pos: "F", mins: 960, goals: 9, assists: 6 },
+  { id: "p5", name: "Tom O'Leary", team: "Cork", pos: "M", mins: 1005, goals: 6, assists: 8 },
+]
+
 export const DEFAULT_VISIBLE_COLUMNS = [
   { id: "team", label: "Team", enabled: true },
   { id: "poss_for", label: "Poss (For)", enabled: true },

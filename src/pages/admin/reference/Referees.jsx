@@ -14,55 +14,6 @@ import { toast } from "sonner"
 import { Check, Ban } from 'lucide-react';
 import { useNavigate } from "react-router-dom"
 
-// Mock data - in real app this would come from API/database
-const mockReferees = [
-  {
-    id: "1",
-    name: "John Murphy",
-    grade: "National",
-    county: "Cork",
-    phone: "+353 87 123 4567",
-    email: "john.murphy@gaa.ie",
-    experience_years: 15,
-    specialization: ["Hurling", "Football"],
-    status: "active",
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-01-15T10:00:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "2",
-    name: "Sarah O'Brien",
-    grade: "Provincial",
-    county: "Dublin",
-    phone: "+353 86 987 6543",
-    email: "sarah.obrien@gaa.ie",
-    experience_years: 8,
-    specialization: ["Camogie", "Ladies Football"],
-    status: "active",
-    created_at: "2024-01-16T14:30:00Z",
-    updated_at: "2024-01-16T14:30:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "3",
-    name: "Michael Walsh",
-    grade: "County",
-    county: "Kilkenny",
-    phone: "+353 85 555 1234",
-    email: "michael.walsh@gaa.ie",
-    experience_years: 12,
-    specialization: ["Hurling"],
-    status: "active",
-    created_at: "2024-01-17T09:15:00Z",
-    updated_at: "2024-01-17T09:15:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-]
-
 const refereeFormFields = [
   { key: "name", label: "Full Name", type: "text", required: true },
   {
@@ -84,7 +35,7 @@ const refereeFormFields = [
 
 const RefereesPage = () => {
   const { venuesStore, teamsStore, refereesStore } = useStores()
-  const [referees, setReferees] = useState(mockReferees)
+  const [referees, setReferees] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingReferee, setEditingReferee] = useState(null)
   const navigate = useNavigate()
