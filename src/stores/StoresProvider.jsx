@@ -6,6 +6,7 @@ import { teamsStore } from "./TeamsStore"
 import { refereesStore } from "./RefereesStore"
 import { playersStore } from "./PlayersStore"
 import { venuesStore } from "./VenuesStore"
+import { competitionsStore } from "./CompetitionStore"
 
 
 const stores = {
@@ -16,6 +17,7 @@ const stores = {
   playersStore,
   refereesStore,
   venuesStore,
+  competitionsStore,
 }
 
 const StoresContext = createContext(stores)

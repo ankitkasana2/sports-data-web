@@ -11,8 +11,8 @@ const ITEMS = [
   { label: "Players", href: "/analytics/players", enabled: true },
   { label: "Venues", href: "/analytics/venues", enabled: true },
   { label: "Referees", href: "/analytics/referees", enabled: true },
-  { label: "Comparison", href: "/analytics/comparison", enabled: false },
-  { label: "Prediction", href: "/analytics/prediction", enabled: false },
+  { label: "Comparison", href: "/analytics/comparison", enabled: true },
+  { label: "Prediction", href: "/analytics/prediction", enabled: true },
 ]
 
 export default function LeftMenu() {

@@ -18,6 +18,8 @@ import PlayerAnalyticsPage from "./pages/analytics/Player"
 import VenueAnalyticsPage from "./pages/analytics/Venues"
 import RefereeAnalyticsPage from "./pages/analytics/Referees"
 import MatchDashboardPage from "./pages/analytics/MatchDashboard"
+import ComparisonPage from "./pages/analytics/Comparison"
+import PredictionPage from "./pages/analytics/Prediction"
 
 
 
@@ -44,6 +46,8 @@ function App() {
           <Route path="players" element={<PlayerAnalyticsPage />} />
           <Route path="venues" element={<VenueAnalyticsPage />} />
           <Route path="referees" element={<RefereeAnalyticsPage />} />
+          <Route path="comparison" element={<ComparisonPage />} />
+          <Route path="prediction" element={<PredictionPage />} />
           {/* add more analytics subpages as needed */}
         </Route>
       </Routes>

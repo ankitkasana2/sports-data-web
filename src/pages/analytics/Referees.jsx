@@ -52,7 +52,6 @@ const refereeData = [
 ];
 
 
-
 export default function RefereeAnalyticsPage() {
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100

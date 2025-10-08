@@ -6,6 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { DataTable, createActionsColumn } from "@/components/admin/dataTable"
 import { FormDialog } from "@/components/admin/formDialog"
 import TopBar from "../../../components/admin/TabBar"
+import { observer } from "mobx-react-lite"
+import { useStores } from "@/stores/StoresProvider"
+import { toJS } from "mobx"
+import { nanoid } from 'nanoid';
+import { toast } from "sonner"
+import { Check, Ban } from 'lucide-react';
+import { useNavigate } from "react-router-dom"
 
 // Mock data - in real app this would come from API/database
 const mockCompetitions = [
@@ -76,32 +83,39 @@ const competitionFormFields = [
     options: [
       { value: "Hurling", label: "Hurling" },
       { value: "Football", label: "Football" },
-      { value: "Camogie", label: "Camogie" },
-      { value: "Ladies Football", label: "Ladies Football" },
     ],
   },
-  { key: "grade", label: "Grade", type: "text", required: true },
+  {
+    key: "grade", label: "Grade", type: "select", required: true, options: [
+      { value: "Senior", label: "Senior" },
+      { value: "Intermediate", label: "Intermediate" },
+      { value: "Junior", label: "Junior" },
+      { value: "U20", label: "U20" },
+      { value: "U17", label: "U17" },
+    ]
+  },
   {
     key: "level",
     label: "Level",
     type: "select",
     required: true,
     options: [
-      { value: "National", label: "National" },
-      { value: "Provincial", label: "Provincial" },
-      { value: "County", label: "County" },
+      { value: "Inter-County", label: "Inter-County" },
       { value: "Club", label: "Club" },
     ],
   },
-  { key: "season", label: "Season", type: "text", required: true },
-  { key: "display_name", label: "Display Name", type: "text", required: true },
-  { key: "half_length_sec", label: "Half Length (seconds)", type: "text", required: true },
+  { key: "county", label: "County", type: "text" },
+  { key: "province", label: "Province", type: "text" },
+  { key: "flags", label: "Flags", type: "switch" },
+  { key: "notes", label: "Notes", type: "textarea" },
 ]
 
-export default function CompetitionsPage() {
-  const [competitions, setCompetitions] = useState(mockCompetitions)
+const CompetitionsPage = () => {
+  const { competitionsStore } = useStores()
+  const [competitions, setCompetitions] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCompetition, setEditingCompetition] = useState(null)
+  const navigate = useNavigate()
 
   const handleAdd = () => {
     setEditingCompetition(null)
@@ -118,7 +132,7 @@ export default function CompetitionsPage() {
     setCompetitions((prev) => prev.map((c) => (c.id === competition.id ? { ...c, status: "inactive" } : c)))
   }
 
-  const handleSubmit = (data) => {
+  const handleSubmit = async (data) => {
     const now = new Date().toISOString()
 
     if (editingCompetition) {
@@ -141,28 +155,39 @@ export default function CompetitionsPage() {
     } else {
       // Add new competition
       const newCompetition = {
-        id: (competitions.length + 1).toString(),
+        id: `Competition_${nanoid(6)}`,
         name: data.name,
         code: data.code,
         game_code: data.game_code,
         grade: data.grade,
         level: data.level,
-        season: data.season,
-        display_name: data.display_name,
-        half_length_sec: Number.parseInt(data.half_length_sec),
-        extra_time_possible: false,
-        penalty_shootout_possible: false,
-        status: "active",
-        created_at: now,
-        updated_at: now,
-        created_by: "current_user",
-        updated_by: "current_user",
+        county: data.county,
+        province: data.province,
+        flags: data.flags,
+        notes: data.notes,
       }
-      setCompetitions((prev) => [...prev, newCompetition])
+
+      const created = await competitionsStore.createCompetition(newCompetition)
+
+      if (created) {
+        toast(<div className="flex gap-3">
+          <Check className="text-green-800" /><span>Competition has been created Successfully.</span>
+        </div>)
+        navigate(0)
+      } else {
+        toast(<div className="flex gap-3">
+          <Ban className="text-red-700" /><span>Competition not created.</span>
+        </div>)
+      }
     }
   }
 
   const columns = [
+    {
+      accessorKey: "id",
+      header: "Id",
+      cell: ({ row }) => <div>{row.getValue("id")}</div>,
+    },
     {
       accessorKey: "display_name",
       header: ({ column }) => (
@@ -198,54 +223,24 @@ export default function CompetitionsPage() {
       },
     },
     {
-      accessorKey: "level",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2"
-        >
-          Level
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const level = row.getValue("level")
-        const variant = level === "National" ? "default" : level === "Provincial" ? "secondary" : "outline"
-        return <Badge variant={variant}>{level}</Badge>
-      },
-    },
-    {
       accessorKey: "grade",
       header: "Grade",
-      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("grade")}</div>,
+      cell: ({ row }) => <div >{row.getValue("grade")}</div>,
     },
     {
-      accessorKey: "season",
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="h-8 px-2"
-        >
-          Season
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => <div className="font-mono">{row.getValue("season")}</div>,
+      accessorKey: "level",
+      header: 'Level',
+      cell: ({ row }) => <div>{row.getValue("level")}</div>,
     },
     {
-      accessorKey: "half_length_sec",
-      header: "Half Length",
-      cell: ({ row }) => {
-        const seconds = row.getValue("half_length_sec")
-        const minutes = Math.floor(seconds / 60)
-        return `${minutes}min`
-      },
+      accessorKey: "county",
+      header: "County",
+      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("county") ? row.getValue("county") != '' : ' — '}</div>,
     },
+
     {
-      accessorKey: "status",
-      header: "Status",
+      accessorKey: "flags",
+      header: "Is-all-ireland",
       cell: ({ row }) => {
         const status = row.getValue("status")
         return <Badge variant={status === "active" ? "default" : "secondary"}>{status}</Badge>
@@ -273,7 +268,7 @@ export default function CompetitionsPage() {
 
   return (
     <div className="space-y-6 p-10">
-      <TopBar/>
+      <TopBar />
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Competitions</h2>
@@ -283,7 +278,7 @@ export default function CompetitionsPage() {
 
       <DataTable
         columns={columns}
-        data={competitions.filter((c) => c.status === "active")}
+        data={competitionsStore.allCompetition}
         searchKey="display_name"
         onAdd={handleAdd}
         addLabel="Add Competition"
@@ -306,3 +301,5 @@ export default function CompetitionsPage() {
     </div>
   )
 }
+
+export default observer(CompetitionsPage)
