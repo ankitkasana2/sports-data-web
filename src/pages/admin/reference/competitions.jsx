@@ -14,63 +14,7 @@ import { toast } from "sonner"
 import { Check, Ban } from 'lucide-react';
 import { useNavigate } from "react-router-dom"
 
-// Mock data - in real app this would come from API/database
-const mockCompetitions = [
-  {
-    id: "1",
-    name: "All-Ireland Senior Hurling Championship",
-    code: "AISHC",
-    game_code: "Hurling",
-    grade: "Senior",
-    level: "National",
-    season: "2025",
-    display_name: "AISHC 2025",
-    half_length_sec: 2100, // 35 minutes
-    extra_time_possible: true,
-    penalty_shootout_possible: false,
-    status: "active",
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-01-15T10:00:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "2",
-    name: "Wexford Senior Hurling Championship",
-    code: "WSHC",
-    game_code: "Hurling",
-    grade: "Senior",
-    level: "County",
-    season: "2025",
-    display_name: "WSHC 2025",
-    half_length_sec: 1800, // 30 minutes
-    extra_time_possible: true,
-    penalty_shootout_possible: true,
-    status: "active",
-    created_at: "2024-01-16T14:30:00Z",
-    updated_at: "2024-01-16T14:30:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-  {
-    id: "3",
-    name: "Munster Senior Football Championship",
-    code: "MSFC",
-    game_code: "Football",
-    grade: "Senior",
-    level: "Provincial",
-    season: "2025",
-    display_name: "MSFC 2025",
-    half_length_sec: 2100, // 35 minutes
-    extra_time_possible: true,
-    penalty_shootout_possible: false,
-    status: "active",
-    created_at: "2024-01-17T09:15:00Z",
-    updated_at: "2024-01-17T09:15:00Z",
-    created_by: "admin",
-    updated_by: "admin",
-  },
-]
+
 
 const competitionFormFields = [
   { key: "name", label: "Competition Name", type: "text", required: true },
@@ -235,7 +179,7 @@ const CompetitionsPage = () => {
     {
       accessorKey: "county",
       header: "County",
-      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("county") ? row.getValue("county") != '' : ' — '}</div>,
+      cell: ({ row }) => <div className="text-muted-foreground">{row.getValue("county") ? row.getValue("county") : ' — '}</div>,
     },
 
     {

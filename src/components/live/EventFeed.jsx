@@ -24,14 +24,14 @@ export const EventFeed = observer(function EventFeed() {
   }, [store.events.length])
 
   const details = (e) => {
-    if (e.type === "throw_in") {
+    if (e.event_type === "throw_in") {
       return `Throw-in • Won by ${e.won_team}`
-    } else if (e.type === 'free') {
-      return `${e.free_type} • ${e.won_team} • ${e.free_outcome}`
-    } else if (e.type === 'card') {
-      return `${e.type} • ${e.card_type} • ${e.card_player_id}`
-    } else if (e.type === 'note') {
-      return `${e.type} • ${e.note_text} `
+    } else if (e.event_type === 'free') {
+      return `${e.free_type} • ${e.awarded_team_id} • ${e.free_outcome}`
+    } else if (e.event_type === 'card') {
+      return `${e.event_type} • ${e.card_type} • ${e.card_player_id}`
+    } else if (e.event_type === 'note') {
+      return `${e.event_type} • ${e.note_text} `
     }
   }
 
@@ -57,9 +57,9 @@ export const EventFeed = observer(function EventFeed() {
             {rows.map((e, idx) => {
               return (
                 <TableRow key={e.id}>
-                  <TableCell className="tabular-nums">{e.ts}</TableCell>
-                  <TableCell className="capitalize">{e.won_team ? e.won_team : '—'}</TableCell>
-                  <TableCell className="uppercase">{e.type}</TableCell>
+                  <TableCell className="tabular-nums">{e.ts}s</TableCell>
+                  <TableCell className="capitalize">{e.won_team ? e.won_team : e.awarded_team_id ? e.awarded_team_id : '-'}</TableCell>
+                  <TableCell className="uppercase">{e.event_type}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2 w-full">
                       <div className="text-green-800">{details(e)}</div>

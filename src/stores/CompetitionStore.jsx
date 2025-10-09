@@ -16,7 +16,7 @@ class CompetitionsStore {
 
     getAllCompetitions() {
         setTimeout(() => {
-            axios.get(`${apiUrl.VITE_BACKEND_PATH}competition`)
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}coreCompetition`)
                 .then(response => {
                     this.allCompetition = response.data;
                 })

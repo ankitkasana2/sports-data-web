@@ -42,7 +42,7 @@ class MatchesStore {
                     this.getAllVenue()
                 })
                 .catch(error => {
-                    console.error("There was an error fetching users!", error);
+                    console.error("There was an error fetching competition!", error);
                 });
         }, 500);
     }

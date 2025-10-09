@@ -15,7 +15,7 @@ class LiveMatchStore {
   code = "football"
   clock = { period: "H1", seconds: 0, running: false }
   intervalId = null
-  match_id = null
+  match_id = 'match_4545'
 
   score = {
     home: { goals: 0, points: 0 },
@@ -267,22 +267,41 @@ class LiveMatchStore {
     this.closeCurrentPossessionOn()
   }
 
-  addEvent(e) {
+  // add event 
+  async addEvent(e) {
 
     this.pushHistory()
     const evt = {
       id: `Event_${nanoid(6)}`,
-      ts: this.clock.seconds + 's',
+      matchId: this.match_id,
+      ts: this.clock.seconds ,
       period: this.clock.period,
       ...e,
     }
 
     console.log("evt", evt)
 
-    if ((e.type && e.type !== 'note') || (e.event_type && e.event_type !== 'note')) {
-      this.applyPossessionRules(evt)
+    // create event 
+    try {
+      const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/createEvent`, evt);
+
+      if (response.data.success) {
+        if ((e.type && e.type !== 'note') || (e.event_type && e.event_type !== 'note')) {
+          this.applyPossessionRules(evt)
+        }
+        this.events.push(evt)
+        return true;  // success
+      } else {
+        return false; // failed
+      }
+    } catch (error) {
+      console.error("Error creating player:", error);
+      return false;
     }
-    this.events.push(evt)
+
+
+
+
   }
 
   currentPossession() {
@@ -375,7 +394,7 @@ class LiveMatchStore {
     // --- CASE 1: No possession yet ---
     if (!p) {
       // Events that should open a possession for a team
-      const restartTypes = new Set(['throw_in','sideline','free','65','45','penalty','puckout','kickout','restart','kickout_or_puckout'])
+      const restartTypes = new Set(['throw_in', 'sideline', 'free', '65', '45', 'penalty', 'puckout', 'kickout', 'restart', 'kickout_or_puckout'])
 
       // Determine team that would start possession
       let awardedTeam = this.extractTeamFromEvent(evt)
@@ -410,7 +429,7 @@ class LiveMatchStore {
     evt.possession_id = p.possession_id
 
     // Define end-type events that close possession
-    const endTypes = new Set(['shot','score','wide_loss','short_loss','whistle','turnover'])
+    const endTypes = new Set(['shot', 'score', 'wide_loss', 'short_loss', 'whistle', 'turnover'])
     if (endTypes.has(type)) {
       this.endPossession(type, evt.id)
       return
@@ -459,7 +478,7 @@ class LiveMatchStore {
     }
 
     // Sideline/45/65/penalty/mark: if awarded to other team, flip; if awarded to same team and outcome is play_on, continue; if set_shot -> ensure possession was opened earlier (should already be)
-    if (['sideline','45','65','penalty','mark'].includes(type)) {
+    if (['sideline', '45', '65', 'penalty', 'mark'].includes(type)) {
       const awarded = evt.team || evt.awarded_team_id || evt.won_by_team_id || null
       if (awarded && awarded !== p.team_id) {
         this.endPossession(type + '_lost', evt.id)

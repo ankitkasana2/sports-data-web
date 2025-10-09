@@ -37,10 +37,10 @@ export const SidelineDialog = observer(function SidelineDialog() {
 
     // store event 
     store.addEvent({
-      type: 'free',
+      event_type: 'free',
       free_type: 'Sideline',
       free_outcome: outcome,
-      won_team: awardedTeam,
+      awarded_team_id: awardedTeam,
       spot_x: position ? position.x : null,
       spot_y: position ? position.y : null
     })
