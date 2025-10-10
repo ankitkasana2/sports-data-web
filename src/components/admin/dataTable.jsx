@@ -149,7 +149,7 @@ export function DataTable({ columns, data, searchKey = "name", onAdd, addLabel =
   )
 }
 
-export function createActionsColumn(onEdit, onDelete) {
+export function createActionsColumn(onEdit, onDelete, type = 'default', onAddSeason) {
   return {
     id: "actions",
     enableHiding: false,
@@ -167,6 +167,7 @@ export function createActionsColumn(onEdit, onDelete) {
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => navigator.clipboard.writeText(item.id)}>Copy ID</DropdownMenuItem>
             <DropdownMenuSeparator />
+            {type=='competition' &&<DropdownMenuItem onClick={() => onAddSeason(item)}>Add Season</DropdownMenuItem>}
             <DropdownMenuItem onClick={() => onEdit(item)}>Edit</DropdownMenuItem>
             <DropdownMenuItem onClick={() => onDelete(item)} className="text-destructive">
               Deactivate

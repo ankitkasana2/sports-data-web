@@ -7,6 +7,7 @@ import ProfilePanel from "@/components/analytics/profile-panel"
 import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/analytics/data/mock"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import VenuesTable from "../../components/analytics/venues/venue-table"
 
 const venueData = [
   {
@@ -181,16 +182,10 @@ export default function VenueAnalyticsPage() {
       </Card>
 
       <div className="p-3 md:p-4">
-        <VenueAnalyticsTable data={venueData}/>
+         <VenuesTable />
       </div>
 
-      <ProfilePanel
-        team={selectedTeam}
-        open={!!selectedTeam}
-        onOpenChange={(o) => {
-          if (!o) setSelectedTeam(null)
-        }}
-      />
+     
     </>
   )
 }

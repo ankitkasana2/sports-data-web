@@ -111,6 +111,7 @@ export function FormDialog({
                     onChange={(e) => updateField(field.key, e.target.value)}
                     className="col-span-3"
                     required={field.required}
+                    readOnly={field.readonly} 
                   />
                 )}
               </div>

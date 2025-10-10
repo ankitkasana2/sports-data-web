@@ -15,7 +15,6 @@ import { Check, Ban } from 'lucide-react';
 import { useNavigate } from "react-router-dom"
 
 
-
 const competitionFormFields = [
   { key: "name", label: "Competition Name", type: "text", required: true },
   { key: "code", label: "Code", type: "text", required: true },
@@ -54,11 +53,51 @@ const competitionFormFields = [
   { key: "notes", label: "Notes", type: "textarea" },
 ]
 
+const competitionSeasonFormFields = [
+  { key: "name", label: "Competition Name", type: "text", required: true },
+  { key: "season", label: "Season", type: "text", required: true, readOnly: true},
+  {
+    key: "game_code",
+    label: "Game Type",
+    type: "select",
+    required: true,
+    options: [
+      { value: "Hurling", label: "Hurling" },
+      { value: "Football", label: "Football" },
+    ],
+  },
+  {
+    key: "grade", label: "Grade", type: "select", required: true, options: [
+      { value: "Senior", label: "Senior" },
+      { value: "Intermediate", label: "Intermediate" },
+      { value: "Junior", label: "Junior" },
+      { value: "U20", label: "U20" },
+      { value: "U17", label: "U17" },
+    ]
+  },
+  {
+    key: "level",
+    label: "Level",
+    type: "select",
+    required: true,
+    options: [
+      { value: "Inter-County", label: "Inter-County" },
+      { value: "Club", label: "Club" },
+    ],
+  },
+  { key: "county", label: "County", type: "text" },
+  { key: "province", label: "Province", type: "text" },
+  { key: "flags", label: "Flags", type: "switch" },
+  { key: "notes", label: "Notes", type: "textarea" },
+
+]
+
 const CompetitionsPage = () => {
   const { competitionsStore } = useStores()
   const [competitions, setCompetitions] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingCompetition, setEditingCompetition] = useState(null)
+  const [competitionSeason, setCompetitionSeason] = useState(false)
   const navigate = useNavigate()
 
   const handleAdd = () => {
@@ -74,6 +113,11 @@ const CompetitionsPage = () => {
   const handleDelete = (competition) => {
     // In real app, this would be a soft delete (status = 'inactive')
     setCompetitions((prev) => prev.map((c) => (c.id === competition.id ? { ...c, status: "inactive" } : c)))
+  }
+
+  const handleAddSeason = (competition) => {
+    setCompetitionSeason(true)
+    setDialogOpen(true)
   }
 
   const handleSubmit = async (data) => {
@@ -207,7 +251,7 @@ const CompetitionsPage = () => {
         return <div className="text-sm text-muted-foreground">{date.toLocaleDateString()}</div>
       },
     },
-    createActionsColumn(handleEdit, handleDelete),
+    createActionsColumn(handleEdit, handleDelete, 'competition', handleAddSeason),
   ]
 
   return (
@@ -237,7 +281,7 @@ const CompetitionsPage = () => {
             ? "Update the competition information below."
             : "Add a new competition to the master data list."
         }
-        fields={competitionFormFields}
+        fields={competitionSeason == true ? competitionSeasonFormFields : competitionFormFields}
         initialData={editingCompetition || undefined}
         onSubmit={handleSubmit}
         submitLabel={editingCompetition ? "Update Competition" : "Add Competition"}

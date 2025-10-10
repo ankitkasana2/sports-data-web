@@ -7,74 +7,108 @@ import ProfilePanel from "@/components/analytics/profile-panel"
 import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/analytics/data/mock"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import PlayersTable from "../../components/analytics/players/player-table"
 
-const sampleData = [
+const samplePlayers = [
   {
-    player: "John Doe",
-    team: "Team A",
-    matches: 5,
-    scoring: { goals: 3, onePt: 5, twoPt: 2, totalPoints: 10 },
-    shooting: { attempts: 12, scores: 10, accuracy: 83 },
-    creation: { assists: 4, secondaryAssists: 2 },
-    possession: { turnoversWon: 3, turnoversConceded: 1, foulsWon: 2, foulsCommitted: 0 },
-    restarts: { targeted: 5, marksWon: 2, involvementInScores: 3 },
-    soloGo: { attempts: 4, turnovers: 1, scoresInChain: 2 },
-    keeperStats: { kickOutsTaken: 20, crossed40Pct: 60, retentionPct: 75, marksConceded: 2, violations: 0 },
-    minutesPlayed: { total: 300, avgPerMatch: 60 },
+    id: 1,
+    name: "A. Murphy",
+    team: "County A",
+    position: "MF",
+    gp: 10,
+    min_total: 620,
+    min_avg: 62.0,
+    starts: 9,
+    subs: 1,
+    on_pitch_pct: 0.78,
+    goals: 3,
+    points: 24,
+    share_scoring: 0.19,
+    from_play: { att: 40, sc: 18, pct: 0.45 },
+    frees: { att: 12, sc: 9, pct: 0.75 },
+    f45: { att: 6, sc: 3, pct: 0.5 },
+    pen: { att: 2, sc: 1, pct: 0.5 },
+    two_pt: { att: 20, rate: 0.22, pct: 0.35, pts_game: 1.8 },
+    h65: null,
+    sideline: null,
+    to_won: 22,
+    to_conc: 17,
+    to_to_shot_15: 0.31,
+    receipts: 28,
+    receipt_share: 0.14,
+    receipts_to_shots_15: 0.6,
+    is_gk: false,
+    ortg_on: 98.4,
+    drtg_on: 93.2,
+    net_on: 5.2,
+    pace_on: 46.1,
+    plus_minus_per60: 1.3,
+    fouls_won: 18,
+    fouls_conc: 16,
+    cards: 2,
+    matchLog: [
+      { date: "2025-05-01", minutes: 68, points: 5, shots: 6, frees: 2 },
+      { date: "2025-04-24", minutes: 60, points: 4, shots: 5, frees: 1 },
+    ],
+    shotMatrix: [
+      { type: "FP 0–20m", att: 10, sc: 6, pct: 0.6 },
+      { type: "FP 21–35m", att: 14, sc: 6, pct: 0.43 },
+    ],
+    chemistry: [
+      { name: "B. O’Connor", events: 12, share: 0.22 },
+      { name: "C. Walsh", events: 9, share: 0.18 },
+    ],
   },
   {
-    player: "Jane Smith",
-    team: "Team B",
-    matches: 6,
-    scoring: { goals: 5, onePt: 7, twoPt: 1, totalPoints: 13 },
-    shooting: { attempts: 15, scores: 13, accuracy: 87 },
-    creation: { assists: 6, secondaryAssists: 3 },
-    possession: { turnoversWon: 4, turnoversConceded: 2, foulsWon: 3, foulsCommitted: 1 },
-    restarts: { targeted: 6, marksWon: 3, involvementInScores: 4 },
-    soloGo: { attempts: 5, turnovers: 2, scoresInChain: 3 },
-    keeperStats: { kickOutsTaken: 18, crossed40Pct: 65, retentionPct: 70, marksConceded: 1, violations: 0 },
-    minutesPlayed: { total: 360, avgPerMatch: 60 },
+    id: 2,
+    name: "D. Kelly",
+    team: "County B",
+    position: "GK",
+    gp: 10,
+    min_total: 640,
+    min_avg: 64.0,
+    starts: 10,
+    subs: 0,
+    on_pitch_pct: 0.92,
+    goals: 0,
+    points: 2,
+    share_scoring: 0.03,
+    from_play: { att: 5, sc: 2, pct: 0.4 },
+    frees: { att: 3, sc: 2, pct: 0.67 },
+    f45: { att: 2, sc: 1, pct: 0.5 },
+    pen: { att: 0, sc: 0, pct: 0 },
+    two_pt: { att: 0, rate: 0, pct: 0, pts_game: 0 },
+    to_won: 4,
+    to_conc: 8,
+    to_to_shot_15: 0.1,
+    receipts: 0,
+    receipt_share: 0,
+    receipts_to_shots_15: 0,
+    is_gk: true,
+    ko: {
+      taken: 120,
+      short_pct: 0.55,
+      med_pct: 0.28,
+      long_pct: 0.17,
+      crossed_40_pct: 0.48,
+      marks_conceded_per_game: 0.4,
+    },
+    ortg_on: 92.3,
+    drtg_on: 91.1,
+    net_on: 1.2,
+    pace_on: 44.9,
+    plus_minus_per60: 0.2,
+    fouls_won: 1,
+    fouls_conc: 3,
+    cards: 0,
+    matchLog: [
+      { date: "2025-05-01", minutes: 70, points: 0, shots: 0, frees: 0 },
+      { date: "2025-04-24", minutes: 64, points: 0, shots: 0, frees: 0 },
+    ],
+    shotMatrix: [],
+    chemistry: [{ name: "E. Byrne", events: 18, share: 0.33 }],
   },
-  {
-    player: "Mark Johnson",
-    team: "Team A",
-    matches: 4,
-    scoring: { goals: 2, onePt: 3, twoPt: 0, totalPoints: 5 },
-    shooting: { attempts: 8, scores: 5, accuracy: 62 },
-    creation: { assists: 2, secondaryAssists: 1 },
-    possession: { turnoversWon: 2, turnoversConceded: 3, foulsWon: 1, foulsCommitted: 2 },
-    restarts: { targeted: 3, marksWon: 1, involvementInScores: 1 },
-    soloGo: { attempts: 3, turnovers: 1, scoresInChain: 1 },
-    keeperStats: { kickOutsTaken: 10, crossed40Pct: 50, retentionPct: 60, marksConceded: 3, violations: 1 },
-    minutesPlayed: { total: 240, avgPerMatch: 60 },
-  },
-  {
-    player: "Emily Davis",
-    team: "Team C",
-    matches: 7,
-    scoring: { goals: 4, onePt: 6, twoPt: 2, totalPoints: 12 },
-    shooting: { attempts: 18, scores: 12, accuracy: 67 },
-    creation: { assists: 5, secondaryAssists: 4 },
-    possession: { turnoversWon: 5, turnoversConceded: 2, foulsWon: 4, foulsCommitted: 1 },
-    restarts: { targeted: 7, marksWon: 4, involvementInScores: 5 },
-    soloGo: { attempts: 6, turnovers: 1, scoresInChain: 3 },
-    keeperStats: { kickOutsTaken: 25, crossed40Pct: 70, retentionPct: 80, marksConceded: 2, violations: 0 },
-    minutesPlayed: { total: 420, avgPerMatch: 60 },
-  },
-  {
-    player: "Luke Brown",
-    team: "Team B",
-    matches: 5,
-    scoring: { goals: 1, onePt: 4, twoPt: 1, totalPoints: 6 },
-    shooting: { attempts: 10, scores: 6, accuracy: 60 },
-    creation: { assists: 3, secondaryAssists: 2 },
-    possession: { turnoversWon: 3, turnoversConceded: 2, foulsWon: 2, foulsCommitted: 1 },
-    restarts: { targeted: 5, marksWon: 2, involvementInScores: 2 },
-    soloGo: { attempts: 2, turnovers: 1, scoresInChain: 1 },
-    keeperStats: { kickOutsTaken: 15, crossed40Pct: 55, retentionPct: 65, marksConceded: 2, violations: 1 },
-    minutesPlayed: { total: 300, avgPerMatch: 60 },
-  },
-];
+]
 
 export default function PlayerAnalyticsPage() {
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
@@ -198,17 +232,9 @@ export default function PlayerAnalyticsPage() {
         </div>
       </Card>
 
-      <div className="p-3 md:p-4">
-        <PlayerAnalyticsTable data={sampleData} />
+      <div className="p-3 md:p-4"> 
+        <PlayersTable data={samplePlayers} />
       </div>
-
-      <ProfilePanel
-        team={selectedTeam}
-        open={!!selectedTeam}
-        onOpenChange={(o) => {
-          if (!o) setSelectedTeam(null)
-        }}
-      />
     </>
   )
 }
