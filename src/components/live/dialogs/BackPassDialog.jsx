@@ -13,28 +13,33 @@ export const BackPassDialog = observer(function BackPassDialog() {
   const open = !!store.ui.currentBackPass.open
 
   const [team, setTeam] = useState("teamA")
+  const [outcome, setOutcome] = useState("")
 
 
   const onSave = () => {
 
-    if (awardedTeam == '') {
+    if (team == '') {
       toast(<div className="flex gap-2 items-center">
         <CircleAlert className="text-red-500 h-4 w-4" />
         <span>Please select a team.</span>
+      </div>)
+      return
+    } else if (outcome == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select outcome.</span>
       </div>)
       return
     }
 
 
     // store event 
-    // store.addEvent({
-    //   type: 'free',
-    //   free_type: 'ordinary',
-    //   free_outcome: outcome,
-    //   won_team: awardedTeam,
-    //   spot_x: position ? position.x : null,
-    //   spot_y: position ? position.y : null
-    // })
+    store.addEvent({
+      event_type: 'free',
+      free_type: 'ordinary',
+      free_outcome: outcome,
+      awarded_team_id: team,
+    })
 
     store.closeDialogs()
   }
@@ -56,6 +61,20 @@ export const BackPassDialog = observer(function BackPassDialog() {
               <SelectContent>
                 <SelectItem value="teamA">Team A</SelectItem>
                 <SelectItem value="teamB">Team B</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* outcome  */}
+          <div className="grid gap-1">
+            <label className="text-sm font-medium">Outcome</label>
+            <Select value={outcome} onValueChange={(v) => setOutcome(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="select an outcome" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="play_on">Play On</SelectItem>
+                <SelectItem value="set_shot">Set Shot Now</SelectItem>
               </SelectContent>
             </Select>
           </div>

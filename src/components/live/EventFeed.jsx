@@ -25,13 +25,13 @@ export const EventFeed = observer(function EventFeed() {
 
   const details = (e) => {
     if (e.event_type === "throw_in") {
-      return `Throw-in • Won by ${e.won_team}`
+      return `Throw-in • Won by ${e.throw_in_won_by_team_id}`
     } else if (e.event_type === 'free') {
       return `${e.free_type} • ${e.awarded_team_id} • ${e.free_outcome}`
     } else if (e.event_type === 'card') {
       return `${e.event_type} • ${e.card_type} • ${e.card_player_id}`
     } else if (e.event_type === 'note') {
-      return `${e.event_type} • ${e.note_text} `
+      return `${e.event_type} • ${'...'}`
     }
   }
 

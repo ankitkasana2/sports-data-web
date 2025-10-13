@@ -36,10 +36,10 @@ export const MarkDialog = observer(function MarkDialog() {
 
     // store event 
     store.addEvent({
-      type: 'free',
-      free_type: 'Mark',
+      event_type: 'free',
+      free_type: 'mark_free',
       free_outcome: option,
-      won_team: awardedTeam,
+      awarded_team_id: awardedTeam,
     })
 
 

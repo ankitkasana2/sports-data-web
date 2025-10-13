@@ -55,7 +55,7 @@ export const ShotDialog = observer(function ShotDialog() {
   const store = liveMatchStore
   const open = !!store.ui.currentShot.open
   const [result, setResult] = useState("")
-  const [shotType, setShotType] = useState("open_play")
+  const [shotType, setShotType] = useState("")
   const [position, setPosition] = useState(null)
   const [team, setTeam] = useState("home")
   const [shooter, setShooter] = useState('')
@@ -260,14 +260,14 @@ export const ShotDialog = observer(function ShotDialog() {
               <label className="text-sm font-medium">Shot Type</label>
               <Select value={shotType} onValueChange={(v) => setShotType(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder="Select shot type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="open_play">Open Play</SelectItem>
                   <SelectItem value="free">Free</SelectItem>
                   {<SelectItem value={store.code == 'football' ? '45' : '65'}>{store.code == 'football' ? '45' : '65'}</SelectItem>}
                   <SelectItem value="penalty">Penalty</SelectItem>
-                  <SelectItem value="sideline_cut">Sideline</SelectItem>
+                  <SelectItem value="sideline">Sideline</SelectItem>
                   {store.code == 'football' && <SelectItem value="mark_free">Mark free</SelectItem>}
                 </SelectContent>
               </Select>

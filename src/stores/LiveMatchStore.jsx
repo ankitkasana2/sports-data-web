@@ -274,7 +274,7 @@ class LiveMatchStore {
     const evt = {
       id: `Event_${nanoid(6)}`,
       matchId: this.match_id,
-      ts: this.clock.seconds ,
+      ts: this.clock.seconds,
       period: this.clock.period,
       ...e,
     }
@@ -536,9 +536,12 @@ class LiveMatchStore {
     }
   }
 
-  openDialog(kind) {
+  openDialog(kind, from=null) {
     this.pauseClock()
-    if (kind === "shot") this.ui.currentShot.open = true
+    if (kind === "shot") {
+      this.ui.currentShot.open = true
+      if(from == 'sideline'){}
+    }
     if (kind === "free") this.ui.currentFree.open = true
     if (kind === "restart") this.ui.currentRestart.open = true
     if (kind === "turnover") this.ui.currentTurnover.open = true

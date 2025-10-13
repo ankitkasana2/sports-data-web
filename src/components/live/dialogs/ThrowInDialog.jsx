@@ -4,6 +4,8 @@ import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
+import { toast } from "sonner"
+import { CircleAlert } from 'lucide-react';
 
 export const ThrowInDialog = observer(function ThrowInDialog() {
   const { liveMatchStore } = useStores()
@@ -13,8 +15,20 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
   const [wonTeam, setWonTeam] = useState('Team_A')
 
   const onSave = () => {
-    const type = 'throw_in'
-    store.addEvent({ type, won_team: wonTeam })
+    if (wonTeam == '') {
+      toast(<div className="flex gap-2 items-center">
+        <CircleAlert className="text-red-500 h-4 w-4" />
+        <span>Please select a team.</span>
+      </div>)
+      return
+    }
+
+
+    // store event 
+    store.addEvent({
+      event_type: 'throw_in',
+      throw_in_won_by_team_id: wonTeam
+    })
 
     store.closeDialogs()
   }

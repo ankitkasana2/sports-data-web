@@ -35,10 +35,10 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
 
     // store event 
     store.addEvent({
-      type: 'free',
+      event_type: 'free',
       free_type: store.code == 'football' ? '45' : '65',
       free_outcome: outcome,
-      won_team: awardedTeam,
+      awarded_team_id: awardedTeam,
     })
 
     store.closeDialogs()

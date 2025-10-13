@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
 export default function TeamsAnalyticsPage() {
-  const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
+  const [view, setView] = useState("Paired") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
   const [showDiff, setShowDiff] = useState(true)

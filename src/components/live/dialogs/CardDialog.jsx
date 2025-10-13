@@ -42,12 +42,17 @@ export const CardDialog = observer(function CardDialog() {
 
     // store event 
     store.addEvent({
-      type: 'card',
+      event_type: 'card',
       card_player_id: player,
       card_type: cardType,
       card_reason: message,
-      won_team: team,
+      team_id: team,
     })
+
+    setTeam('')
+    setPlayer('')
+    setCardType('')
+    setMessage('')
 
     store.closeDialogs()
   }

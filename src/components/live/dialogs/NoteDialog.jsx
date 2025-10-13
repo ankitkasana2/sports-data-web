@@ -26,7 +26,7 @@ export const NoteDialog = observer(function NoteDialog() {
 
     // store event 
     store.addEvent({
-      type: 'note',
+      event_type: 'note',
       note_text: message
     })
 

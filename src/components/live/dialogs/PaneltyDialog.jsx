@@ -35,10 +35,10 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
 
     // store event 
     store.addEvent({
-      type: 'free',
-      free_type: 'Penalty',
+      event_type: 'free',
+      free_type: 'Penalty_awarded',
       free_outcome: takeNow,
-      won_team: awardedTeam,
+      awarded_team_id: awardedTeam,
     })
 
     store.closeDialogs()

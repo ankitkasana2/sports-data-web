@@ -9,6 +9,9 @@ const apiUrl = import.meta.env;
 class TeamsStore {
 
     allTeams = []
+    teamAnalytics = {
+        
+    }
 
     constructor() {
         makeAutoObservable(this)

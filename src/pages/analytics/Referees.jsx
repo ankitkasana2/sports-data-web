@@ -13,7 +13,7 @@ const refereeData = [
   {
     name: "Ref A",
     matches: 6,
-    freesPer100: 12,
+    freesPer100: 11,
     cardsPer100: 1.5,
     pointsFromFreesPer100: 8,
     advances50mPer10OppKickouts: 3,
@@ -27,8 +27,8 @@ const refereeData = [
     name: "Ref B",
     matches: 2, // small sample
     freesPer100: 10,
-    cardsPer100: 1.0,
-    pointsFromFreesPer100: 6,
+    cardsPer100: 1.1,
+    pointsFromFreesPer100: 8,
     advances50mPer10OppKickouts: 2,
     kickoutNonCrossing40mPct: 55,
     pace: 32,
