@@ -278,7 +278,20 @@ function CreateMatchDialog({ onCreate }) {
     const id = crypto.randomUUID ? crypto.randomUUID() : `m_${Date.now()}`
     const comp_season_id = matchesStore.allCompetitions.find(comp => comp.name == form.competition && comp.season == form.season).comp_season_id
 
-    const kickoff_datetime = new Date(`${form.date}T${form.time}`).toISOString()
+    let kickoff_datetime = null
+
+    if (form.date && form.time) {
+      const dt = new Date(`${form.date}T${form.time}`)
+      if (!isNaN(dt)) {
+        kickoff_datetime = dt.toISOString()
+      } else {
+        console.error("Invalid date/time:", form.date, form.time)
+      }
+    } else {
+      console.error("Date or time missing:", form.date, form.time)
+    }
+
+    console.log('seb')
 
 
 
@@ -410,7 +423,7 @@ function CreateMatchDialog({ onCreate }) {
               <SelectContent>
                 {teamsStore.allTeams &&
                   teamsStore.allTeams
-                    .filter((team) => team.active_flag === "Y" && team.team_name !== form.teamB) // exclude Team B
+                    .filter((team) => team.active_flag === "active" && team.team_name !== form.teamB) // exclude Team B
                     .map((team) => (
                       <SelectItem key={team.team_id} value={team.team_name}>
                         {team.team_name}
@@ -532,7 +545,7 @@ function CreateMatchDialog({ onCreate }) {
                 <SelectValue placeholder="Select a referee" />
               </SelectTrigger>
               <SelectContent>
-                {refereesStore.allRefrees && refereesStore.allRefrees.map((referee) => { return referee.active_flag == 'Y' && <SelectItem key={referee.referee_id} value={referee.name}>{referee.name}</SelectItem> })}
+                {refereesStore.allRefrees && refereesStore.allRefrees.map((referee) => { return referee.active_flag == 'active' && <SelectItem key={referee.referee_id} value={referee.name}>{referee.name}</SelectItem> })}
               </SelectContent>
             </Select>
           </div>
@@ -605,7 +618,7 @@ function CreateMatchDialog({ onCreate }) {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={''}>Create</Button>
+          <Button onClick={submit}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

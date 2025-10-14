@@ -35,7 +35,7 @@ class LiveMatchStore {
   ui = {
     prematchOpen: true,
     selection: null,
-    currentShot: { open: false, xy: [] },
+    currentShot: { open: false, xy: [], shotType: '' },
     currentFree: { open: false, xy: [] },
     currentRestart: { open: false, xy: [] },
     currentTurnover: { open: false, xy: [] },
@@ -260,7 +260,10 @@ class LiveMatchStore {
     this.pushHistory()
     if (kind === "goal") {
       this.score[team].goals += 1;
-    } else {
+    } else if (kind == 'two_point') {
+      this.score[team].points += 2;
+    }
+    else {
       this.score[team].points += 1;
     }
     // close current possession on score (per rules)
@@ -536,11 +539,23 @@ class LiveMatchStore {
     }
   }
 
-  openDialog(kind, from=null) {
+  openDialog(kind, from = null) {
     this.pauseClock()
     if (kind === "shot") {
+
+      if (from == 'sideline') {
+        this.ui.currentShot.shotType = 'sideline'
+      } else if (from == '45' || from == '65') {
+        this.ui.currentShot.shotType = from
+      } else if (from == 'penalty') {
+        this.ui.currentShot.shotType = 'penalty'
+      } else if (from == 'mark') {
+        this.ui.currentShot.shotType = from
+      } else if (from == 'ordinary') {
+        this.ui.currentShot.shotType = 'free'
+      }
+
       this.ui.currentShot.open = true
-      if(from == 'sideline'){}
     }
     if (kind === "free") this.ui.currentFree.open = true
     if (kind === "restart") this.ui.currentRestart.open = true

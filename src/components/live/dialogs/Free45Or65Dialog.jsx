@@ -46,7 +46,7 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
     // if set shot 
     if (outcome == 'set_shot') {
       setTimeout(() => {
-        store.openDialog('shot')
+        store.openDialog('shot', store.code == 'football' ? '45' : '65')
       }, 500);
     }
 

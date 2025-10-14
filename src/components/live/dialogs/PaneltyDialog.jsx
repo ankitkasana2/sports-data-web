@@ -46,7 +46,7 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
     // if set shot 
     if (takeNow == 'set_shot') {
       setTimeout(() => {
-        store.openDialog('shot')
+        store.openDialog('shot', 'penalty')
       }, 500);
     }
   }

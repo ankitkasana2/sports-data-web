@@ -49,7 +49,7 @@ export const MarkDialog = observer(function MarkDialog() {
     // if set shot 
     if (option == 'set_shot') {
       setTimeout(() => {
-        store.openDialog('shot')
+        store.openDialog('shot', 'mark')
       }, 500);
     }
 

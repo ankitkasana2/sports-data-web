@@ -8,6 +8,7 @@ import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/ana
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
+
 export default function TeamsAnalyticsPage() {
   const [view, setView] = useState("Paired") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100

@@ -52,7 +52,7 @@ export const SidelineDialog = observer(function SidelineDialog() {
     // if set shot 
     if (outcome == 'set_shot') {
       setTimeout(() => {
-        store.openDialog('shot')
+        store.openDialog('shot', 'sideline')
       }, 500);
     }
 

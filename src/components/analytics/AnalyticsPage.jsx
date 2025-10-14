@@ -6,31 +6,11 @@ import { Progress } from "@/components/ui/progress"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { TrendingUp, TrendingDown, MapPin, Users, Trophy, Target } from "lucide-react"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { toJS } from "mobx"
+import { useState } from "react"
 
-// Mock data for the dashboard
-const venueData = [
-  { venue: "Stadium A", index: 85, matches: 12 },
-  { venue: "Arena B", index: 78, matches: 8 },
-  { venue: "Field C", index: 92, matches: 15 },
-  { venue: "Court D", index: 67, matches: 6 },
-  { venue: "Ground E", index: 88, matches: 10 },
-]
-
-const teamFormData = [
-  { week: "W1", performance: 65 },
-  { week: "W2", performance: 72 },
-  { week: "W3", performance: 68 },
-  { week: "W4", performance: 85 },
-  { week: "W5", performance: 78 },
-  { week: "W6", performance: 92 },
-]
-
-const refereeProfiles = [
-  { name: "John Smith", matches: 45, accuracy: 94, experience: "8 years" },
-  { name: "Sarah Johnson", matches: 38, accuracy: 96, experience: "6 years" },
-  { name: "Mike Davis", matches: 52, accuracy: 91, experience: "12 years" },
-  { name: "Lisa Chen", matches: 41, accuracy: 95, experience: "7 years" },
-]
 
 const eloMovers = [
   { team: "Team Alpha", change: +125, current: 1850, trend: "up" },
@@ -40,7 +20,71 @@ const eloMovers = [
   { team: "Team Epsilon", change: +156, current: 1901, trend: "up" },
 ]
 
-export default function AnalyticsPage() {
+const AnalyticsPage = () => {
+
+  const { matchesStore, homeFilterbarStore, teamsStore, refereesStore, analyticsStore, venuesStore } = useStores()
+
+  const [showAll, setShowAll] = useState(false);
+
+  // Show only first 5 referees unless "showAll" is true
+  const displayedReferees = showAll
+    ? refereesStore.allRefrees
+    : refereesStore.allRefrees.slice(0, 5);
+
+
+
+  const calculateVSI = (venueId) => {
+    const possessionData = toJS(analyticsStore.possession);
+
+    if (!possessionData || possessionData.length === 0) return 0;
+
+    // Filter matches for this venue
+    const venueMatches = possessionData.filter(
+      (m) => m.venue_id === venueId
+    );
+
+    if (venueMatches.length === 0) return 0;
+
+    // Step 1: Compute pp100 for each match at this venue
+    const matchesWithPP100 = venueMatches.map((m) => {
+      const points = Number(m.total_point);
+      const possessions = Number(m.total_possessions);
+      return {
+        ...m,
+        pp100: (points / possessions) * 100
+      };
+    });
+
+    // Step 2: Compute league-wide pp100 (all matches, weighted by possessions)
+    const totalLeaguePossessions = possessionData.reduce(
+      (sum, m) => sum + Number(m.total_possessions),
+      0
+    );
+    const leaguePP100 =
+      possessionData.reduce(
+        (sum, m) => sum + ((Number(m.total_point) / Number(m.total_possessions)) * 100) * Number(m.total_possessions),
+        0
+      ) / totalLeaguePossessions;
+
+    // Step 3: Compute venue pp100 (weighted by possessions)
+    const totalVenuePossessions = matchesWithPP100.reduce(
+      (sum, m) => sum + Number(m.total_possessions),
+      0
+    );
+    const pp100Venue =
+      matchesWithPP100.reduce((sum, m) => sum + m.pp100 * Number(m.total_possessions), 0) /
+      totalVenuePossessions;
+
+    // Step 4: Compute VSI
+    const vsi = pp100Venue - leaguePP100;
+
+    // Optional: return rounded value
+    return Math.round(vsi);
+  };
+
+
+
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -63,17 +107,17 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {venueData.map((venue, index) => (
-                  <div key={venue.venue} className="flex items-center justify-between">
+                {venuesStore.allVenues.map((venue) => (
+                  <div key={venue.venue_id} className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{venue.venue}</span>
-                        <span className="text-sm font-semibold">{venue.index}/100</span>
+                        <span className="text-sm font-medium">{venue.venue_name}</span>
+                        <span className="text-sm font-semibold">{calculateVSI(venue.venue_id)}{'%'}</span>
                       </div>
                       <Progress value={venue.index} className="h-2" />
                     </div>
                     <Badge variant="outline" className="ml-3">
-                      {venue.matches} matches
+                      {venue.matches} 
                     </Badge>
                   </div>
                 ))}
@@ -81,51 +125,8 @@ export default function AnalyticsPage() {
             </CardContent>
           </Card>
 
-          {/* Team Form */}
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                  <Trophy className="h-5 w-5" />
-                  Team Form
-                </CardTitle>
-                <CardDescription>Performance trends over recent weeks</CardDescription>
-              </div>
-              <Button variant="secondary" size="sm">
-                View Details
-              </Button>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer
-                config={{
-                  performance: {
-                    label: "Performance",
-                    color: "hsl(var(--chart-1))",
-                  },
-                }}
-                className="h-[200px]"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={teamFormData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Line
-                      type="monotone"
-                      dataKey="performance"
-                      stroke="var(--color-chart-1)"
-                      strokeWidth={3}
-                      dot={{ fill: "var(--color-chart-1)", strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
-
           {/* Referee Profiles */}
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className={`cursor-pointer hover:shadow-lg transition-shadow ${showAll ? "h-auto" : ""}`}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
                 <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -134,14 +135,20 @@ export default function AnalyticsPage() {
                 </CardTitle>
                 <CardDescription>Top performing referees and their stats</CardDescription>
               </div>
-              <Button variant="secondary" size="sm">
-                View All
-              </Button>
+              {!showAll && (
+                <Button variant="secondary" size="sm" onClick={() => setShowAll(true)}>
+                  See All
+                </Button>
+              )}
             </CardHeader>
+
             <CardContent>
               <div className="space-y-4">
-                {refereeProfiles.map((referee, index) => (
-                  <div key={referee.name} className="flex items-center justify-between p-3 rounded-lg bg-muted border">
+                {displayedReferees.map((referee) => (
+                  <div
+                    key={referee.referee_id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted border"
+                  >
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center border">
                         <span className="text-sm font-semibold">
@@ -157,8 +164,8 @@ export default function AnalyticsPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium">{referee.accuracy}% accuracy</p>
-                      <p className="text-sm text-muted-foreground">{referee.matches} matches</p>
+                      <p className="text-sm font-medium">{referee.match_count} matches</p>
+                      <p className="text-sm text-muted-foreground">{referee.experience_years} years</p>
                     </div>
                   </div>
                 ))}
@@ -239,3 +246,7 @@ export default function AnalyticsPage() {
     </div>
   )
 }
+
+
+
+export default observer(AnalyticsPage)

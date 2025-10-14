@@ -71,6 +71,11 @@ export const ShotDialog = observer(function ShotDialog() {
 
   useEffect(() => {
     if (!open) return
+
+    if (store.ui.currentShot.shotType) {
+      setShotType(store.ui.currentShot.shotType)
+    }
+
     const h = (e) => {
       if (e.key.toLowerCase() === "g") setResult("goal")
       if (e.key.toLowerCase() === "p") setResult("point")
@@ -138,9 +143,6 @@ export const ShotDialog = observer(function ShotDialog() {
       return
     }
 
-    // Simple alternation for team side demo: home/away
-    const shotCount = store.events.filter((e) => e.type === "shot").length
-    const team2 = shotCount % 2 === 0 ? "home" : "away"
 
     // store position
     store.setDialogXY("shot", position)
@@ -148,22 +150,27 @@ export const ShotDialog = observer(function ShotDialog() {
     // Update scoreboard if point/goal
     if (store.code == 'football') {
       if (result === "goal") store.addScore(team, "goal")
-      if (result === "point") store.addScore(team, "point")
-    } else {
+      else if (result === "point") {
+        if (['from_play', 'free', 'mark'].includes(shotType) && (calculation.arc_status === 'on_40' || calculation.arc_status == 'outside_40')) {
+          store.addScore(team, "two_point")
+        }else{
+          store.addScore(team, "point")
+        }
+      }
 
+    } else {
+      if (result === "goal") store.addScore(team, "goal")
+      else if (result === "point") store.addScore(team, "point")
     }
 
 
     // Record the shot event
-    store.addEvent({ type: "shot", won_team:team, shot_result: result, shot_type: shotType, position })
-
-
-
+    store.addEvent({ type: "shot", won_team: team, shot_result: result, shot_type: shotType, position })
 
     store.closeDialogs()
 
     setResult('')
-    setShotType('open_play')
+    setShotType('')
     setPosition(null)
     setTeam('home')
     setShooter('')
@@ -263,12 +270,12 @@ export const ShotDialog = observer(function ShotDialog() {
                   <SelectValue placeholder="Select shot type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="open_play">Open Play</SelectItem>
+                  <SelectItem value="from_play">Open Play</SelectItem>
                   <SelectItem value="free">Free</SelectItem>
                   {<SelectItem value={store.code == 'football' ? '45' : '65'}>{store.code == 'football' ? '45' : '65'}</SelectItem>}
                   <SelectItem value="penalty">Penalty</SelectItem>
                   <SelectItem value="sideline">Sideline</SelectItem>
-                  {store.code == 'football' && <SelectItem value="mark_free">Mark free</SelectItem>}
+                  {store.code == 'football' && <SelectItem value="mark">Mark</SelectItem>}
                 </SelectContent>
               </Select>
             </div>

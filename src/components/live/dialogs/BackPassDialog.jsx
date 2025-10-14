@@ -42,6 +42,13 @@ export const BackPassDialog = observer(function BackPassDialog() {
     })
 
     store.closeDialogs()
+
+    // if set shot 
+    if (outcome == 'set_shot') {
+      setTimeout(() => {
+        store.openDialog('shot', 'ordinary')
+      }, 500);
+    }
   }
 
   return (
