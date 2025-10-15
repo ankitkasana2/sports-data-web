@@ -189,8 +189,8 @@ const AnalyticsPage = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {eloMovers.map((team, index) => (
-                  <div key={team.team} className="flex items-center justify-between p-3 rounded-lg bg-muted border">
+                {analyticsStore.teams.map((team, index) => (
+                  <div key={team.team_name} className="flex items-center justify-between p-3 rounded-lg bg-muted border">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 rounded-full bg-muted border">
                         {team.trend === "up" ? (
@@ -200,8 +200,8 @@ const AnalyticsPage = () => {
                         )}
                       </div>
                       <div>
-                        <p className="font-medium">{team.team}</p>
-                        <p className="text-sm text-muted-foreground">Current: {team.current}</p>
+                        <p className="font-medium">{team.team_name}</p>
+                        <p className="text-sm text-muted-foreground">Current: {team.elo}</p>
                       </div>
                     </div>
                     <Badge variant="outline">
