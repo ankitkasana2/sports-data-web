@@ -10,6 +10,7 @@ class PlayersStore {
 
     allPlayers = []
     players = []
+    playerAnalytics = []
 
     constructor() {
         makeAutoObservable(this)
@@ -40,8 +41,6 @@ class PlayersStore {
         }, 500);
     }
 
-
-    
     // create a player
     async createPlayer(player) {
         try {
@@ -57,6 +56,27 @@ class PlayersStore {
             return false;
         }
     }
+
+
+    // get player analytics
+    getPlayerAnalytics() {
+        setTimeout(() => {
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}playerAnalytics`)
+                .then(response => {
+
+                    this.calculateAnalytics(response.data)
+                })
+                .catch(error => {
+                    console.error("There was an error fetching player analytics!", error);
+                });
+        }, 500);
+    }
+
+
+    calculateAnalytics(data) {
+        
+    }
+
 }
 
 export const playersStore = new PlayersStore()

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect, use } from "react"
 import TopBar from "@/components/analytics/top-bar"
 import Controls from "@/components/analytics/controls"
 import ColumnGroups from "@/components/analytics/column-groups"
@@ -7,10 +7,16 @@ import ProfilePanel from "@/components/analytics/profile-panel"
 import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/analytics/data/mock"
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { toJS } from "mobx"
 
 
-export default function TeamsAnalyticsPage() {
-  const [view, setView] = useState("Paired") // Attacking | Defending | Paired
+const TeamsAnalyticsPage = () => {
+
+  const { teamsStore, analyticsStore } = useStores()
+
+  const [view, setView] = useState(analyticsStore.filter.view) // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
   const [showDiff, setShowDiff] = useState(true)
@@ -33,8 +39,25 @@ export default function TeamsAnalyticsPage() {
     }
   })
 
+
+  useEffect(() => {
+    setView(toJS(analyticsStore.filter.view))
+  }, [toJS(analyticsStore.filter.view)])
+
+
+  useEffect(() => {
+    teamsStore.getTeamAnalytics()
+  }, [])
+
+  useEffect(() => {
+    console.log("analy",toJS(teamsStore.teamAnalytics))
+  }, [toJS(teamsStore.teamAnalytics)])
+  
+  
+  
+
   const rows = useMemo(() => {
-    const derived = TEAMS.map((t) => computeDerived(t, { rateMode }))
+    const derived = teamsStore.teamAnalytics.map((t) => computeDerived(t, { rateMode }))
     let filtered = derived
 
     if (search.trim()) {
@@ -158,3 +181,6 @@ export default function TeamsAnalyticsPage() {
     </>
   )
 }
+
+
+export default observer(TeamsAnalyticsPage)
