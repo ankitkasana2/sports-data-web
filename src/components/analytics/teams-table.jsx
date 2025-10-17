@@ -63,6 +63,8 @@ export default function TeamsTable({
     const cols = useMemo(() => {
         const enabled = (id) => visibleColumns.find((c) => c.id === id)?.enabled
 
+        console.log("value", enabled)
+
         const base = []
 
         // Team meta
@@ -77,14 +79,14 @@ export default function TeamsTable({
             if (enabled("pace")) base.push({ id: "pace", label: "Pace (poss/60)", render: (r) => r.pace })
 
             if (view === "Paired") {
-                if (enabled("ortg_for"))
-                    base.push({ id: "ortg_for", label: "ORtg (For)", render: (r) => r.ortg_for.toFixed(1) })
-                if (enabled("drtg_against"))
-                    base.push({ id: "drtg_against", label: "DRtg (Against)", render: (r) => r.drtg_against.toFixed(1) })
-                if (showDiff && enabled("net"))
-                    base.push({ id: "net_diff", label: "Net DIFF", render: (r) => (r.ortg_for - r.drtg_against).toFixed(1) })
+                if (enabled("ORtg"))
+                    base.push({ id: "ORtg", label: "ORtg (For)", render: (r) => r.ORtg.toFixed(1) })
+                if (enabled("DRtg"))
+                    base.push({ id: "DRtg", label: "DRtg (Against)", render: (r) => r.DRtg.toFixed(1) })
+                if (showDiff && enabled("nett_diff"))
+                    base.push({ id: "nett_diff", label: "Net DIFF", render: (r) => (r.ORtg - r.DRtg).toFixed(1) })
             } else if (view === "Attacking") {
-                if (enabled("ortg_for")) base.push({ id: "ortg_for", label: "ORtg", render: (r) => r.ortg_for.toFixed(1) })
+                if (enabled("ORtg")) base.push({ id: "ORtg", label: "ORtg", render: (r) => r.ORtg.toFixed(1) })
                 if (enabled("two_pt_share"))
                     base.push({
                         id: "two_pt_share",
@@ -92,8 +94,8 @@ export default function TeamsTable({
                         render: (r) => <PctCell value={r.two_pt_share} attempts={r.two_pt_attempts} />,
                     })
             } else {
-                if (enabled("drtg_against"))
-                    base.push({ id: "drtg_against", label: "DRtg", render: (r) => r.drtg_against.toFixed(1) })
+                if (enabled("DRtg"))
+                    base.push({ id: "DRtg", label: "DRtg", render: (r) => r.DRtg.toFixed(1) })
                 if (enabled("opp_two_pt_share"))
                     base.push({
                         id: "opp_two_pt_share",
@@ -109,19 +111,19 @@ export default function TeamsTable({
                 base.push({
                     id: "ko_short_own",
                     label: "Own KO Short%",
-                    render: (r) => <PctCell value={r.ko_short_own} attempts={r.ko_short_own_att} minN={8} />,
+                    render: (r) => <PctCell value={r.ko_short_own} attempts={r.ko_short_own} minN={8} />,
                 })
-            if (view !== "Attacking" && enabled("ko_short_opp"))
+            if (view !== "Attacking" && enabled("opp_ko_short_own"))
                 base.push({
-                    id: "ko_short_opp",
+                    id: "opp_ko_short_own",
                     label: "Opp KO Short%",
-                    render: (r) => <PctCell value={r.ko_short_opp} attempts={r.ko_short_opp_att} minN={8} />,
+                    render: (r) => <PctCell value={r.opp_ko_short_own} attempts={r.opp_ko_short_own} minN={8} />,
                 })
-            if (view === "Paired" && showDiff && enabled("ko_short_diff"))
+            if (view === "Paired" && showDiff && enabled("short_ko_diff"))
                 base.push({
-                    id: "ko_short_diff",
+                    id: "short_ko_diff",
                     label: "KO Short DIFF",
-                    render: (r) => ((r.ko_short_own - r.ko_short_opp) * 100).toFixed(1) + "%",
+                    render: (r) => ((r.ko_short_own - r.opp_ko_short_own) * 100).toFixed(1) + "%",
                 })
         }
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import TopBar from "@/components/analytics/top-bar"
 import Controls from "@/components/analytics/controls"
 import ColumnGroups from "@/components/analytics/column-groups"
@@ -8,6 +8,9 @@ import { TEAMS, computeDerived, DEFAULT_VISIBLE_COLUMNS } from "@/components/ana
 import { Card } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import PlayersTable from "../../components/analytics/players/player-table"
+import { observer } from "mobx-react-lite"
+import { useStores } from "../../stores/StoresProvider"
+import { toJS } from "mobx"
 
 const samplePlayers = [
   {
@@ -110,7 +113,10 @@ const samplePlayers = [
   },
 ]
 
-export default function PlayerAnalyticsPage() {
+const PlayerAnalyticsPage = () => {
+
+  const { playersStore, analyticsStore } = useStores()
+
   const [view, setView] = useState("Attacking") // Attacking | Defending | Paired
   const [rateMode, setRateMode] = useState("perMatch") // perMatch | per100
   const [opponentAdjusted, setOpponentAdjusted] = useState(false)
@@ -133,6 +139,15 @@ export default function PlayerAnalyticsPage() {
       return []
     }
   })
+
+  useEffect(() => {
+    playersStore.getPlayerAnalytics()
+  }, [])
+
+  useEffect(() => {
+    console.log("playeranaly", toJS(playersStore.playerAnalytics))
+  }, [toJS(playersStore.playerAnalytics)])
+
 
   const rows = useMemo(() => {
     const derived = TEAMS.map((t) => computeDerived(t, { rateMode }))
@@ -232,9 +247,12 @@ export default function PlayerAnalyticsPage() {
         </div>
       </Card>
 
-      <div className="p-3 md:p-4"> 
+      <div className="p-3 md:p-4">
         <PlayersTable data={samplePlayers} />
       </div>
     </>
   )
 }
+
+
+export default observer(PlayerAnalyticsPage)

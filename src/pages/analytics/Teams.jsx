@@ -50,16 +50,17 @@ const TeamsAnalyticsPage = () => {
   }, [])
 
   useEffect(() => {
-    console.log("analy",toJS(teamsStore.teamAnalytics))
+    console.log("analy", toJS(teamsStore.teamAnalytics))
   }, [toJS(teamsStore.teamAnalytics)])
-  
-  
-  
+
+
+
 
   const rows = useMemo(() => {
     const derived = teamsStore.teamAnalytics.map((t) => computeDerived(t, { rateMode }))
+    
     let filtered = derived
-
+    
     if (search.trim()) {
       const q = search.toLowerCase()
       filtered = filtered.filter((r) => r.team.toLowerCase().includes(q))
@@ -72,17 +73,17 @@ const TeamsAnalyticsPage = () => {
     }
 
     // basic multi-sort support
-    const multi = [...filtered]
-    for (let i = sort.length - 1; i >= 0; i--) {
-      const { id, desc } = sort[i]
-      multi.sort((a, b) => {
-        const av = a[id] ?? 0
-        const bv = b[id] ?? 0
-        if (av === bv) return 0
-        return desc ? bv - av : av - bv
-      })
-    }
-    return multi
+    // const multi = [...filtered]
+    // for (let i = sort.length - 1; i >= 0; i--) {
+    //   const { id, desc } = sort[i]
+    //   multi.sort((a, b) => {
+    //     const av = a[id] ?? 0
+    //     const bv = b[id] ?? 0
+    //     if (av === bv) return 0
+    //     return desc ? bv - av : av - bv
+    //   })
+    // }
+    return filtered
   }, [search, topBottom, sort, rateMode])
 
   function handleSaveView(name) {
