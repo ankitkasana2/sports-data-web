@@ -12,6 +12,8 @@ import { Check, ChevronsUpDown } from "lucide-react"
 import { Textarea } from "../../ui/textarea"
 import { toast } from "sonner"
 import { CircleAlert, FileWarning } from 'lucide-react';
+import { Maximize2, Minimize2 } from "lucide-react";
+
 import { cn } from "@/lib/utils"
 import {
   Command,
@@ -53,6 +55,7 @@ const frameworks = [
 export const ShotDialog = observer(function ShotDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const open = !!store.ui.currentShot.open
   const [result, setResult] = useState("")
   const [shotType, setShotType] = useState("")
@@ -153,7 +156,7 @@ export const ShotDialog = observer(function ShotDialog() {
       else if (result === "point") {
         if (['from_play', 'free', 'mark'].includes(shotType) && (calculation.arc_status === 'on_40' || calculation.arc_status == 'outside_40')) {
           store.addScore(team, "two_point")
-        }else{
+        } else {
           store.addScore(team, "point")
         }
       }
@@ -194,12 +197,108 @@ export const ShotDialog = observer(function ShotDialog() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-3">
-            <MiniPitch
-              code={store.code}
-              mode="select"
-              value={position}
-              onChange={(xy) => setPosition(xy)}
-            />
+            <div className="relative">
+              <MiniPitch
+                code={store.code}
+                mode="select"
+                value={position}
+                onChange={(xy) => setPosition(xy)}
+                isFullScreen={isFullScreen}
+                className={`${isFullScreen ? "fullscreen-pitch" : "normal-pitch"}`}
+              />
+
+              {/* Fullscreen toggle button */}
+              {/* Fullscreen button (icon only) */}
+              <Button
+                size="icon"
+                variant="outline"
+                className="absolute top-2 right-2 z-10 rounded-full p-2"
+                onClick={() => setIsFullScreen(true)}
+                title="Enter Fullscreen"
+              >
+                <Maximize2 className="h-4 w-4" />
+              </Button>
+
+              {/* Fullscreen overlay */}
+              {isFullScreen && (
+                <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
+                  <div className="relative w-[95vw] max-w-[1600px]" style={{ aspectRatio: "5 / 3" }}>
+                    <MiniPitch
+                      code={store.code}
+                      mode="select"
+                      value={position}
+                      onChange={(xy) => setPosition(xy)}
+                      isFullScreen={isFullScreen}
+                      className={`${isFullScreen ? "fullscreen-pitch" : "normal-pitch"}`}
+                    />
+                    {/* Exit fullscreen icon */}
+                    <Button
+                      size="icon"
+                      variant="secondary"
+                      className="absolute top-3 right-3 z-10 bg-white shadow-md rounded-full p-2"
+                      onClick={() => setIsFullScreen(false)}
+                      title="Exit Fullscreen"
+                    >
+                      <Minimize2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {isFullScreen && (
+                <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
+                  <div className="relative w-[95vw] max-w-[1600px]" style={{ aspectRatio: "5 / 3" }}>
+                    <MiniPitch
+                      code={store.code}
+                      mode="select"
+                      value={position}
+                      onChange={(xy) => setPosition(xy)}
+                      className="rounded-md border border-gray-300 shadow-lg"
+                    />
+                    {/* Fullscreen button (icon only) */}
+                    <Button
+  size="icon"
+  variant="outline"
+  className="absolute top-2 right-2 z-10 rounded-full p-2"
+  onClick={() => setIsFullScreen(true)}
+  title="Enter Fullscreen"
+>
+  <Maximize2 className="h-4 w-4" />
+</Button>
+
+                    {/* Fullscreen overlay */}
+{isFullScreen && (
+  <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center">
+    <div
+      className="relative w-[95vw] max-w-[1600px]"
+      style={{ aspectRatio: "5 / 3" }}
+    >
+      <MiniPitch
+        key="fullscreen"
+        code={store.code}
+        mode="select"
+        value={position}
+        onChange={(xy) => setPosition(xy)}
+        isFullScreen={true}
+        className="rounded-md border border-gray-300 shadow-lg"
+      />
+      {/* Exit fullscreen icon */}
+      <Button
+        size="icon"
+        variant="secondary"
+        className="absolute top-3 right-3 z-10 bg-white shadow-md rounded-full p-2"
+        onClick={() => setIsFullScreen(false)}
+        title="Exit Fullscreen"
+      >
+        <Minimize2 className="h-4 w-4" />
+      </Button>
+    </div>
+  </div>
+)}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="text-xs text-muted-foreground">
               Click pitch to set XY. Quick keys: G goal, P point, W wide, V saved, B blocked, D dropped.
             </div>

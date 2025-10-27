@@ -1,0 +1,18 @@
+.mini-pitch-container {
+  width: 100%;
+  height: 350px; /* default height */
+  transition: all 0.3s ease;
+}
+
+.mini-pitch-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.95);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

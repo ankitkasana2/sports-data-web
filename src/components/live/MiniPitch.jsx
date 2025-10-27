@@ -1,7 +1,9 @@
 import React, {useEffect} from "react"
 import { cn } from "@/lib/utils"
 
-export function MiniPitch({ code, mode, value, onChange, className}) {
+// export function MiniPitch({ code, mode, value, onChange, className}) {
+export function MiniPitch({ code, mode, value, onChange, className, isFullScreen = false }) {
+
   const ref = React.useRef(null)
 
   useEffect(() => {
@@ -20,12 +22,13 @@ export function MiniPitch({ code, mode, value, onChange, className}) {
 
   return (
     <div
-      ref={ref}
-      className={cn(
-        "relative w-full overflow-hidden rounded-md border bg-emerald-50", // Primary brand color accent via lines; neutrals otherwise
-        className,
-      )}
-      style={{ aspectRatio: "5 / 3" }}
+  ref={ref}
+  className={cn(
+    "relative w-full overflow-hidden rounded-md border bg-emerald-50",
+    className,
+  )}
+  style={{ aspectRatio: "5 / 3", width: "100%" }}
+
       onClick={handleClick}
       aria-readonly={mode === "view" ? true : undefined}
     >
@@ -91,7 +94,7 @@ export function MiniPitch({ code, mode, value, onChange, className}) {
       </svg>
 
       {/* Selection crosshair */}
-      {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (
+      {/* {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (
         v!=null &&<div
           key={index} // use index if coordinates are not unique
           className="absolute pointer-events-none"
@@ -103,7 +106,46 @@ export function MiniPitch({ code, mode, value, onChange, className}) {
         >
           <div className="h-4 w-4 rounded-full border-2 border-emerald-600 bg-white" />
         </div>
-      ))}
+      ))} */}
+
+      {(Array.isArray(value) ? value : value ? [value] : []).map((v, index) => (
+  v != null && (
+    <div
+      key={index}
+      className="absolute"
+      style={{
+        left: `${v.x}%`,
+        top: `${v.y}%`,
+        transform: "translate(-50%, -50%)",
+        cursor: "pointer",
+      }}
+    >
+      {/* Small visible circle */}
+      <div
+        className="rounded-full border border-emerald-700 bg-white"
+        style={{
+          width: isFullScreen ? "11px" : "5px",
+          height: isFullScreen ? "11px" : "5px",
+          boxShadow: "0 0 2px rgba(0,0,0,0.3)",
+        }}
+      />
+
+      {/* Larger invisible tap area (easy selection) */}
+      <div
+        className="absolute"
+        style={{
+          width: "12px",
+          height: "12px",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          backgroundColor: "transparent",
+        }}
+        onClick={() => onChange && onChange(v)}
+      />
+    </div>
+  )
+))}
 
       {/* Disabled overlay for view mode */}
       {mode === "view" && <div className="absolute inset-0 pointer-events-none" aria-hidden="true" />}
