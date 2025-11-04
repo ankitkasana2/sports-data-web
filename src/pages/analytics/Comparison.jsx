@@ -24,6 +24,8 @@ import {
   applyTriToggleMask,
 } from "@/lib/comparison-data"
 
+const apiUrl = import.meta.env;
+
 export default function ComparisonPage() {
   // URL state
   const [searchParams, setSearchParams] = useSearchParams()
@@ -65,41 +67,87 @@ export default function ComparisonPage() {
     phase: "any", // any | league | ko
   })
 
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set("type", entityType)
-    params.set("ids", entities.map((e) => e.id).join(","))
-    params.set("mode", mode)
-    params.set("baseline", String(baselineIndex))
-    params.set("tri", triToggle)
-    params.set("rate", rateMode)
-    params.set("adj", oppAdjusted ? "1" : "0")
-    params.set("dvl", deltaVsLeague ? "1" : "0")
-    params.set("pct", percentile ? "1" : "0")
-    params.set("diffchip", showDiffChip ? "1" : "0")
-    params.set("norm", normalizeExposure ? "1" : "0")
-    params.set("preset", preset)
-    params.set("window", sampleWindow)
-    params.set("h2h", h2hEnabled ? "1" : "0")
-   router(`${pathname.pathname}?${params.toString()}`, { replace: true })
+  const [entitiesLibrary, setEntitiesLibrary] = useState([])
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    entityType,
-    entities,
-    mode,
-    baselineIndex,
-    triToggle,
-    rateMode,
-    oppAdjusted,
-    deltaVsLeague,
-    percentile,
-    showDiffChip,
-    normalizeExposure,
-    preset,
-    sampleWindow,
-    h2hEnabled,
-  ])
+
+  // useEffect(() => {
+  //   const params = new URLSearchParams(searchParams.toString())
+  //   params.set("type", entityType)
+  //   params.set("ids", entities.map((e) => e.id).join(","))
+  //   params.set("mode", mode)
+  //   params.set("baseline", String(baselineIndex))
+  //   params.set("tri", triToggle)
+  //   params.set("rate", rateMode)
+  //   params.set("adj", oppAdjusted ? "1" : "0")
+  //   params.set("dvl", deltaVsLeague ? "1" : "0")
+  //   params.set("pct", percentile ? "1" : "0")
+  //   params.set("diffchip", showDiffChip ? "1" : "0")
+  //   params.set("norm", normalizeExposure ? "1" : "0")
+  //   params.set("preset", preset)
+  //   params.set("window", sampleWindow)
+  //   params.set("h2h", h2hEnabled ? "1" : "0")
+  //  router(`${pathname.pathname}?${params.toString()}`, { replace: true })
+
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [
+  //   entityType,
+  //   entities,
+  //   mode,
+  //   baselineIndex,
+  //   triToggle,
+  //   rateMode,
+  //   oppAdjusted,
+  //   deltaVsLeague,
+  //   percentile,
+  //   showDiffChip,
+  //   normalizeExposure,
+  //   preset,
+  //   sampleWindow,
+  //   h2hEnabled,
+  // ])
+
+  useEffect(() => {
+  const params = new URLSearchParams();
+
+  params.set("type", entityType);
+  if (entities.length) params.set("ids", entities.map(e => e.id).join(","));
+  params.set("mode", mode);
+  params.set("baseline", String(baselineIndex));
+  params.set("tri", triToggle);
+  params.set("rate", rateMode);
+  params.set("adj", oppAdjusted ? "1" : "0");
+  params.set("dvl", deltaVsLeague ? "1" : "0");
+  params.set("pct", percentile ? "1" : "0");
+  params.set("diffchip", showDiffChip ? "1" : "0");
+  params.set("norm", normalizeExposure ? "1" : "0");
+  params.set("preset", preset);
+  params.set("window", sampleWindow);
+  params.set("h2h", h2hEnabled ? "1" : "0");
+
+  // optional: detect entry source
+  if (searchParams.get("source")) params.set("source", searchParams.get("source"));
+
+  router(`${pathname.pathname}?${params.toString()}`, { replace: true });
+}, [
+  entityType, entities, mode, baselineIndex, triToggle, rateMode,
+  oppAdjusted, deltaVsLeague, percentile, showDiffChip, normalizeExposure,
+  preset, sampleWindow, h2hEnabled
+]);
+
+useEffect(() => {
+  async function loadEntities() {
+    try {
+      const res = await fetch(`${apiUrl.VITE_BACKEND_PATH}analytics/entities?type=${entityType}`)
+      const data = await res.json()
+      setEntitiesLibrary(data)
+    } catch (err) {
+      console.error("Failed to load entities:", err)
+    }
+  }
+
+  loadEntities()
+}, [entityType])
+
 
   useEffect(() => {
     function onKeyDown(e) {
@@ -218,7 +266,8 @@ export default function ComparisonPage() {
             entityType={entityType}
             entities={entities}
             setEntities={setEntities}
-            library={SAMPLE_ENTITIES[entityType] || []}
+            // library={SAMPLE_ENTITIES[entityType] || []}
+            library={entitiesLibrary}
           />
 
           <div className="flex items-center justify-between gap-2 flex-wrap">
