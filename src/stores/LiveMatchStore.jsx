@@ -150,6 +150,30 @@ class LiveMatchStore {
     this.pendingChanges = true
   }
 
+  addEvent(event) {
+  const newEvent = { id: nanoid(), timestamp: Date.now(), ...event };
+
+  // Save current state before mutation
+  this.past.push(JSON.stringify(this.events));
+  this.future = [];
+
+  this.events.unshift(newEvent); // newest on top
+  this.pendingChanges = true;
+}
+
+undo() {
+  if (this.past.length === 0) return;
+  this.future.push(JSON.stringify(this.events));
+  this.events = JSON.parse(this.past.pop());
+  this.pendingChanges = true;
+}
+
+redo() {
+  if (this.future.length === 0) return;
+  this.past.push(JSON.stringify(this.events));
+  this.events = JSON.parse(this.future.pop());
+  this.pendingChanges = true;
+}
 
 
   // serialization for simple history
