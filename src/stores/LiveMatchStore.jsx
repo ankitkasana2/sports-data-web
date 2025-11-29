@@ -47,6 +47,7 @@ class LiveMatchStore {
     currentMark: { open: false, xy: [] },
     currentCard: { open: false, xy: [] },
     current50mAdvance: { open: false, xy: [] },
+     currentSubstitution: { open: false, xy: [] },
     currentBackPass: { open: false, xy: [] },
     currentNote: { open: false, xy: [] },
 
@@ -160,6 +161,13 @@ class LiveMatchStore {
   this.events.unshift(newEvent); // newest on top
   this.pendingChanges = true;
 }
+
+updateRestartSpot(meters) {
+  const num = Number(meters);
+  if (!this.match) this.match = {};
+  this.match.restartSpotMeters = num;
+}
+
 
 undo() {
   if (this.past.length === 0) return;
@@ -317,7 +325,7 @@ redo() {
           this.applyPossessionRules(evt)
         }
         this.events.push(evt)
-        return true;  // success
+        return true;  // successm
       } else {
         return false; // failed
       }
@@ -592,6 +600,7 @@ redo() {
     if (kind === "mark") this.ui.currentMark.open = true
     if (kind === "card") this.ui.currentCard.open = true
     if (kind === "50mAdvance") this.ui.current50mAdvance.open = true
+    if (kind === "substitution") this.ui.currentSubstitution.open = true
     if (kind === "backPass") this.ui.currentBackPass.open = true
     if (kind === "note") this.ui.currentNote.open = true
   }
@@ -609,6 +618,7 @@ redo() {
     this.ui.currentMark.open = false
     this.ui.currentCard.open = false
     this.ui.current50mAdvance.open = false
+    this.ui.currentSubstitution.open = false
     this.ui.currentBackPass.open = false
     this.ui.currentNote.open = false
   }

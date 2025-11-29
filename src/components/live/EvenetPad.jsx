@@ -20,7 +20,7 @@ import { CardDialog } from "./dialogs/CardDialog"
 import { Advance50mDialog } from "./dialogs/Advance50mDialog"
 import { BackPassDialog } from "./dialogs/BackPassDialog"
 import { NoteDialog } from "./dialogs/NoteDialog"
-
+import { SubstitutionDialog } from "./dialogs/SubstitutionDialog"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
 
@@ -28,7 +28,7 @@ export const EventPad = observer(function EventPad() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
   const [ping, setPing] = useState(null)
-
+const [adminEnvOpen, setAdminEnvOpen] = useState(false)
   // Hotkeys
   useEffect(() => {
     const handler = (e) => {
@@ -64,9 +64,25 @@ export const EventPad = observer(function EventPad() {
         e.preventDefault()
         store.openDialog("free")
         setPing("f")
-      } else if (e.key.toLowerCase() === "k" || e.key.toLowerCase() === "p") {
+      }
+      else if (e.key.toLowerCase() === "c") {
         e.preventDefault()
-        store.openDialog("restart")
+        store.openDialog("card")
+        setPing("c")
+      } 
+      else if (e.key.toLowerCase() === "5") {
+        e.preventDefault()
+        store.openDialog("50mAdvance")
+        setPing("5")
+      } 
+        else if (e.key.toLowerCase() === "m") {
+        e.preventDefault()
+        store.openDialog("mark")
+        setPing("m")
+      } 
+      else if (e.key.toLowerCase() === "k" || e.key.toLowerCase() === "p") {
+        e.preventDefault()
+        store.openDialog("KickoutOrPuckout")
         setPing("k")
       } else if (e.key.toLowerCase() === "t") {
         e.preventDefault()
@@ -146,12 +162,17 @@ export const EventPad = observer(function EventPad() {
             {store.code == 'football' && <DropdownMenuItem onClick={() => store.openDialog("50mAdvance")}>
               50m Advance
             </DropdownMenuItem>}
+
+              <DropdownMenuItem onClick={() => store.openDialog("substitution")}>
+              Substitution
+            </DropdownMenuItem>
             {store.code == 'football' && <DropdownMenuItem onClick={() => store.openDialog("backPass")}>
               Back-pass to GK
             </DropdownMenuItem>}
             <DropdownMenuItem onClick={() => store.openDialog("note")}>
               Note
             </DropdownMenuItem>
+          
           </DropdownMenuContent>
         </DropdownMenu>
         <div className="ml-auto text-xs text-muted-foreground">
@@ -171,6 +192,7 @@ export const EventPad = observer(function EventPad() {
       <MarkDialog/>
       <CardDialog/>
       <Advance50mDialog/>
+      <SubstitutionDialog /> 
       <BackPassDialog/>
       <NoteDialog/>
     </div>

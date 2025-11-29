@@ -349,7 +349,7 @@ export const FreeDialog = observer(function FreeDialog() {
 
     const evt = {
       event_type: "free",
-      team: awardedTeam,
+      awarded_team_id: awardedTeam,
       awarded_player_id: awardedPlayer,
       fouling_player_id: foulingPlayer || null,
       foul_category: foulCategory || null,

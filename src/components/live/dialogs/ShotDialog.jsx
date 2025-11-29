@@ -1,424 +1,5 @@
-// import { useState, useEffect } from "react"
-// import { observer } from "mobx-react-lite"
-// import { useStores } from "../../../stores/StoresProvider"
-// import { Button } from "../../ui/button"
-// import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog"
-// import { MiniPitch } from "../MiniPitch"
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
-// import { Input } from "@/components/ui/input"
-// import { Badge } from "@/components/ui/badge"
-// import { Label } from "@/components/ui/label"
-// import { Check, ChevronsUpDown } from "lucide-react"
-// import { Textarea } from "../../ui/textarea"
-// import { toast } from "sonner"
-// import { CircleAlert, FileWarning } from 'lucide-react';
-// import { Maximize2, Minimize2 } from "lucide-react";
-
-// import { cn } from "@/lib/utils"
-// import {
-//   Command,
-//   CommandEmpty,
-//   CommandGroup,
-//   CommandInput,
-//   CommandItem,
-//   CommandList,
-// } from "@/components/ui/command"
-// import {
-//   Popover,
-//   PopoverContent,
-//   PopoverTrigger,
-// } from "@/components/ui/popover"
-
-
-
-// const frameworks = [
-//   {
-//     value: "player-1",
-//     label: "Player-1",
-//   },
-//   {
-//     value: "player-2",
-//     label: "Player-2",
-//   },
-//   {
-//     value: "player-3",
-//     label: "Player-3",
-//   },
-//   {
-//     value: "player-4",
-//     label: "Player-4",
-//   },
-// ]
-
-
-
-// export const ShotDialog = observer(function ShotDialog() {
-//   const { liveMatchStore } = useStores()
-//   const store = liveMatchStore
-//   const [isFullScreen, setIsFullScreen] = useState(false);
-//   const open = !!store.ui.currentShot.open
-//   const [result, setResult] = useState("")
-//   const [shotType, setShotType] = useState("")
-//   const [position, setPosition] = useState(null)
-//   const [team, setTeam] = useState("home")
-//   const [shooter, setShooter] = useState('')
-//   const [openShooter, setOpenShooter] = useState(false)
-//   const [pressure, setPressure] = useState()
-//   const [assist, setAssist] = useState('')
-//   const [openAssist, setOpenAssist] = useState(false)
-//   const [calculation, setCalculation] = useState({
-//     shot_distance_m: 'none',
-//     shot_distance_band: 'none',
-//     arc_status: 'none',
-//   })
-
-//   useEffect(() => {
-//     if (!open) return
-
-//     if (store.ui.currentShot.shotType) {
-//       setShotType(store.ui.currentShot.shotType)
-//     }
-
-//     const h = (e) => {
-//       if (e.key.toLowerCase() === "g") setResult("goal")
-//       if (e.key.toLowerCase() === "p") setResult("point")
-//       if (e.key.toLowerCase() === "w") setResult("wide")
-//       if (e.key.toLowerCase() === "v") setResult("saved")
-//       if (e.key.toLowerCase() === "b") setResult("blocked")
-//       if (e.key.toLowerCase() === "d") setResult("dropped_short")
-//     }
-//     window.addEventListener("keydown", h)
-//     return () => window.removeEventListener("keydown", h)
-//   }, [open])
-
-
-//   // calculation 
-//   useEffect(() => {
-//     if (position != null) {
-
-//       let distance = 0
-//       let arc = ''
-//       if (team == 'home') {
-//         distance = Math.round(Math.sqrt((position.x - 2) ** 2 + (position.y - 49) ** 2))
-//         arc = position.x < 30 ? 'inside_40' : position.x >= 30 && position.x <= 32 ? 'on_40' : position.x > 32 ? 'outside_40' : 'none'
-//       } else {
-//         distance = Math.round(Math.sqrt((position.x - 95) ** 2 + (position.y - 49) ** 2))
-//         arc = position.x > 68.5 ? 'inside_40' : position.x <= 68.5 && position.x >= 67.5 ? 'on_40' : position.x < 67.5 ? 'outside_40' : 'none'
-//       }
-
-//       setCalculation(prev => ({
-//         ...prev,
-//         shot_distance_m: distance, // or whatever value
-//         shot_distance_band: distance <= 20 ? '0-20' : distance > 20 && distance <= 35 ? "21-35" : distance > 36 && distance <= 55 ? '36-55' : distance > 55 ? "56+" : 'none',
-//         arc_status: arc,
-//       }));
-
-//     }
-
-//   }, [position, team])
-
-
-//   const onSave = () => {
-
-//     if (team == '') {
-//       toast(<div className="flex gap-2 items-center">
-//         <CircleAlert className="text-red-500 h-4 w-4" />
-//         <span>Please select a team.</span>
-//       </div>)
-//       return
-//     } else if (result == '') {
-//       toast(<div className="flex gap-2 items-center">
-//         <CircleAlert className="text-red-500 h-4 w-4" />
-//         <span>Please select result.</span>
-//       </div>)
-//       return
-//     } else if (shotType == '') {
-//       toast(<div className="flex gap-2 items-center">
-//         <CircleAlert className="text-red-500 h-4 w-4" />
-//         <span>Please select shot-type.</span>
-//       </div>)
-//       return
-//     } else if (position == null) {
-//       toast(<div className="flex gap-2 items-center">
-//         <CircleAlert className="text-red-500 h-4 w-4" />
-//         <span>Please select position.</span>
-//       </div>)
-//       return
-//     }
-
-
-//     // store position
-//     store.setDialogXY("shot", position)
-
-//     // Update scoreboard if point/goal
-//     if (store.code == 'football') {
-//       if (result === "goal") store.addScore(team, "goal")
-//       else if (result === "point") {
-//         if (['from_play', 'free', 'mark'].includes(shotType) && (calculation.arc_status === 'on_40' || calculation.arc_status == 'outside_40')) {
-//           store.addScore(team, "two_point")
-//         } else {
-//           store.addScore(team, "point")
-//         }
-//       }
-
-//     } else {
-//       if (result === "goal") store.addScore(team, "goal")
-//       else if (result === "point") store.addScore(team, "point")
-//     }
-
-
-//     // Record the shot event
-//     store.addEvent({ type: "shot", won_team: team, shot_result: result, shot_type: shotType, position })
-
-//     store.closeDialogs()
-
-//     setResult('')
-//     setShotType('')
-//     setPosition(null)
-//     setTeam('home')
-//     setShooter('')
-//     setOpenShooter(false)
-//     setPressure('')
-//     setAssist('')
-//     setOpenAssist(false)
-//     setCalculation({
-//       shot_distance_m: 'none',
-//       shot_distance_band: 'none',
-//       arc_status: 'none',
-//     })
-//   }
-
-//   return (
-//     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
-//       <DialogContent className="sm:max-w-2xl">
-//         <DialogHeader>
-//           <DialogTitle>Shot</DialogTitle>
-//         </DialogHeader>
-
-//         <div className="grid gap-3 sm:grid-cols-2">
-//           <div className="space-y-3">
-//             <div className="relative">
-//               <MiniPitch
-//                 code={store.code}
-//                 mode="select"
-//                 value={position}
-//                 onChange={(xy) => setPosition(xy)}
-//                 isFullScreen={isFullScreen}
-//                 className={`${isFullScreen ? "fullscreen-pitch" : "normal-pitch"}`}
-//               />
-
-             
-//             </div>
-//             <div className="text-xs text-muted-foreground">
-//               Click pitch to set XY. Quick keys: G goal, P point, W wide, V saved, B blocked, D dropped.
-//             </div>
-
-//             <div className="grid grid-cols-2">
-//               {/* shot_distance_m   */}
-//               <div>
-//                 <Label className="text-sm font-medium">Shot_distance_m</Label>
-//                 <Badge>{calculation.shot_distance_m}</Badge>
-//               </div>
-
-//               {/* shot_distance_band   */}
-//               <div>
-//                 <Label className="text-sm font-medium">Shot_distance_band</Label>
-//                 <Badge>{calculation.shot_distance_band}</Badge>
-//               </div>
-
-//               {/* arcstatus */}
-//               {store.code == 'football' && <div className="grid gap-1">
-//                 <Label className="text-sm font-medium">Arc status</Label>
-//                 <Badge>{calculation.arc_status}</Badge>
-//               </div>}
-//             </div>
-
-//           </div>
-
-
-//           <div className="space-y-3 ">
-//             <div className="flex justify-between">
-//               <div className="grid gap-1">
-//                 <label className="text-sm font-medium">Team</label>
-//                 <Select value={team} onValueChange={(v) => setTeam(v)}>
-//                   <SelectTrigger>
-//                     <SelectValue />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="home">Home</SelectItem>
-//                     <SelectItem value="away">Away</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-
-//               {/* result  */}
-//               <div className="grid gap-1">
-//                 <label className="text-sm font-medium">Result</label>
-//                 <Select value={result} onValueChange={(v) => setResult(v)}>
-//                   <SelectTrigger>
-//                     <SelectValue placeholder="Select result" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="goal">Goal</SelectItem>
-//                     <SelectItem value="point">Point</SelectItem>
-//                     <SelectItem value="wide">Wide</SelectItem>
-//                     <SelectItem value="saved">Saved</SelectItem>
-//                     <SelectItem value="blocked">Blocked</SelectItem>
-//                     <SelectItem value="short">Dropped Short</SelectItem>
-//                     <SelectItem value="post">Off Post</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//             </div>
-
-//             {/* shot type  */}
-//             <div className="grid gap-1">
-//               <label className="text-sm font-medium">Shot Type</label>
-//               <Select value={shotType} onValueChange={(v) => setShotType(v)}>
-//                 <SelectTrigger>
-//                   <SelectValue placeholder="Select shot type" />
-//                 </SelectTrigger>
-//                 <SelectContent>
-//                   <SelectItem value="from_play">Open Play</SelectItem>
-//                   <SelectItem value="free">Free</SelectItem>
-//                   {<SelectItem value={store.code == 'football' ? '45' : '65'}>{store.code == 'football' ? '45' : '65'}</SelectItem>}
-//                   <SelectItem value="penalty">Penalty</SelectItem>
-//                   <SelectItem value="sideline">Sideline</SelectItem>
-//                   {store.code == 'football' && <SelectItem value="mark">Mark</SelectItem>}
-//                 </SelectContent>
-//               </Select>
-//             </div>
-
-//             <div className="flex justify-between">
-//               {/* shooter  */}
-//               <div className="grid gap-1">
-//                 <label className="text-sm font-medium">Shooter</label>
-//                 <Popover open={openShooter} onOpenChange={setOpenShooter}>
-//                   <PopoverTrigger asChild>
-//                     <Button
-//                       variant="outline"
-//                       role="combobox"
-//                       aria-expanded={openShooter}
-//                       className=" justify-between"
-//                     >
-//                       {shooter
-//                         ? frameworks.find((framework) => framework.value === shooter)?.label
-//                         : "Select player"}
-//                       <ChevronsUpDown className="opacity-50" />
-//                     </Button>
-//                   </PopoverTrigger>
-//                   <PopoverContent className="w-[200px] p-0">
-//                     <Command>
-//                       <CommandInput placeholder="Search player..." className="h-9" />
-//                       <CommandList>
-//                         <CommandEmpty>No player found.</CommandEmpty>
-//                         <CommandGroup>
-//                           {frameworks.map((framework) => (
-//                             <CommandItem
-//                               key={framework.value}
-//                               value={framework.value}
-//                               onSelect={(currentValue) => {
-//                                 setShooter(currentValue === shooter ? "" : currentValue)
-//                                 setOpenShooter(false)
-//                               }}
-//                             >
-//                               {framework.label}
-//                               <Check
-//                                 className={cn(
-//                                   "ml-auto",
-//                                   shooter === framework.value ? "opacity-100" : "opacity-0"
-//                                 )}
-//                               />
-//                             </CommandItem>
-//                           ))}
-//                         </CommandGroup>
-//                       </CommandList>
-//                     </Command>
-//                   </PopoverContent>
-//                 </Popover>
-//               </div>
-
-//               {/* pressure  */}
-//               <div className="grid gap-1">
-//                 <label className="text-sm font-medium">Pressure</label>
-//                 <Select value={pressure} onValueChange={(v) => setPressure(v)}>
-//                   <SelectTrigger>
-//                     <SelectValue placeholder="Select pressure" />
-//                   </SelectTrigger>
-//                   <SelectContent>
-//                     <SelectItem value="None">None</SelectItem>
-//                     <SelectItem value="Light">Light</SelectItem>
-//                     <SelectItem value="Heavy">Heavy</SelectItem>
-//                   </SelectContent>
-//                 </Select>
-//               </div>
-//             </div>
-
-
-//             {/* assist  */}
-//             <div className="grid gap-1">
-//               <label className="text-sm font-medium">Assist</label>
-//               <Popover open={openAssist} onOpenChange={setOpenAssist}>
-//                 <PopoverTrigger asChild>
-//                   <Button
-//                     variant="outline"
-//                     role="combobox"
-//                     aria-expanded={openAssist}
-//                     className=" justify-between"
-//                   >
-//                     {assist
-//                       ? frameworks.find((framework) => framework.value === assist)?.label
-//                       : "Select player"}
-//                     <ChevronsUpDown className="opacity-50" />
-//                   </Button>
-//                 </PopoverTrigger>
-//                 <PopoverContent className="w-[200px] p-0">
-//                   <Command>
-//                     <CommandInput placeholder="Search player.." className="h-9" />
-//                     <CommandList>
-//                       <CommandEmpty>No player found.</CommandEmpty>
-//                       <CommandGroup>
-//                         {frameworks.map((framework) => (
-//                           <CommandItem
-//                             key={framework.value}
-//                             value={framework.value}
-//                             onSelect={(currentValue) => {
-//                               setAssist(currentValue === assist ? "" : currentValue)
-//                               setOpenAssist(false)
-//                             }}
-//                           >
-//                             {framework.label}
-//                             <Check
-//                               className={cn(
-//                                 "ml-auto",
-//                                 assist === framework.value ? "opacity-100" : "opacity-0"
-//                               )}
-//                             />
-//                           </CommandItem>
-//                         ))}
-//                       </CommandGroup>
-//                     </CommandList>
-//                   </Command>
-//                 </PopoverContent>
-//               </Popover>
-//             </div>
-
-//           </div>
-//         </div>
-
-//         <DialogFooter>
-//           <Button onClick={() => store.closeDialogs()} variant="outline">
-//             Cancel
-//           </Button>
-//           <Button onClick={onSave}>Save</Button>
-//         </DialogFooter>
-//       </DialogContent>
-//     </Dialog >
-//   )
-// })
-
-
-import { useState, useEffect } from "react"
+// ShotDialog.jsx
+import React, { useState, useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
@@ -463,16 +44,31 @@ export const ShotDialog = observer(function ShotDialog() {
     arc_status: "—",
   })
 
-  // 🧮 Auto-calc distance, angle, sector, arc
+  // Auto-calc distance, angle, sector, arc
   useEffect(() => {
-    if (!position) return
+    if (!position) {
+      setCalc({
+        distance_m: "—",
+        distance_band: "—",
+        angle_deg: "—",
+        sector: "—",
+        arc_status: "—",
+      })
+      return
+    }
 
+    // choose goal center depending on which team is attacking
+    // assume pitch coords: x 0..100 (0 = left goal, 100 = right goal), y 0..100 (50 center)
     const goal = team === "home" ? { x: 100, y: 50 } : { x: 0, y: 50 }
     const dx = goal.x - position.x
     const dy = goal.y - position.y
     const distance = Math.round(Math.sqrt(dx * dx + dy * dy))
+
+    // angle: compute angle subtended by goal (approx) — simple approximation using dy/dx
+    // here using atan2(abs(dy), abs(dx)) -> degrees (gives 0..90). That's consistent with earlier code.
     const angle = Math.round(Math.atan2(Math.abs(dy), Math.abs(dx)) * (180 / Math.PI))
 
+    // arc status for football (40m / arc we used 39..41 as on_40 etc.)
     const arc =
       store.code === "football"
         ? distance < 39
@@ -491,7 +87,8 @@ export const ShotDialog = observer(function ShotDialog() {
         ? "36–55"
         : "56+"
 
-    const sector = dy < -10 ? "L" : dy > 10 ? "R" : "C"
+    // sector: left / center / right (dy negative = left side assuming origin top-left)
+    const sector = position.y < 33.33 ? "L" : position.y > 66.66 ? "R" : "C"
 
     setCalc({
       distance_m: distance,
@@ -502,7 +99,7 @@ export const ShotDialog = observer(function ShotDialog() {
     })
   }, [position, team, store.code])
 
-  // 🎯 Keyboard quick keys
+  // Keyboard quick keys
   useEffect(() => {
     if (!open) return
     const handler = (e) => {
@@ -518,16 +115,33 @@ export const ShotDialog = observer(function ShotDialog() {
     return () => window.removeEventListener("keydown", handler)
   }, [open])
 
-  const onSave = () => {
-    if (!team || !result || !shotType || !shooter || !position) {
-      toast(<ValidationMsg text="Please fill all required fields (team, shooter, result, position)." />)
+  const onSave = async () => {
+    // validations
+    if (!team) {
+      toast(<ValidationMsg text="Please select a team." />)
+      return
+    }
+    if (!shooter) {
+      toast(<ValidationMsg text="Please select shooter." />)
+      return
+    }
+    if (!result) {
+      toast(<ValidationMsg text="Please select result." />)
+      return
+    }
+    if (!shotType) {
+      toast(<ValidationMsg text="Please select shot type." />)
+      return
+    }
+    if (!position) {
+      toast(<ValidationMsg text="Please choose position on pitch." />)
       return
     }
 
-    // 🧾 Event object
+    // build event
     const evt = {
       event_type: "shot",
-      team,
+      awarded_team_id: team,
       shooter_player_id: shooter,
       assist_player_id: assist || null,
       shot_type: shotType,
@@ -536,32 +150,78 @@ export const ShotDialog = observer(function ShotDialog() {
       ts: store.clock.seconds,
       period: store.clock.period,
       xy: position,
-      distance_m: calc.distance_m,
+      distance_m: calc.distance_m === "—" ? null : calc.distance_m,
       distance_band: calc.distance_band,
-      angle_deg: calc.angle_deg,
+      angle_deg: calc.angle_deg === "—" ? null : calc.angle_deg,
       sector: calc.sector,
       arc_status: calc.arc_status,
-      points_awarded:
-        result === "goal"
-          ? 3
-          : store.code === "football" &&
-            result === "point" &&
-            (shotType === "from_play" || shotType === "free" || shotType === "mark") &&
-            (calc.arc_status === "on_40" || calc.arc_status === "outside_40")
-          ? 2
-          : result === "point"
-          ? 1
-          : 0,
+      
+      // points_awarded computed below
     }
 
-    // 🧠 Update scoreboard
-    if (evt.points_awarded > 0) store.addScore(team, evt.points_awarded === 3 ? "goal" : evt.points_awarded === 2 ? "two_point" : "point")
+    // compute points awarded
+    const points_awarded =
+      result === "goal"
+        ? 3
+        : store.code === "football" &&
+          result === "point" &&
+          (shotType === "from_play" || shotType === "free" || shotType === "mark") &&
+          (calc.arc_status === "on_40" || calc.arc_status === "outside_40")
+        ? 2
+        : result === "point"
+        ? 1
+        : 0
 
+    evt.points_awarded = points_awarded
+
+    // add event
     store.addEvent(evt)
+    // store XY for UI (persist last position)
     store.setDialogXY("shot", position)
-    store.closeDialogs()
 
-    // Reset
+    // update scoreboard if any points
+    if (evt.points_awarded > 0) {
+      // addScore accepts teamName and kind: 'goal' | 'two_point' | 'point' OR we support points number
+      if (evt.points_awarded === 3) store.addScore(team, "goal")
+      else if (evt.points_awarded === 2) store.addScore(team, "two_point")
+      else if (evt.points_awarded === 1) store.addScore(team, "point")
+    }
+
+    // POSSESSION LOGIC:
+    // - goal / point => possession ends (and scoreboard updated)
+    // - wide => possession ends (defence gets ball)
+    // - saved/blocked => ambiguous: we need to know who got the rebound
+    //    --> we prompt the user (simple confirm):
+    //         OK = attack retained (start sub-possession)
+    //         Cancel = defence gained (end possession)
+    // - dropped_short / post etc. => treat as possession end (defence) by default
+    const shotEndsPossession = ["goal", "point", "wide", "dropped_short", "post"].includes(result)
+    const ambiguousResults = ["saved", "blocked"]
+
+    if (shotEndsPossession) {
+      store.endPossession(team === "home" ? "home" : "away")
+      store.closeDialogs()
+    } else if (ambiguousResults.includes(result)) {
+      // prompt referee/operator: did attack retain?
+      // Using window.confirm for simplicity — replace with a nicer UI dialog if you want.
+      const attackRetained = window.confirm(
+        "Did the attacking team retain possession after this shot? (OK = ATTACK retained / Cancel = DEFENCE gained)"
+      )
+      if (attackRetained) {
+        // attacker keeps possession -> new sub-possession
+        store.startSubPossession(team)
+      } else {
+        // defence gains ball -> end possession for attack
+        store.endPossession(team === "home" ? "home" : "away")
+      }
+      store.closeDialogs()
+    } else {
+      // fallback: end possession
+      store.endPossession(team === "home" ? "home" : "away")
+      store.closeDialogs()
+    }
+
+    // reset dialog local state
     setResult("")
     setShotType("")
     setShooter("")
@@ -608,6 +268,7 @@ export const ShotDialog = observer(function ShotDialog() {
               <SelectItem value="saved">Saved</SelectItem>
               <SelectItem value="blocked">Blocked</SelectItem>
               <SelectItem value="dropped_short">Dropped Short</SelectItem>
+              <SelectItem value="post">Off Post</SelectItem>
             </SelectGroup>
 
             <SelectGroup label="Shot Type" value={shotType} onChange={setShotType}>
@@ -642,7 +303,7 @@ export const ShotDialog = observer(function ShotDialog() {
       </DialogContent>
     </Dialog>
   )
-})
+}) // end ShotDialog
 
 // Helper Components
 function Metric({ label, value }) {

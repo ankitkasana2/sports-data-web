@@ -102,7 +102,7 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
 
     // store event 
     store.addEvent({
-      type: 'turnover_won',
+       event_type: 'turnover',
       turnover_mechanism: mechanism,
       forced_flag: mechanism == 'Handling_error' && mechanism == 'Loose_ball' ? 'false' : 'true',
       ball_type: '',
