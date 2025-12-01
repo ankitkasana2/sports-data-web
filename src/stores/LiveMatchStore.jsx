@@ -155,7 +155,7 @@ class LiveMatchStore {
   const newEvent = { id: nanoid(), timestamp: Date.now(), ...event };
 
   // Save current state before mutation
-  this.past.push(JSON.stringify(this.events));
+  this.past.unshift(JSON.stringify(this.events));
   this.future = [];
 
   this.events.unshift(newEvent); // newest on top
@@ -201,10 +201,10 @@ redo() {
     this.code = v.code
     this.clock = v.clock
     this.score = v.score
-    this.events.pop()
+    this.events.shift()
     this.possessions = v.possessions
-    this.ui.currentShot.xy.pop()
-    this.ui.currentFree.xy.pop()
+    this.ui.currentShot.xy.shift()
+    this.ui.currentFree.xy.shift()
     // this.ui = v.ui
   }
 
@@ -324,7 +324,7 @@ redo() {
         if ((e.type && e.type !== 'note') || (e.event_type && e.event_type !== 'note')) {
           this.applyPossessionRules(evt)
         }
-        this.events.push(evt)
+        this.events.unshift(evt)
         return true;  // successm
       } else {
         return false; // failed
@@ -388,7 +388,7 @@ redo() {
 
     console.log('startPossession ->', p)
 
-    this.possessions.push(p)
+    this.possessions.unshift(p)
     return p
   }
 
