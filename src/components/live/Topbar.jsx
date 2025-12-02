@@ -129,6 +129,7 @@ import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
 import { secondsToHHMMSS } from "./LiveUtils"
+import { toast } from "sonner";
 
 export const TopBar = observer(function TopBar() {
   const { liveMatchStore } = useStores()
@@ -248,9 +249,17 @@ export const TopBar = observer(function TopBar() {
           </Button>
 
           {/* Save Button */}
-          <Button variant="default" size="sm" onClick={() => store.saveToLocalStorage()}>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => {
+              store.saveToLocalStorage();
+              toast.success("Data saved successfully!");
+            }}
+          >
             Save
           </Button>
+
         </div>
 
         {/* 🧮 Scoreboard */}

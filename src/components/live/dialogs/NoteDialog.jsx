@@ -15,7 +15,8 @@ export const NoteDialog = observer(function NoteDialog() {
 
   const [message, setMessage] = useState('')
 
-  const onSave = () => {
+  const onSave = () => { 
+    try {
     if (message == '') {
       toast(<div className="flex gap-2 items-center">
         <CircleAlert className="text-red-500 h-4 w-4" />
@@ -29,8 +30,14 @@ export const NoteDialog = observer(function NoteDialog() {
       event_type: 'note',
       note_text: message
     })
+     toast.success("Data saved successfully!")
 
     store.closeDialogs()
+  }catch (error) {
+    toast.error("Failed to save event")
+    console.error(error)
+  }
+
   }
 
   return (

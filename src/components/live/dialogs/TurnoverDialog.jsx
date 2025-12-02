@@ -120,7 +120,7 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
       pressure_flag: pressureFlag,
       notes: message,
     })
-
+       toast.success("Data saved successfully!")
     store.closeDialogs()
 
     // set emplty 

@@ -18,7 +18,7 @@ export const MarkDialog = observer(function MarkDialog() {
   const [player, setPlayer] = useState("")
 
   const onSave = () => {
-
+  try {
     if (awardedTeam == '') {
       toast(<div className="flex gap-2 items-center">
         <CircleAlert className="text-red-500 h-4 w-4" />
@@ -42,7 +42,7 @@ export const MarkDialog = observer(function MarkDialog() {
       awarded_team_id: awardedTeam,
     })
 
-
+     toast.success("Data saved successfully!")
     store.closeDialogs()
 
 
@@ -52,7 +52,11 @@ export const MarkDialog = observer(function MarkDialog() {
         store.openDialog('shot', 'mark')
       }, 500);
     }
-
+  }
+    catch (error) {
+    toast.error("Failed to save event")
+    console.error(error)
+  } 
   }
 
   return (

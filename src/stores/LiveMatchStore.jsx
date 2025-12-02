@@ -169,7 +169,7 @@ updateRestartSpot(meters) {
 }
 
 
-undo() {
+undo(){
   if (this.past.length === 0) return;
   this.future.push(JSON.stringify(this.events));
   this.events = JSON.parse(this.past.pop());

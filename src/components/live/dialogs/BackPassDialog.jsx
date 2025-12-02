@@ -17,7 +17,7 @@ export const BackPassDialog = observer(function BackPassDialog() {
 
 
   const onSave = () => {
-
+ 
     if (team == '') {
       toast(<div className="flex gap-2 items-center">
         <CircleAlert className="text-red-500 h-4 w-4" />
@@ -40,7 +40,7 @@ export const BackPassDialog = observer(function BackPassDialog() {
       free_outcome: outcome,
       awarded_team_id: team,
     })
-
+     toast.success("Data successfully saved!")
     store.closeDialogs()
 
     // if set shot 

@@ -276,6 +276,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { toast } from "sonner"
 
 export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog() {
   const { liveMatchStore } = useStores()
@@ -326,19 +327,27 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
     }
   }
 
-  const onSave = () => {
-    const type = 
+  const onSave = async () => {
+     try {
+    const evt = {
+      event_type: 'restart',
+      awarded_team_id: executingTeam,
+      start_cause: 'restart',
+      start_restart_type: store.code === "football" ? "kickout" : "puckout",
+    }
 
-    // store event 
-    store.addEvent({
-      type: 'restart',
-      start_cause : 'restart',
-      start_restart_type : store.code === "football" ? "kickout" : "puckout",
-      
-    })
+    // store event
+    store.addEvent(evt)
 
+    // success message
+    toast.success("Data saved successfully!")
 
     store.closeDialogs()
+  } catch (error) {
+    toast.error("Failed to save event")
+    console.error(error)
+  }
+
   }
 
   return (

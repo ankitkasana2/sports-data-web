@@ -20,7 +20,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CircleAlert } from "lucide-react";
-
 export const Advance50mDialog = observer(function Advance50mDialog() {
   const { liveMatchStore } = useStores();
   const store = liveMatchStore;
@@ -125,10 +124,11 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
   // Save
   // -------------------------------------------
   const onSave = () => {
+
+    try {
     if (!validate()) return;
 
-    const misconduct =
-      entryPoint === "misconduct" || offenderType === "bench";
+    const misconduct = entryPoint === "misconduct" || offenderType === "bench";
 
     const stack = computeStack();
     const label = computeLabel(stack);
@@ -169,9 +169,13 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
     store.updateRestartSpot(after_50);
 
     toast.success(`${label} recorded (${team})`);
-
+    toast.success("Data saved successfully!")
     store.closeDialogs();
-  };
+  } catch (error) {
+    toast.error("Failed to save event")
+    console.error(error)
+  }
+  }
 
   // -------------------------------------------
   // UI

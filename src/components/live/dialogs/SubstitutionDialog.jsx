@@ -45,7 +45,7 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
     setPlayerIn(benchPlayers.length ? benchPlayers[0].id : "")
   }, [team, onPitchPlayers, benchPlayers])
 
-  const onSave = () => {
+  const onSave = () => { try{
     if (!team) return toast(<div className="flex gap-2 items-center"><CircleAlert className="text-red-500 h-4 w-4" /><span>Please select a team.</span></div>)
     if (!playerOut) return toast(<div className="flex gap-2 items-center"><CircleAlert className="text-red-500 h-4 w-4" /><span>Please select player OUT.</span></div>)
     if (!playerIn) return toast(<div className="flex gap-2 items-center"><CircleAlert className="text-red-500 h-4 w-4" /><span>Please select player IN.</span></div>)
@@ -56,7 +56,13 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
       player_out_id: playerOut,
       player_in_id: playerIn,
     })
+    toast.success("Data saved successfully!")
     store.closeDialogs()
+  }catch (error) {
+    toast.error("Failed to save event")
+    console.error(error)
+  }
+
   }
 
   return (

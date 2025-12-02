@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Checkbox } from "../ui/checkbox"
 import { Download, Columns3, Save } from "lucide-react"
 
+
 function toCsv(rows, visibleColumns) {
   const headers = visibleColumns.filter((c) => c.enabled).map((c) => c.id)
   const body = rows.map((r) => headers.map((h) => r[h] ?? "").join(","))

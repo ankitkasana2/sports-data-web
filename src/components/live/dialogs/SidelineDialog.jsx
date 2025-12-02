@@ -47,6 +47,7 @@ export const SidelineDialog = observer(function SidelineDialog() {
 
     // store position 
     store.setDialogXY("sideline", position)
+    toast.success("Data saved successfully!")
     store.closeDialogs()
 
     // if set shot 

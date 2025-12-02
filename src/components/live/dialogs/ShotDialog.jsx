@@ -218,9 +218,10 @@ export const ShotDialog = observer(function ShotDialog() {
     } else {
       // fallback: end possession
       store.endPossession(team === "home" ? "home" : "away")
+      toast.success("Data saved successfully!")
       store.closeDialogs()
     }
-
+ 
     // reset dialog local state
     setResult("")
     setShotType("")
@@ -229,7 +230,6 @@ export const ShotDialog = observer(function ShotDialog() {
     setPressure("")
     setPosition(null)
   }
-
   return (
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">

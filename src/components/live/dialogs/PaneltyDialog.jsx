@@ -18,37 +18,43 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
 
 
   const onSave = () => {
+    try {
+      if (awardedTeam == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select a team.</span>
+        </div>)
+        return
+      } else if (takeNow == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Select if the penalty is taken.</span>
+        </div>)
+        return
+      }
 
-    if (awardedTeam == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select a team.</span>
-      </div>)
-      return
-    } else if (takeNow == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Select if the penalty is taken.</span>
-      </div>)
-      return
+      // store event 
+      store.addEvent({
+        event_type: 'free',
+        free_type: 'Penalty_awarded',
+        free_outcome: takeNow,
+        awarded_team_id: awardedTeam,
+      })
+      toast.success("Data saved successfully!")
+      store.closeDialogs()
+
+      // if set shot 
+      if (takeNow == 'set_shot') {
+        setTimeout(() => {
+          store.openDialog('shot', 'penalty')
+        }, 500);
+      }
+    }
+    catch (error) {
+      toast.error("Failed to save event")
+      console.error(error)
     }
 
-    // store event 
-    store.addEvent({
-      event_type: 'free',
-      free_type: 'Penalty_awarded',
-      free_outcome: takeNow,
-      awarded_team_id: awardedTeam,
-    })
-
-    store.closeDialogs()
-
-    // if set shot 
-    if (takeNow == 'set_shot') {
-      setTimeout(() => {
-        store.openDialog('shot', 'penalty')
-      }, 500);
-    }
   }
 
   return (

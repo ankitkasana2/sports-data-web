@@ -20,42 +20,48 @@ export const CardDialog = observer(function CardDialog() {
 
 
   const onSave = () => {
-    if (team == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select a team.</span>
-      </div>)
-      return
-    } else if (player == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select player.</span>
-      </div>)
-      return
-    } else if (cardType == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select card.</span>
-      </div>)
-      return
+    try {
+      if (team == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select a team.</span>
+        </div>)
+        return
+      } else if (player == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select player.</span>
+        </div>)
+        return
+      } else if (cardType == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select card.</span>
+        </div>)
+        return
+      }
+
+      // store event 
+      store.addEvent({
+        event_type: 'card',
+        won_team: team,
+        card_player_id: player,
+        card_type: cardType,
+        card_reason: message,
+        team_id: team,
+      })
+
+      setTeam('')
+      setPlayer('')
+      setCardType('')
+      setMessage('')
+      toast.success("Data saved successfully!")
+      store.closeDialogs()
+    } catch (error) {
+      toast.error("Failed to save event")
+      console.error(error)
+
     }
-
-    // store event 
-    store.addEvent({
-      event_type: 'card',
-      won_team:team,
-      card_player_id: player,
-      card_type: cardType,
-      card_reason: message,
-      team_id: team,
-    })
-
-    setTeam('')
-    setPlayer('')
-    setCardType('')
-    setMessage('')
-
-    store.closeDialogs()
   }
 
   return (

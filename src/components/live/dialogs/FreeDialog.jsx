@@ -32,7 +32,7 @@
 //     arc_status: 'none',
 //   })
 
-  
+
 
 
 
@@ -291,20 +291,20 @@ export const FreeDialog = observer(function FreeDialog() {
           position.x < 30
             ? "inside_40"
             : position.x >= 30 && position.x <= 32
-            ? "on_40"
-            : position.x > 32
-            ? "outside_40"
-            : "none"
+              ? "on_40"
+              : position.x > 32
+                ? "outside_40"
+                : "none"
       } else {
         distance = Math.round(Math.sqrt((position.x - 95) ** 2 + (position.y - 49) ** 2))
         arc =
           position.x > 68.5
             ? "inside_40"
             : position.x <= 68.5 && position.x >= 67.5
-            ? "on_40"
-            : position.x < 67.5
-            ? "outside_40"
-            : "none"
+              ? "on_40"
+              : position.x < 67.5
+                ? "outside_40"
+                : "none"
       }
 
       // band calc
@@ -338,39 +338,46 @@ export const FreeDialog = observer(function FreeDialog() {
   }
 
   const onSave = async () => {
-    if (!awardedTeam || !awardedPlayer) {
-      toast.error("Please select the awarded team and player.")
-      return
-    }
-    if (!position) {
-      toast.error("Please select a pitch position.")
-      return
+    try {
+      if (!awardedTeam || !awardedPlayer) {
+        toast.error("Please select the awarded team and player.")
+        return
+      }
+      if (!position) {
+        toast.error("Please select a pitch position.")
+        return
+      }
+
+      const evt = {
+        event_type: "free",
+        awarded_team_id: awardedTeam,
+        awarded_player_id: awardedPlayer,
+        fouling_player_id: foulingPlayer || null,
+        foul_category: foulCategory || null,
+        ts: store.clock.seconds,
+        period: store.clock.period,
+        xy: position,
+        free_distance_m: calculation.free_distance_m,
+        free_distance_band: calculation.free_distance_band,
+        lane: calculation.lane_sector,
+        arc_status: calculation.arc_status,
+        is_50m_advance: is50,
+        next_action: nextAction || null,
+        two_point_option:
+          store.code === "football" &&
+          is50 &&
+          (calculation.arc_status === "on_40" || calculation.arc_status === "inside_40"),
+      }
+
+      await store.addEvent(evt)
+      store.setDialogXY("free", position)
+      toast.success("Data saved successfully!")
+      store.closeDialogs()
+    } catch (error) {
+      toast.error("Failed to save event")
+      console.error(error)
     }
 
-    const evt = {
-      event_type: "free",
-      awarded_team_id: awardedTeam,
-      awarded_player_id: awardedPlayer,
-      fouling_player_id: foulingPlayer || null,
-      foul_category: foulCategory || null,
-      ts: store.clock.seconds,
-      period: store.clock.period,
-      xy: position,
-      free_distance_m: calculation.free_distance_m,
-      free_distance_band: calculation.free_distance_band,
-      lane: calculation.lane_sector,
-      arc_status: calculation.arc_status,
-      is_50m_advance: is50,
-      next_action: nextAction || null,
-      two_point_option:
-        store.code === "football" &&
-        is50 &&
-        (calculation.arc_status === "on_40" || calculation.arc_status === "inside_40"),
-    }
-
-    await store.addEvent(evt)
-    store.setDialogXY("free", position)
-    store.closeDialogs()
   }
 
   return (

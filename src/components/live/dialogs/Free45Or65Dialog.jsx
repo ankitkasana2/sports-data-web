@@ -17,39 +17,45 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
   const [outcome, setOutcome] = useState("")
 
   const onSave = () => {
+    try {
+      if (awardedTeam == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select a team.</span>
+        </div>)
+        return
+      } else if (outcome == '') {
+        toast(<div className="flex gap-2 items-center">
+          <CircleAlert className="text-red-500 h-4 w-4" />
+          <span>Please select outcome.</span>
+        </div>)
+        return
+      }
 
-    if (awardedTeam == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select a team.</span>
-      </div>)
-      return
-    } else if (outcome == '') {
-      toast(<div className="flex gap-2 items-center">
-        <CircleAlert className="text-red-500 h-4 w-4" />
-        <span>Please select outcome.</span>
-      </div>)
-      return
+
+      // store event 
+      store.addEvent({
+        event_type: 'free',
+        free_type: store.code == 'football' ? '45' : '65',
+        free_outcome: outcome,
+        awarded_team_id: awardedTeam,
+      })
+      toast.success("Data saved successfully!")
+      store.closeDialogs()
+
+      // if set shot 
+      if (outcome == 'set_shot') {
+        setTimeout(() => {
+          store.openDialog('shot', store.code == 'football' ? '45' : '65')
+        }, 500);
+      }
     }
+    catch (error) {
+      toast.error("Failed to save event")
+      console.error(error)
 
 
-    // store event 
-    store.addEvent({
-      event_type: 'free',
-      free_type: store.code == 'football' ? '45' : '65',
-      free_outcome: outcome,
-      awarded_team_id: awardedTeam,
-    })
-
-    store.closeDialogs()
-
-    // if set shot 
-    if (outcome == 'set_shot') {
-      setTimeout(() => {
-        store.openDialog('shot', store.code == 'football' ? '45' : '65')
-      }, 500);
     }
-
   }
 
   return (
