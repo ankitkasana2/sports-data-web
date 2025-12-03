@@ -11,19 +11,44 @@ export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false
   const store = liveMatchStore
 
   const shots = useMemo(() => {
-    const list = store.events.filter((e) => e.type === "shot")
-    const attempts = list.length
-    // We don't track detailed results on the event; derive scores from store.score
-    const ptsTotal = toTotalPoints(store.score.home) + toTotalPoints(store.score.away)
-    const completed = store.possessions.filter((p) => p.end != null).length || 1
-    const pps = ptsTotal / completed
-    return { attempts, ptsTotal, pps }
-  }, [store.events, store.score.home, store.score.away, store.possessions])
+    // Correct filter → because your event object uses `event_type`
+     const list = store.events.filter((e) => e.event_type === "shot");
+     const attempts = list.length;
+     const ptsTotal =
+     toTotalPoints(store.score.home) + toTotalPoints(store.score.away);
+     const completed =
+     store.possessions.filter((p) => p.end != null).length || 1;
+     const pps = ptsTotal / completed;
+      return { attempts, ptsTotal, pps };
+}, [
+  store.events.length,       
+  store.score.home,
+  store.score.away,
+  store.possessions.length
+]);
+
+const Free = useMemo(() => {
+    // Correct filter → because your event object uses `event_type`
+     const list = store.events.filter((e) => e.event_type === "free");
+     const attempts = list.length;
+     const ptsTotal =
+     toTotalPoints(store.score.home) + toTotalPoints(store.score.away);
+     const completed =
+     store.possessions.filter((p) => p.end != null).length || 1;
+     const pps = ptsTotal / completed;
+      return { attempts, ptsTotal, pps };
+}, [
+  store.events.length,       
+  store.score.home,
+  store.score.away,
+  store.possessions.length
+]);
+
 
   const restarts = useMemo(() => {
     const isKick = store.code === "football"
-    const list = store.events.filter((e) => (isKick ? e.type === "kickout" : e.type === "puckout"))
-    return { total: list.length, ownRetentionPct: null }
+    const list = store.events.filter((e) => (isKick ? e.event_type === "kickout" : e.event_type === "puckout"))
+    return { total: list.length, ownRetentionPct: 0 }
   }, [store.events, store.code])
 
   const scoreA = store.score.home
@@ -33,15 +58,20 @@ export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false
     return (
       <div className="flex items-center gap-4 overflow-x-auto py-2 text-sm">
         <StatPill label="Shots" value={`${shots.attempts}`} />
+
         <StatPill
           label="Scores"
           value={`${scoreA.goals}-${scoreA.points} • ${scoreB.goals}-${scoreB.points}`}
           sub={`A ${toTotalPoints(scoreA)} • B ${toTotalPoints(scoreB)}`}
         />
-        <StatPill label="Frees" value={`${store.events.filter((e) => e.type === "free").length}`} />
+        <StatPill label="Frees" value={`${Free.attempts}`} />
         <StatPill
           label="Restart retention"
-          value={restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}
+          value={
+    restarts.ownRetentionPct !== null
+      ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%`
+      : "—"
+  }
         />
         <StatPill label="PPP" value={shots.pps.toFixed(2)} />
 
@@ -61,10 +91,11 @@ export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false
           <div className="font-medium">Shots</div>
           <div>Attempts: {shots.attempts}</div>
           <div>PPP: {shots.pps.toFixed(2)}</div>
+      
         </div>
         <div className="rounded border p-2">
           <div className="font-medium">{store.code === "football" ? "Kick-outs" : "Puck-outs"}</div>
-          <div>Total: {restarts.total}</div>
+          <div>Total: {restarts.total}</div>  
           <div>
             Own retention:{" "}
             {restarts.ownRetentionPct !== null ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%` : "—"}

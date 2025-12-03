@@ -106,7 +106,7 @@ function MatchesTable({ rows, selected, setSelected }) {
                                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                                         {m.match_status === "Scheduled" || m.match_status === "InProgress" ? (
                                             <Button asChild size="sm">
-                                                <Link to={`/live/${m.id}`}>{m.match_status == "Scheduled" ? "Start" : "Resume"}</Link>
+                                                <Link to={`/live/${m.match_id}`}>{m.match_status == "Scheduled" ? "Start" : "Resume"}</Link>
                                             </Button>
                                         ) : (
                                             <span className="text-sm text-muted-foreground">—</span>

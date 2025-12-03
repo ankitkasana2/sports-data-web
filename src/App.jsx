@@ -24,6 +24,9 @@ import PredictionPage from "./pages/analytics/Prediction"
 
 
 function App() {
+
+
+  
   return (
     <div className="min-h-screen ">
       <Routes>
