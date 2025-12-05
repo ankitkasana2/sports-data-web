@@ -154,20 +154,39 @@ import { Button } from "../ui/button"
 import { EllipsisVertical, Pencil, Clock } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Separator } from "../ui/separator"
-
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 export const EventFeed = observer(function EventFeed() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
+
+  // const { id } = useParams();
+  
+const location = useLocation();
+console.log("URL:", location.pathname);
+const segments = location.pathname.split("/");
+const id = segments[2]; 
+
+console.log("Extracted ID:", id);
+
+ useEffect(() => {
+    store.fetchEvents(id);
+  
+  }, [id]);
 
   // 🧭 Filter control
   const [filter, setFilter] = useState("all")
 
   // 🕓 Sort newest first + apply filter
   const rows = useMemo(() => {
-    const sorted = [...(store.events || [])].sort((a, b) => b.ts - a.ts)
-    if (filter === "all") return sorted
-    return sorted.filter((e) => e.event_type === filter)
-  }, [store.events.length, filter])
+  console.log("useMemo RUNNING")
+  const sorted = [...store.events].sort((a, b) => b.ts - a.ts);
+  if (filter === "all") return sorted;
+  return sorted.filter((e) => e.event_type === filter);
+
+}, [store.events.slice(), filter]);
+
+
 
   // 🎯 Format details based on event type
   const details = (e) => {
@@ -242,11 +261,12 @@ export const EventFeed = observer(function EventFeed() {
                     : ""
                 }`}
               >
-                <TableCell className="tabular-nums">
-                  {secondsToHHMMSS(e.ts)}
+                <TableCell className="tabular-nums">{e.period
+                  }
                 </TableCell>
+                
                 <TableCell className="capitalize">
-                  {e.won_team || e.awarded_team_id || "-"}
+                  {e.team_id }
                 </TableCell>
                 <TableCell>
                   <TypeChip event={e} />

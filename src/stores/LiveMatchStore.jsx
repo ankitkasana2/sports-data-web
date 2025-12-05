@@ -1,41 +1,41 @@
-import { makeAutoObservable, computed } from "mobx"
-import axios from "axios"
-import { toJS } from "mobx"
-import { nanoid } from 'nanoid';
+import { makeAutoObservable, computed, runInAction } from "mobx";
+import axios from "axios";
+import { nanoid } from "nanoid";
+
 // Gaelic formatting helper: goals-points (total points = goals*3 + points)
 export function toTotalPoints(s) {
-  return s.goals * 3 + s.points
+  return (s?.goals || 0) * 3 + (s?.points || 0);
 }
-
 
 const apiUrl = import.meta.env;
 
-
 class LiveMatchStore {
-  code = "football"
-  clock = { period: "H1", seconds: 0, running: false }
-  intervalId = null
-  match_id = 'match_4545'
+  // basic config / state
+  code = "football";
+  clock = { period: "H1", seconds: 0, running: false };
+  intervalId = null;
 
   score = {
     home: { goals: 0, points: 0 },
     away: { goals: 0, points: 0 },
-  }
+  };
 
-  // core data
-  events = []
-  possessions = []
-  match_context = {}
+  // core data (always arrays by default)
+  events = [];
+  possessions = [];
+  match_context = {};
 
-  lastSavedAt = null
-  isOnline = true
-  pendingChanges = false
+  loading = false;
+
+  lastSavedAt = null;
+  isOnline = true;
+  pendingChanges = false;
 
   // UI state
   ui = {
     prematchOpen: true,
     selection: null,
-    currentShot: { open: false, xy: [], shotType: '' },
+    currentShot: { open: false, xy: [], shotType: "" },
     currentFree: { open: false, xy: [] },
     currentRestart: { open: false, xy: [] },
     currentTurnover: { open: false, xy: [] },
@@ -47,218 +47,142 @@ class LiveMatchStore {
     currentMark: { open: false, xy: [] },
     currentCard: { open: false, xy: [] },
     current50mAdvance: { open: false, xy: [] },
-     currentSubstitution: { open: false, xy: [] },
+    currentSubstitution: { open: false, xy: [] },
     currentBackPass: { open: false, xy: [] },
     currentNote: { open: false, xy: [] },
+  };
 
-  }
-
-  // basic history for undo/redo
-  past = []
-  future = []
+  // history for undo/redo
+  past = [];
+  future = [];
 
   autosaveTimer = null;
+  match_id = null;
 
   constructor() {
+    // mark computed fields
     makeAutoObservable(this, {
       pppHome: computed,
       pppAway: computed,
       possessionCounts: computed,
-    })
+    });
 
-    this.initializeAutosave()
-    this.initializeOnlineDetection()
-    this.loadFromLocalStorage()
+    this.readMatchIdFromURL();
+    this.listenURLChange();
+
+    // ensure arrays are never undefined
+    this.events = this.events || [];
+    this.possessions = this.possessions || [];
   }
 
-  initializeAutosave() {
-    // Start autosave timer (every 2.5 seconds)
-    // this.autosaveTimer = setInterval(() => {
-    //   this.saveToLocalStorage()
-    // }, 2500)
+  /* --------------------- URL helpers --------------------- */
+  readMatchIdFromURL() {
+    if (typeof window === "undefined") return;
+    const path = window.location.pathname; // e.g. /live/M005
+    const parts = path.split("/"); // ["", "live", "M005"]
+    this.match_id = parts[2] || null;
+    // console.debug("Resolved match_id:", this.match_id);
   }
 
-  initializeOnlineDetection() {
-    if (typeof window !== "undefined") {
-      this.isOnline = navigator.onLine
+  listenURLChange() {
+    if (typeof window === "undefined") return;
 
-      window.addEventListener("online", () => {
-        this.isOnline = true
-        if (this.pendingChanges) {
-          this.saveToLocalStorage()
-        }
-      })
+    window.addEventListener("popstate", () => {
+      this.readMatchIdFromURL();
+    });
 
-      window.addEventListener("offline", () => {
-        this.isOnline = false
-      })
-    }
+    // patch pushState/replaceState to detect navigation done by router
+    const originalPushState = history.pushState;
+    history.pushState = (...args) => {
+      originalPushState.apply(history, args);
+      this.readMatchIdFromURL();
+    };
+
+    const originalReplaceState = history.replaceState;
+    history.replaceState = (...args) => {
+      originalReplaceState.apply(history, args);
+      this.readMatchIdFromURL();
+    };
   }
 
-  saveToLocalStorage() {
-    if (typeof window === "undefined") return
-
-    try {
-      const saveData = {
-        code: this.code,
-        clock: this.clock,
-        score: this.score,
-        events: this.events,
-        possessions: this.possessions,
-        ui: this.ui,
-        timestamp: Date.now(),
-      }
-
-      localStorage.setItem("live-match-autosave", JSON.stringify(saveData))
-      this.lastSavedAt = Date.now()
-      this.pendingChanges = false
-    } catch (error) {
-      console.error("Failed to save to localStorage:", error)
-    }
-  }
-
-  loadFromLocalStorage() {
-    if (typeof window === "undefined") return
-
-    try {
-      const saved = localStorage.getItem("live-match-autosave")
-      if (!saved) return
-
-      const saveData = JSON.parse(saved)
-      const hoursSinceLastSave = (Date.now() - saveData.timestamp) / (1000 * 60 * 60)
-      if (hoursSinceLastSave > 24) return
-
-      this.code = saveData.code || this.code
-      this.clock = { ...this.clock, ...saveData.clock }
-      this.score = { ...this.score, ...saveData.score }
-      this.events = saveData.events || []
-      this.possessions = saveData.possessions || []
-      this.ui = { ...this.ui, ...saveData.ui }
-      this.lastSavedAt = saveData.timestamp
-    } catch (error) {
-      console.error("Failed to load from localStorage:", error)
-    }
-  }
-
+  /* --------------------- Utility helpers --------------------- */
   destroy() {
     if (this.autosaveTimer) {
-      clearInterval(this.autosaveTimer)
-      this.autosaveTimer = null
+      clearInterval(this.autosaveTimer);
+      this.autosaveTimer = null;
+    }
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
     }
   }
 
   markChanged() {
-    this.pendingChanges = true
+    this.pendingChanges = true;
   }
 
-  addEvent(event) {
-  const newEvent = { id: nanoid(), timestamp: Date.now(), ...event };
-
-  // Save current state before mutation
-  this.past.unshift(JSON.stringify(this.events));
-  this.future = [];
-
-  this.events.unshift(newEvent); // newest on top
-  this.pendingChanges = true;
-}
-
-updateRestartSpot(meters) {
-  const num = Number(meters);
-  if (!this.match) this.match = {};
-  this.match.restartSpotMeters = num;
-}
-
-
-undo(){
-  if (this.past.length === 0) return;
-  this.future.push(JSON.stringify(this.events));
-  this.events = JSON.parse(this.past.pop());
-  this.pendingChanges = true;
-}
-
-redo() {
-  if (this.future.length === 0) return;
-  this.past.push(JSON.stringify(this.events));
-  this.events = JSON.parse(this.future.pop());
-  this.pendingChanges = true;
-}
-
-
-  // serialization for simple history
-  snapshot() {
-    return JSON.stringify({
+  /* --------------------- History (safe) --------------------- */
+  // snapshot returns plain object (not string) to make debugging easier
+  snapshotObject() {
+    return {
       code: this.code,
-      clock: this.clock,
-      score: this.score,
-      events: this.events,
-      possessions: this.possessions,
-      ui: this.ui,
-    })
-  }
-
-  restore(s) {
-    const v = JSON.parse(s)
-    this.code = v.code
-    this.clock = v.clock
-    this.score = v.score
-    this.events.shift()
-    this.possessions = v.possessions
-    this.ui.currentShot.xy.shift()
-    this.ui.currentFree.xy.shift()
-    // this.ui = v.ui
+      clock: { ...this.clock },
+      score: JSON.parse(JSON.stringify(this.score)),
+      events: Array.isArray(this.events) ? JSON.parse(JSON.stringify(this.events)) : [],
+      possessions: Array.isArray(this.possessions)
+        ? JSON.parse(JSON.stringify(this.possessions))
+        : [],
+      ui: JSON.parse(JSON.stringify(this.ui)),
+      match_context: JSON.parse(JSON.stringify(this.match_context || {})),
+    };
   }
 
   pushHistory() {
-    this.past.push(this.snapshot())
-    this.future = []
+    // keep last N snapshots if you want (here unlimited, consider limiting)
+    try {
+      this.past.push(this.snapshotObject());
+      this.future = [];
+    } catch (err) {
+      // shouldn't happen, but don't break app
+      console.error("pushHistory error", err);
+    }
+  }
+
+  restoreFromSnapshot(snapshot) {
+    if (!snapshot || typeof snapshot !== "object") return;
+    // safe assignments — fallback to defaults
+    this.code = snapshot.code ?? this.code;
+    this.clock = snapshot.clock ?? this.clock;
+    this.score = snapshot.score ?? this.score;
+    this.events = Array.isArray(snapshot.events) ? snapshot.events : [];
+    this.possessions = Array.isArray(snapshot.possessions) ? snapshot.possessions : [];
+    this.ui = snapshot.ui ?? this.ui;
+    this.match_context = snapshot.match_context ?? this.match_context;
   }
 
   undo() {
-    if (!this.past.length) return
-    const current = this.snapshot()
-    const prev = this.past.pop()
-    this.future.push(current)
-    this.restore(prev)
+    if (!this.past.length) return;
+    const current = this.snapshotObject();
+    const prev = this.past.pop();
+    if (!prev) return;
+    this.future.push(current);
+    this.restoreFromSnapshot(prev);
+    this.pendingChanges = true;
   }
 
   redo() {
-    if (!this.future.length) return
-    const current = this.snapshot()
-    const next = this.future.pop()
-    this.past.push(current)
-    this.restore(next)
+    if (!this.future.length) return;
+    const current = this.snapshotObject();
+    const next = this.future.pop();
+    if (!next) return;
+    this.past.push(current);
+    this.restoreFromSnapshot(next);
+    this.pendingChanges = true;
   }
 
-  setCode(code) {
-    this.pushHistory()
-    this.code = code
-  }
-
-  openPrematch(open) {
-    this.ui.prematchOpen = open
-  }
-
-  savePrematch(data) {
-
-    setTimeout(() => {
-      axios.post(`${apiUrl.VITE_BACKEND_PATH}match_context`, data)
-        .then(response => {
-          console.log("Match_context saved:", response.data);
-        })
-        .catch(error => {
-          console.error("There was an error to save match_context!", error);
-        });
-    }, 500);
-
-    this.match_context = data
-    this.clock.period = "H1"
-    this.clock.seconds = 0
-    this.startClock()
-    return
-  }
-
+  /* --------------------- Clock/score helpers --------------------- */
   startClock() {
-    if (this.intervalId) return; // prevent multiple intervals
+    if (this.intervalId) return;
     this.clock.running = true;
     this.intervalId = setInterval(() => {
       this.clock.seconds = this.clock.seconds + 1;
@@ -269,83 +193,161 @@ redo() {
     this.clock.running = false;
     if (this.intervalId) {
       clearInterval(this.intervalId);
-      this.intervalId = null; // reset
+      this.intervalId = null;
     }
   }
 
   setTime(seconds) {
-    this.pushHistory()
-    this.clock.seconds = Math.max(0, Math.floor(seconds))
+    this.pushHistory();
+    this.clock.seconds = Math.max(0, Math.floor(seconds));
   }
 
   setPeriod(period) {
-    this.pushHistory()
-    this.clock.period = period
+    this.pushHistory();
+    this.clock.period = period;
   }
 
   tick(delta = 1) {
-    if (!this.clock.running) return
-    this.clock.seconds = Math.max(0, this.clock.seconds + delta)
+    if (!this.clock.running) return;
+    this.clock.seconds = Math.max(0, this.clock.seconds + delta);
   }
 
   addScore(team, kind) {
-    this.pushHistory()
+    this.pushHistory();
+    if (!this.score[team]) this.score[team] = { goals: 0, points: 0 };
     if (kind === "goal") {
       this.score[team].goals += 1;
-    } else if (kind == 'two_point') {
+    } else if (kind === "two_point") {
       this.score[team].points += 2;
-    }
-    else {
+    } else {
       this.score[team].points += 1;
     }
-    // close current possession on score (per rules)
-    this.closeCurrentPossessionOn()
+    this.closeCurrentPossessionOn();
   }
 
-  // add event 
-  async addEvent(e) {
-
-    this.pushHistory()
-    const evt = {
-      id: `Event_${nanoid(6)}`,
-      matchId: this.match_id,
-      ts: this.clock.seconds,
-      period: this.clock.period,
-      ...e,
+  /* --------------------- Fetching / API --------------------- */
+  async fetchEvents(matchId) {
+    this.loading = true;
+    // guard matchId fallback to stored id
+    const id = matchId ?? this.match_id;
+    if (!id) {
+      this.events = [];
+      this.loading = false;
+      return;
     }
 
-    console.log("evt", evt)
+    try {
+      const res = await axios.get(`${apiUrl.VITE_BACKEND_PATH}api/events/${id}`);
+      // API might return different shapes — be defensive
+      const payload = res?.data ?? {};
+      // prefer `data` (common), else `events`, else whole payload if it looks like an array
+      let events = [];
+      if (Array.isArray(payload.data)) events = payload.data;
+      else if (Array.isArray(payload.events)) events = payload.events;
+      else if (Array.isArray(res)) events = res;
+      else if (Array.isArray(payload)) events = payload;
 
-    // create event 
+      runInAction(() => {
+        this.events = events || [];
+        this.loading = false;
+      });
+      console.log("✅ fetchEvents response, events count:", this.events.length);
+    } catch (error) {
+      runInAction(() => {
+        this.loading = false;
+        // keep events as array to avoid undefined errors
+        this.events = Array.isArray(this.events) ? this.events : [];
+      });
+      if (error?.response) {
+        console.log("📛 Backend Error Response:", error.response.data);
+      } else {
+        console.log("📛 Unknown Error:");
+      }
+    }
+  }
+
+  /* --------------------- Event creation / local apply --------------------- */
+  
+  addEventLocal(eventObj, { newestFirst = true } = {}) {
+    // ensure arrays exist
+    if (!Array.isArray(this.events)) this.events = [];
+    // push history before mutating in case user wants undo
+    this.pushHistory();
+
+    const newEvent = {
+      id: eventObj.id ?? `Event_${nanoid(6)}`,
+      matchId: this.match_id ?? eventObj.matchId ?? null,
+      ts: eventObj.ts ?? this.clock.seconds,
+      period: eventObj.period ?? this.clock.period,
+      ...eventObj,
+    };
+
+    if (newestFirst) {
+      this.events.unshift(newEvent);
+    } else {
+      this.events.push(newEvent);
+    }
+
+    this.pendingChanges = true;
+    // try to apply possession rules to maintain possessions
+    try {
+      this.applyPossessionRules(newEvent);
+    } catch (err) {
+      // guard — possession logic shouldn't break event insertion
+      console.error("applyPossessionRules error", err);
+    }
+    return newEvent;
+  }
+
+  // add event with API create (calls addEventLocal on success)
+  async addEvent(e) {
+    
+    if (!Array.isArray(this.events)) this.events = [];
+
+    const evt = {
+      id: e.id ?? `Event_${nanoid(6)}`,
+      matchId: this.match_id,
+      ts: e.ts ?? this.clock.seconds,
+      period: e.period ?? this.clock.period,
+      ...e,
+    };
+
+    // push history before network call if you want to be able to undo attempt
+    this.pushHistory();
+
     try {
       const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/createEvent`, evt);
-
-      if (response.data.success) {
-        if ((e.type && e.type !== 'note') || (e.event_type && e.event_type !== 'note')) {
-          this.applyPossessionRules(evt)
+      // if backend returns success flag, use it; else assume success when 2xx
+      const success = response?.data?.success ?? response.status < 400;
+      if (success) {
+        // update possessions and add locally
+        if ((e.type && e.type !== "note") || (e.event_type && e.event_type !== "note")) {
+          this.applyPossessionRules(evt);
         }
-        this.events.unshift(evt)
-        return true;  // successm
+        // ensure events array and then push
+        if (!Array.isArray(this.events)) this.events = [];
+        this.events.unshift(evt);
+        return true;
       } else {
-        return false; // failed
+        
+        return false;
       }
     } catch (error) {
-      console.error("Error creating player:", error);
+      console.error("Error creating event:", error);
+      // keep store consistent (events remains array)
+      if (!Array.isArray(this.events)) this.events = [];
       return false;
     }
-
-
-
-
   }
 
+  /* --------------------- Possession helpers --------------------- */
   currentPossession() {
-    return this.possessions[this.possessions.length - 1]
+    if (!Array.isArray(this.possessions)) this.possessions = [];
+    return this.possessions[this.possessions.length - 1];
   }
 
-  // Flexible helper to extract team id from heterogeneous event objects
   extractTeamFromEvent(evt) {
-    if (!evt) return null
+    if (!evt) return null;
     return (
       evt.team ||
       evt.awarded_team_id ||
@@ -354,18 +356,17 @@ redo() {
       evt.taken_by_team_id ||
       evt.team_id ||
       null
-    )
+    );
   }
 
   startPossession(evtOrTeam, start_cause = "touch", start_restart_type = null) {
-    // allow either event object or team id string
-    let teamId = null
-    let start_event_id = null
-    if (typeof evtOrTeam === 'string') {
-      teamId = evtOrTeam
-    } else if (typeof evtOrTeam === 'object' && evtOrTeam !== null) {
-      teamId = this.extractTeamFromEvent(evtOrTeam)
-      start_event_id = evtOrTeam.id || null
+    let teamId = null;
+    let start_event_id = null;
+    if (typeof evtOrTeam === "string") {
+      teamId = evtOrTeam;
+    } else if (typeof evtOrTeam === "object" && evtOrTeam !== null) {
+      teamId = this.extractTeamFromEvent(evtOrTeam);
+      start_event_id = evtOrTeam.id || null;
     }
 
     const p = {
@@ -384,194 +385,201 @@ redo() {
       shot_event_id: null,
       points_for: 0,
       sequence_id: null,
-    }
+    };
 
-    console.log('startPossession ->', p)
-
-    this.possessions.unshift(p)
-    return p
+    if (!Array.isArray(this.possessions)) this.possessions = [];
+    this.possessions.unshift(p);
+    return p;
   }
 
   endPossession(end_cause = null, end_event_id = null) {
-    const p = this.currentPossession()
-    if (!p) return
-    if (p.end_time_sec != null) return // already closed
-
-    p.end_time_sec = this.clock.seconds
-    p.duration_sec = Math.max(0, p.end_time_sec - p.start_time_sec)
-    p.end_event_id = end_event_id
-    p.end_cause = end_cause
-
-    // compute points_for from scoreboard snapshot if possible
-    // (We don't have per-possession incremental points here; this is a best-effort placeholder.)
-
-    console.log('endPossession ->', p)
-    return p
+    const p = this.currentPossession();
+    if (!p) return;
+    if (p.end_time_sec != null) return;
+    p.end_time_sec = this.clock.seconds;
+    p.duration_sec = Math.max(0, p.end_time_sec - p.start_time_sec);
+    p.end_event_id = end_event_id;
+    p.end_cause = end_cause;
+    return p;
   }
 
   closeCurrentPossessionOn() {
-    this.endPossession("score", null)
+    this.endPossession("score", null);
   }
 
-  closeForPeriod() {
-    // Ends the current possession on period end
-    this.endPossession('period_end', null)
-  }
-
+  /* apply possession rules (kept mostly same but defensive) */
   applyPossessionRules(evt) {
-    // Normalize type field (support both type and event_type naming)
-    const type = evt.type || evt.event_type || null
-    const p = this.currentPossession()
+    const type = evt.type || evt.event_type || null;
+    const p = this.currentPossession();
 
-    // Helper: mark evt with possession id when a possession exists
-    if (p) evt.possession_id = p.possession_id
+    if (p) evt.possession_id = p.possession_id;
 
-    // --- CASE 1: No possession yet ---
     if (!p) {
-      // Events that should open a possession for a team
-      const restartTypes = new Set(['throw_in', 'sideline', 'free', '65', '45', 'penalty', 'puckout', 'kickout', 'restart', 'kickout_or_puckout'])
+      const restartTypes = new Set([
+        "throw_in",
+        "sideline",
+        "free",
+        "65",
+        "45",
+        "penalty",
+        "puckout",
+        "kickout",
+        "restart",
+        "kickout_or_puckout",
+      ]);
 
-      // Determine team that would start possession
-      let awardedTeam = this.extractTeamFromEvent(evt)
+      let awardedTeam = this.extractTeamFromEvent(evt);
 
-      if (type === 'throw_in') {
-        // Start for the team who won the throw
-        if (evt.won_by_team_id || evt.won_by) awardedTeam = evt.won_by_team_id || evt.won_by
+      if (type === "throw_in") {
+        if (evt.won_by_team_id || evt.won_by)
+          awardedTeam = evt.won_by_team_id || evt.won_by;
         if (awardedTeam) {
-          const poss = this.startPossession(evt, 'throw_in', null)
-          evt.possession_id = poss.possession_id
+          const poss = this.startPossession(evt, "throw_in", null);
+          evt.possession_id = poss.possession_id;
         }
       } else if (restartTypes.has(type)) {
-        // For restarts: if this restart awards possession to a team, open it
-        // Some restarts may be 'set_shot' (shot will close soon after)
         if (awardedTeam) {
-          const poss = this.startPossession(evt, 'restart', type)
-          evt.possession_id = poss.possession_id
+          const poss = this.startPossession(evt, "restart", type);
+          evt.possession_id = poss.possession_id;
         }
-      } else if (type === 'strike' || type === 'touch') {
-        // generic touch starts a possession
+      } else if (type === "strike" || type === "touch") {
         if (awardedTeam) {
-          const poss = this.startPossession(evt, 'touch', null)
-          evt.possession_id = poss.possession_id
+          const poss = this.startPossession(evt, "touch", null);
+          evt.possession_id = poss.possession_id;
         }
       }
-
-      return
+      return;
     }
 
-    // --- CASE 2: Possession is ongoing ---
-    // Assign possession id
-    evt.possession_id = p.possession_id
-
-    // Define end-type events that close possession
-    const endTypes = new Set(['shot', 'score', 'wide_loss', 'short_loss', 'whistle', 'turnover'])
+    // ongoing possession
+    evt.possession_id = p.possession_id;
+    const endTypes = new Set([
+      "shot",
+      "score",
+      "wide_loss",
+      "short_loss",
+      "whistle",
+      "turnover",
+    ]);
     if (endTypes.has(type)) {
-      this.endPossession(type, evt.id)
-      return
+      this.endPossession(type, evt.id);
+      return;
     }
 
-    // Foul handling: if foul is against controlling team -> possession ends
-    if (type === 'foul' || evt.event_type === 'foul') {
-      const againstTeam = evt.against_team || evt.offending_team || null
+    if (type === "foul" || evt.event_type === "foul") {
+      const againstTeam = evt.against_team || evt.offending_team || null;
       if (againstTeam && againstTeam === p.team_id) {
-        this.endPossession('foul', evt.id)
-        return
+        this.endPossession("foul", evt.id);
+        return;
       }
-      // if foul against opponent -> possession continues (and a free event might be created)
     }
 
-    // Free handling
-    if (type === 'free' || evt.event_type === 'free') {
-      // standard field names: evt.team (awarded team) or evt.awarded_team_id
-      const freeTeam = evt.team || evt.awarded_team_id || evt.won_by_team_id || null
-
-      // If free awarded to same team in possession -> possession continues
+    if (type === "free" || evt.event_type === "free") {
+      const freeTeam = evt.team || evt.awarded_team_id || evt.won_by_team_id || null;
       if (freeTeam && freeTeam === p.team_id) {
-        // nothing to do
-        return
+        return;
       }
-
-      // Free awarded to other team -> possession flips
       if (freeTeam && freeTeam !== p.team_id) {
-        this.endPossession('free_lost', evt.id)
-        // Start new possession for awarded team (restart)
-        const newPoss = this.startPossession(evt, 'restart', evt.free_type || 'free')
-        evt.possession_id = newPoss.possession_id
-        return
+        this.endPossession("free_lost", evt.id);
+        const newPoss = this.startPossession(evt, "restart", evt.free_type || "free");
+        evt.possession_id = newPoss.possession_id;
+        return;
       }
     }
 
-    // Throw-in handling during possession (e.g., quick throw won by same team) - by default, treat as continuation if won_by same team
-    if (type === 'throw_in') {
-      const wonBy = evt.won_by_team_id || evt.won_by || null
+    if (type === "throw_in") {
+      const wonBy = evt.won_by_team_id || evt.won_by || null;
       if (wonBy && wonBy !== p.team_id) {
-        this.endPossession('throw_in_lost', evt.id)
-        const newPoss = this.startPossession(evt, 'throw_in', null)
-        evt.possession_id = newPoss.possession_id
-        return
+        this.endPossession("throw_in_lost", evt.id);
+        const newPoss = this.startPossession(evt, "throw_in", null);
+        evt.possession_id = newPoss.possession_id;
+        return;
       }
     }
 
-    // Sideline/45/65/penalty/mark: if awarded to other team, flip; if awarded to same team and outcome is play_on, continue; if set_shot -> ensure possession was opened earlier (should already be)
-    if (['sideline', '45', '65', 'penalty', 'mark'].includes(type)) {
-      const awarded = evt.team || evt.awarded_team_id || evt.won_by_team_id || null
+    if (["sideline", "45", "65", "penalty", "mark"].includes(type)) {
+      const awarded = evt.team || evt.awarded_team_id || evt.won_by_team_id || null;
       if (awarded && awarded !== p.team_id) {
-        this.endPossession(type + '_lost', evt.id)
-        const newPoss = this.startPossession(evt, 'restart', type)
-        evt.possession_id = newPoss.possession_id
-        return
+        this.endPossession(type + "_lost", evt.id);
+        const newPoss = this.startPossession(evt, "restart", type);
+        evt.possession_id = newPoss.possession_id;
+        return;
       }
-      // else same team -> possession continues
     }
 
-    // Back-pass violation: creates a free to opponent -> end possession and start for opponent
-    if (type === 'back_pass' || evt.event_type === 'back_pass_to_gk') {
-      const opponent = evt.awarded_team_id || evt.team || null
+    if (type === "back_pass" || evt.event_type === "back_pass_to_gk") {
+      const opponent = evt.awarded_team_id || evt.team || null;
       if (opponent) {
-        this.endPossession('back_pass', evt.id)
-        const newPoss = this.startPossession(evt, 'restart', 'free')
-        evt.possession_id = newPoss.possession_id
-        return
+        this.endPossession("back_pass", evt.id);
+        const newPoss = this.startPossession(evt, "restart", "free");
+        evt.possession_id = newPoss.possession_id;
+        return;
       }
     }
 
-    // Kick-out / Puck-out: often opens possession for the winner
-    if (type === 'kickout' || type === 'puckout' || type === 'kickout_or_puckout') {
-      const winner = evt.won_by_team_id || evt.winner_team_id || evt.taken_by_team_id || evt.taken_by || null
+    if (type === "kickout" || type === "puckout" || type === "kickout_or_puckout") {
+      const winner = evt.won_by_team_id || evt.winner_team_id || evt.taken_by_team_id || evt.taken_by || null;
       if (winner && winner !== p.team_id) {
-        this.endPossession(type + '_lost', evt.id)
-        const newPoss = this.startPossession(evt, 'kickout', 'kickout')
-        evt.possession_id = newPoss.possession_id
-        return
+        this.endPossession(type + "_lost", evt.id);
+        const newPoss = this.startPossession(evt, "kickout", "kickout");
+        evt.possession_id = newPoss.possession_id;
+        return;
       }
-      // else continues
     }
 
-    // Default: no possession change
+    // default: nothing
   }
 
-
-  // computed metrics
+  /* --------------------- computed --------------------- */
   get pppHome() {
-    const poss = this.possessions.filter((p) => p.team === "home" && p.end != null).length || 1
-    const points = toTotalPoints(this.score.home)
-    return points / poss
+    const poss = (Array.isArray(this.possessions) ? this.possessions : []).filter(
+      (p) => p?.team === "home" && p?.end != null
+    ).length || 1;
+    const points = toTotalPoints(this.score.home);
+    return points / poss;
   }
 
   get pppAway() {
-    const poss = this.possessions.filter((p) => p.team === "away" && p.end != null).length || 1
-    const points = toTotalPoints(this.score.away)
-    return points / poss
+    const poss = (Array.isArray(this.possessions) ? this.possessions : []).filter(
+      (p) => p?.team === "away" && p?.end != null
+    ).length || 1;
+    const points = toTotalPoints(this.score.away);
+    return points / poss;
   }
 
   get possessionCounts() {
+    const arr = Array.isArray(this.possessions) ? this.possessions : [];
     return {
-      home: this.possessions.filter((p) => p.team === "home" && p.end != null).length,
-      away: this.possessions.filter((p) => p.team === "away" && p.end != null).length,
-    }
+      home: arr.filter((p) => p?.team === "home" && p?.end != null).length,
+      away: arr.filter((p) => p?.team === "away" && p?.end != null).length,
+    };
   }
 
-  openDialog(kind, from = null) {
+  /* --------------------- small UI helpers --------------------- */
+  openPrematch(open) {
+    this.ui.prematchOpen = !!open;
+  }
+
+  savePrematch(data) {
+    setTimeout(() => {
+      axios
+        .post(`${apiUrl.VITE_BACKEND_PATH}match_context`, data)
+        .then((response) => {
+          console.log("Match_context saved:", response.data);
+        })
+        .catch((error) => {
+          console.error("There was an error to save match_context!", error);
+        });
+    }, 500);
+
+    this.match_context = data;
+    this.clock.period = "H1";
+    this.clock.seconds = 0;
+    this.startClock();
+    return;
+  }
+
+openDialog(kind, from = null) {
     this.pauseClock()
     if (kind === "shot") {
 
@@ -624,16 +632,25 @@ redo() {
   }
 
   setDialogXY(kind, xy) {
-    if (kind === "shot") this.ui.currentShot.xy = [...this.ui.currentShot.xy, xy]
-    if (kind === "free") this.ui.currentFree.xy = [...this.ui.currentFree.xy, xy]
-    if (kind === "restart") this.ui.currentRestart.xy = [...this.ui.currentShot.xy, xy]
-    if (kind === "turnover") this.ui.currentTurnover.xy = [...this.ui.currentShot.xy, xy]
-    if (kind === "sideline") this.ui.currentSideline.xy = [...this.ui.currentSideline.xy, xy]
+    if (kind === "shot") this.ui.currentShot.xy = [...(this.ui.currentShot.xy || []), xy];
+    if (kind === "free") this.ui.currentFree.xy = [...(this.ui.currentFree.xy || []), xy];
+    if (kind === "restart")
+      this.ui.currentRestart.xy = [...(this.ui.currentRestart.xy || []), xy];
+    if (kind === "turnover")
+      this.ui.currentTurnover.xy = [...(this.ui.currentTurnover.xy || []), xy];
+    if (kind === "sideline")
+      this.ui.currentSideline.xy = [...(this.ui.currentSideline.xy || []), xy];
   }
 }
 
-export const liveMatchStore = new LiveMatchStore()
 
+
+
+export const liveMatchStore = new LiveMatchStore();
 export function createLiveStore() {
-  return new LiveMatchStore()
+  return new LiveMatchStore();
 }
+
+
+
+

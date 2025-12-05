@@ -36,10 +36,10 @@ export const MarkDialog = observer(function MarkDialog() {
 
     // store event 
     store.addEvent({
-      event_type: 'free',
+      event_type: 'Mark',
       free_type: 'mark_free',
       free_outcome: option,
-      awarded_team_id: awardedTeam,
+      team_id: awardedTeam,
     })
 
      toast.success("Data saved successfully!")

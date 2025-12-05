@@ -142,6 +142,7 @@ export const ShotDialog = observer(function ShotDialog() {
     const evt = {
       event_type: "shot",
       awarded_team_id: team,
+      team_id:team,
       shooter_player_id: shooter,
       assist_player_id: assist || null,
       shot_type: shotType,
