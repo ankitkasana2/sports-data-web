@@ -107,6 +107,7 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
       forced_flag: mechanism == 'Handling_error' && mechanism == 'Loose_ball' ? 'false' : 'true',
       ball_type: '',
       won_team: awardedTeam,
+      team_id: awardedTeam,
       spot_x: position ? position.x : null,
       spot_y: position ? position.y : null,
       zone: calculation.zone,

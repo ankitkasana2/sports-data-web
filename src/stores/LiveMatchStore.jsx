@@ -225,6 +225,43 @@ class LiveMatchStore {
     this.closeCurrentPossessionOn();
   }
 
+  // Topbar score recalculation from events 
+  recalculateScore() {
+    const home = { goals: 0, points: 0 };
+    const away = { goals: 0, points: 0 };
+
+    (this.events || []).forEach((evt) => {
+      if (evt.event_type !== "shot") return;
+
+      // NORMALIZE TEAM ID
+      const team = (evt.team_id || evt.team || "").trim().toLowerCase();
+      const isHome =
+        team === "team_a".toLowerCase() ||
+        team === "home" ||
+        team === "a" ||
+        team === "team a";
+
+      const isAway =
+        team === "team_b".toLowerCase() ||
+        team === "away" ||
+        team === "b" ||
+        team === "team b";
+
+      if (evt.shot_result === "goal") {
+        if (isHome) home.goals++;
+        if (isAway) away.goals++;
+      }
+
+      if (evt.shot_result === "point") {
+        if (isHome) home.points++;
+        if (isAway) away.points++;
+      }
+    });
+
+    this.score = { home, away };
+  }
+
+
   /* --------------------- Fetching / API --------------------- */
   async fetchEvents(matchId) {
     this.loading = true;
@@ -251,7 +288,7 @@ class LiveMatchStore {
         this.events = events || [];
         this.loading = false;
       });
-      console.log("✅ fetchEvents response, events count:", this.events.length);
+      this.recalculateScore();
     } catch (error) {
       runInAction(() => {
         this.loading = false;
@@ -259,15 +296,15 @@ class LiveMatchStore {
         this.events = Array.isArray(this.events) ? this.events : [];
       });
       if (error?.response) {
-        console.log("📛 Backend Error Response:", error.response.data);
+        console.log(" Backend Error Response:", error.response.data);
       } else {
-        console.log("📛 Unknown Error:");
+        console.log(" Unknown Error:");
       }
     }
   }
 
   /* --------------------- Event creation / local apply --------------------- */
-  
+
   addEventLocal(eventObj, { newestFirst = true } = {}) {
     // ensure arrays exist
     if (!Array.isArray(this.events)) this.events = [];
@@ -301,7 +338,7 @@ class LiveMatchStore {
 
   // add event with API create (calls addEventLocal on success)
   async addEvent(e) {
-    
+
     if (!Array.isArray(this.events)) this.events = [];
 
     const evt = {
@@ -309,15 +346,29 @@ class LiveMatchStore {
       matchId: this.match_id,
       ts: e.ts ?? this.clock.seconds,
       period: e.period ?? this.clock.period,
+      possession_id: e.possession_id ?? this.currentPossessionId,
       ...e,
     };
+    
 
+
+    if (
+      (e.type && e.type !== "note") ||
+      (e.event_type && e.event_type !== "note")
+    ) {
+      this.applyPossessionRules(evt);
+    }
+
+
+    // 3️⃣ Make a CLEAN COPY to send to backend this code use for posession id otherwise pass direct evt in api.
+    const evtForBackend = JSON.parse(JSON.stringify(evt));
     // push history before network call if you want to be able to undo attempt
     this.pushHistory();
 
     try {
-      const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/createEvent`, evt);
+      const response = await axios.post(`${apiUrl.VITE_BACKEND_PATH}api/createEvent`, evtForBackend);
       // if backend returns success flag, use it; else assume success when 2xx
+
       const success = response?.data?.success ?? response.status < 400;
       if (success) {
         // update possessions and add locally
@@ -329,7 +380,7 @@ class LiveMatchStore {
         this.events.unshift(evt);
         return true;
       } else {
-        
+
         return false;
       }
     } catch (error) {
@@ -579,7 +630,7 @@ class LiveMatchStore {
     return;
   }
 
-openDialog(kind, from = null) {
+  openDialog(kind, from = null) {
     this.pauseClock()
     if (kind === "shot") {
 

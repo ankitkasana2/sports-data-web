@@ -28,7 +28,9 @@ export const NoteDialog = observer(function NoteDialog() {
     // store event 
     store.addEvent({
       event_type: 'note',
-      note_text: message
+      note_text: message,
+        
+
     })
      toast.success("Data saved successfully!")
 

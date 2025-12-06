@@ -169,11 +169,8 @@ export const TopBar = observer(function TopBar() {
   const autosaveLabel = store.lastSavedAt ? formatSaveTime(store.lastSavedAt) : "—"
   const saveStatus = store.pendingChanges ? "Saving..." : `Saved ${autosaveLabel}`
   const offlineIndicator = !store.isOnline ? " (Offline)" : ""
-
-  // Totals for quick display
-  const totalHome = store.score.home.goals * 3 + store.score.home.points
-  const totalAway = store.score.away.goals * 3 + store.score.away.points
-
+ 
+ 
   return (
     <div className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2">
@@ -264,9 +261,21 @@ export const TopBar = observer(function TopBar() {
 
         {/* 🧮 Scoreboard */}
         <div className="flex items-center gap-4">
-          <ScoreBox label="Team A" g={store.score.home.goals} p={store.score.home.points} total={totalHome} />
+          <ScoreBox
+            label="Team A"
+            g={store.score.home.goals}
+            p={store.score.home.points}
+            total={store.totalHome}
+          />
+
           <span className="text-muted-foreground">—</span>
-          <ScoreBox label="Team B" g={store.score.away.goals} p={store.score.away.points} total={totalAway} />
+
+          <ScoreBox
+            label="Team B"
+            g={store.score.away.goals}
+            p={store.score.away.points}
+            total={store.totalAway}
+          />
         </div>
 
         {/* 🧠 Save Status */}

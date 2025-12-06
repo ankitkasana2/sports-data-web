@@ -163,15 +163,10 @@ export const EventFeed = observer(function EventFeed() {
   // const { id } = useParams();
   
 const location = useLocation();
-console.log("URL:", location.pathname);
 const segments = location.pathname.split("/");
 const id = segments[2]; 
-
-console.log("Extracted ID:", id);
-
  useEffect(() => {
     store.fetchEvents(id);
-  
   }, [id]);
 
   // 🧭 Filter control
@@ -179,7 +174,6 @@ console.log("Extracted ID:", id);
 
   // 🕓 Sort newest first + apply filter
   const rows = useMemo(() => {
-  console.log("useMemo RUNNING")
   const sorted = [...store.events].sort((a, b) => b.ts - a.ts);
   if (filter === "all") return sorted;
   return sorted.filter((e) => e.event_type === filter);
@@ -197,7 +191,7 @@ console.log("Extracted ID:", id);
     } else if (e.event_type === "card") {
       return `${e.card_type || ""} card • ${e.card_player_id || ""}`
     } else if (e.event_type === "note") {
-      return `Note • ...`
+      return `Note...`
     } else if (e.event_type === "shot") {
       return `${e.shot_result || "Attempt"}`
     } else if (e.event_type === "turnover") {

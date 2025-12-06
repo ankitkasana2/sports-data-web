@@ -35,10 +35,11 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
 
       // store event 
       store.addEvent({
-        event_type: 'free',
+        event_type: 'panelty',
         free_type: 'Penalty_awarded',
         free_outcome: takeNow,
         awarded_team_id: awardedTeam,
+        team_id:awardedTeam,
       })
       toast.success("Data saved successfully!")
       store.closeDialogs()

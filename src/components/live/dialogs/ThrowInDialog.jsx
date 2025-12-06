@@ -28,7 +28,8 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
       // store event 
       store.addEvent({
         event_type: 'throw_in',
-        throw_in_won_by_team_id: wonTeam
+        throw_in_won_by_team_id: wonTeam,
+        team_id:wonTeam
       })
       toast.success("Data saved successfully!")
       store.closeDialogs()

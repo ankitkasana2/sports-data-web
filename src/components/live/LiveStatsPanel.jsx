@@ -18,29 +18,28 @@ export const LiveStatsPanel = observer(function LiveStatsPanel({ compact = false
 
   // ---------------------------- SHOTS ----------------------------
   const shots = useMemo(() => {
-    const list = events.filter((e) => e.event_type === "shot");
-    const attempts = list.length;
+  const list = events.filter((e) => e.event_type === "shot");
+  const attempts = list.length;
 
-    const ptsTotal = toTotalPoints(scoreA) + toTotalPoints(scoreB);
-    const completed = possessions.filter((p) => p?.end != null).length || 1;
+  const ptsTotal = toTotalPoints(scoreA) + toTotalPoints(scoreB);
+  const completed = possessions.filter((p) => p?.end != null).length || 1;
 
-    const pps = ptsTotal / completed;
+  const pps = ptsTotal / completed;
 
-    return { attempts, ptsTotal, pps };
-  }, [events, scoreA, scoreB, possessions]);
+  return { attempts, ptsTotal, pps };
+}, [events.length, scoreA, scoreB, possessions.length]);
 
-  // ---------------------------- FREES ----------------------------
-  const Free = useMemo(() => {
-    const list = events.filter((e) => e.event_type === "free");
-    const attempts = list.length;
+const Free = useMemo(() => {
+  const list = events.filter((e) => e.event_type === "free");
+  const attempts = list.length;
 
-    const ptsTotal = toTotalPoints(scoreA) + toTotalPoints(scoreB);
-    const completed = possessions.filter((p) => p?.end != null).length || 1;
+  const ptsTotal = toTotalPoints(scoreA) + toTotalPoints(scoreB);
+  const completed = possessions.filter((p) => p?.end != null).length || 1;
 
-    const pps = ptsTotal / completed;
+  const pps = ptsTotal / completed;
 
-    return { attempts, ptsTotal, pps };
-  }, [events, scoreA, scoreB, possessions]);
+  return { attempts, ptsTotal, pps };
+}, [events.length, scoreA, scoreB, possessions.length]);
 
   // ---------------------------- RESTARTS ----------------------------
   const restarts = useMemo(() => {

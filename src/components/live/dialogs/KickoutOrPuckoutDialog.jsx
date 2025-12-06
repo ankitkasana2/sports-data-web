@@ -332,6 +332,7 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
     const evt = {
       event_type: 'restart',
       awarded_team_id: executingTeam,
+      team_id:executingTeam,
       start_cause: 'restart',
       start_restart_type: store.code === "football" ? "kickout" : "puckout",
     }

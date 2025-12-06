@@ -35,10 +35,11 @@ export const BackPassDialog = observer(function BackPassDialog() {
 
     // store event 
     store.addEvent({
-      event_type: 'free',
+      event_type: 'Back',
       free_type: 'ordinary',
       free_outcome: outcome,
       awarded_team_id: team,
+      team_id:team,
     })
      toast.success("Data successfully saved!")
     store.closeDialogs()

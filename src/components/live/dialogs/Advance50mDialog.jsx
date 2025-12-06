@@ -138,7 +138,7 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
     const evt = {
       shooter_player_id: "adv_" + Date.now(),
       event_type: "advance_50",
-      awarded_team_id: team,
+      team_id: team,
       entry_point: entryPoint,
 
       stack,

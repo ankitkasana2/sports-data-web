@@ -53,6 +53,7 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
     store.addEvent({
       event_type: 'substitution',
       awarded_team_id: team,
+      team_id: team,
       player_out_id: playerOut,
       player_in_id: playerIn,
     })
