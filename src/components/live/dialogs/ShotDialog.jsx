@@ -13,7 +13,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { ChevronsUpDown, Check, CircleAlert } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-
+import { secondsToHHMMSS } from "../LiveUtils"
 const players = [
   { value: "player-1", label: "Player 1" },
   { value: "player-2", label: "Player 2" },
@@ -156,7 +156,8 @@ export const ShotDialog = observer(function ShotDialog() {
       angle_deg: calc.angle_deg === "—" ? null : calc.angle_deg,
       sector: calc.sector,
       arc_status: calc.arc_status,
-      
+      spot_x: position ? position.x : null,
+      spot_y: position ? position.y : null
       // points_awarded computed below
     }
 
@@ -235,7 +236,13 @@ export const ShotDialog = observer(function ShotDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Shot / Score</DialogTitle>
+         <DialogTitle className="flex gap-3 items-center">
+                     <span>Shot / Score</span>
+                     <span className="flex gap-2">
+                       <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                       <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                     </span>
+                   </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3 sm:grid-cols-2">

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select"
 import { toast } from "sonner"
 import { CircleAlert } from 'lucide-react';
-
+import { secondsToHHMMSS } from "../LiveUtils"
 
 export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
   const { liveMatchStore } = useStores()
@@ -39,6 +39,7 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
         free_type: store.code == 'football' ? '45' : '65',
         free_outcome: outcome,
         awarded_team_id: awardedTeam,
+        team_id: awardedTeam,
       })
       toast.success("Data saved successfully!")
       store.closeDialogs()
@@ -62,7 +63,12 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{store.code == "football" ? '45' : '65'}</DialogTitle>
+          <DialogTitle className="flex gap-3 items-center">{store.code == "football" ? '45' : '65'}
+                      <span className="flex gap-2">
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                        <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                      </span>
+                    </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "sonner"
 import { CircleAlert } from 'lucide-react';
-
+import { secondsToHHMMSS } from "../LiveUtils"
 
 export const NoteDialog = observer(function NoteDialog() {
   const { liveMatchStore } = useStores()
@@ -46,7 +46,13 @@ export const NoteDialog = observer(function NoteDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Note</DialogTitle>
+          <DialogTitle className="flex gap-3 items-center">
+                                <span>Note</span>
+                                <span className="flex gap-2">
+                                  <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                                  <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                                </span>
+                              </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3">

@@ -277,6 +277,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { toast } from "sonner"
+import { secondsToHHMMSS } from "../LiveUtils"
 
 export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog() {
   const { liveMatchStore } = useStores()
@@ -355,7 +356,13 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{store.code === "football" ? "Kick-out" : "Puck-out"}</DialogTitle>
+          <DialogTitle   className="flex gap-3 items-center">{store.code === "football" ? "Kick-out" : "Puck-out"}
+                      <span className="flex gap-2">
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                        <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                      </span>
+          
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid grid-cols-2 gap-4">

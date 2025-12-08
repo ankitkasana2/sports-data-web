@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { toast } from "sonner"
 import { CircleAlert } from 'lucide-react';
 import { Textarea } from "@/components/ui/textarea"
-
+import { secondsToHHMMSS } from "../LiveUtils"
 export const CardDialog = observer(function CardDialog() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
@@ -67,7 +67,13 @@ export const CardDialog = observer(function CardDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Card</DialogTitle>
+             <DialogTitle className="flex gap-3 items-center">
+                      <span>Card</span>
+                      <span className="flex gap-2">
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                        <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                      </span>
+                    </DialogTitle>
         </DialogHeader>
 
         <div className="grid sm:grid-cols-2 gap-3">

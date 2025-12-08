@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { MiniPitch } from "../MiniPitch"
 import { toast } from "sonner"
 import { CircleAlert } from 'lucide-react';
+import { secondsToHHMMSS } from "../LiveUtils"
 
 export const SidelineDialog = observer(function SidelineDialog() {
   const { liveMatchStore } = useStores()
@@ -64,7 +65,13 @@ export const SidelineDialog = observer(function SidelineDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Sideline</DialogTitle>
+           <DialogTitle className="flex gap-3 items-center">
+                      <span>Sideline</span>
+                      <span className="flex gap-2">
+                        <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+                        <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+                      </span>
+                    </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3 sm:grid-cols-2">
