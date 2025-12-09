@@ -42,18 +42,34 @@ const Free = useMemo(() => {
 }, [events.length, scoreA, scoreB, possessions.length]);
 
   // ---------------------------- RESTARTS ----------------------------
-  const restarts = useMemo(() => {
-    const isKick = store.code === "football";
+ const restarts = useMemo(() => {
+  const isKick = store.code === "football";
 
-    const list = events.filter((e) =>
-      isKick ? e.event_type === "kickout" : e.event_type === "puckout"
-    );
+  const list = events.filter(e =>
+    isKick ? e.event_type === "restart" : e.event_type === "puckout"
+  );
 
-    return {
-      total: list.length,
-      ownRetentionPct: 0,
-    };
-  }, [events, store.code]);
+  const total = list.length;
+
+  const retained = list.filter(
+    (e) => e.taken_by_team_id && e.won_by_team_id && 
+           e.taken_by_team_id === e.won_by_team_id
+  ).length;
+
+  const pct = total > 0 ? retained / total : 0;
+
+  return {
+    total,
+    retained,
+    ownRetentionPct: pct,
+  };
+}, [events.length, store.code]);
+
+
+console.log("RESTARTS:", restarts);
+
+
+
 
   if (compact) {
     return (
@@ -97,18 +113,18 @@ const Free = useMemo(() => {
           <div>PPP: {shots.pps.toFixed(2)}</div>
         </div>
 
-        <div className="rounded border p-2">
-          <div className="font-medium">
-            {store.code === "football" ? "Kick-outs" : "Puck-outs"}
-          </div>
-          <div>Total: {restarts.total}</div>
-          <div>
-            Own retention:{" "}
-            {restarts.ownRetentionPct !== null
-              ? `${(restarts.ownRetentionPct * 100).toFixed(0)}%`
-              : "—"}
-          </div>
-        </div>
+      <div className="rounded border p-2">
+  <div className="font-medium">
+    {store.code === "football" ? "Kick-outs" : "Puck-outs"}
+  </div>
+
+  <div>Total: {restarts.total}</div>
+
+  <div>
+    Own retention: {(restarts.ownRetentionPct * 100).toFixed(0)}%
+  </div>
+</div>
+
       </div>
     </Card>
   );

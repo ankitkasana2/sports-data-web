@@ -357,6 +357,13 @@ export const FreeDialog = observer(function FreeDialog() {
         foul_category: foulCategory || null,
         ts: store.clock.seconds,
         period: store.clock.period,
+        free_type:
+    nextAction === "place_kick" ? "place" :
+    nextAction === "play_short" ? "short" :
+    nextAction === "solo_go" ? "solo_go" :
+    nextAction === "turnover" ? "turnover" :
+    nextAction === "advantage" ? "advantage" :
+    null,
         xy: position,
         free_distance_m: calculation.free_distance_m,
         free_distance_band: calculation.free_distance_band,
@@ -368,6 +375,8 @@ export const FreeDialog = observer(function FreeDialog() {
           store.code === "football" &&
           is50 &&
           (calculation.arc_status === "on_40" || calculation.arc_status === "inside_40"),
+
+     
       }
 
       await store.addEvent(evt)

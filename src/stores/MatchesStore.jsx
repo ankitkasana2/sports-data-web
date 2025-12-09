@@ -33,6 +33,8 @@ class MatchesStore {
         }, 500);
     }
 
+    
+
     // competition 
     getAllCompetition() {
         setTimeout(() => {
