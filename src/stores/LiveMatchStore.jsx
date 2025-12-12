@@ -20,6 +20,11 @@ class LiveMatchStore {
     away: { goals: 0, points: 0 },
   };
 
+// Team names 
+team_a_name = "";
+team_b_name = "";
+
+
   // core data (always arrays by default)
   events = [];
   possessions = [];
@@ -276,6 +281,7 @@ class LiveMatchStore {
     try {
       const res = await axios.get(`${apiUrl.VITE_BACKEND_PATH}api/events/${id}`);
       // API might return different shapes — be defensive
+       console.log("API Response Data:", res?.data);
       const payload = res?.data ?? {};
       // prefer `data` (common), else `events`, else whole payload if it looks like an array
       let events = [];
@@ -285,6 +291,11 @@ class LiveMatchStore {
       else if (Array.isArray(payload)) events = payload;
 
       runInAction(() => {
+
+ // team names  addad
+  this.team_a_name = payload.team_a_name || "";
+  this.team_b_name = payload.team_b_name || "";
+
         this.events = events || [];
         this.loading = false;
       });

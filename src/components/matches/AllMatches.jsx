@@ -55,7 +55,6 @@ function CreateMatchDialog({ onCreate }) {
     competition: "",
     round: "",
     venue_name: "",
-    venue_type: "",
     date: "",
     time: "",
     teamA: "",
@@ -295,35 +294,77 @@ function CreateMatchDialog({ onCreate }) {
 
 
 
-    const newMatch = {
-      id,
-      round_id: "",
-      comp_season_id,
-      group_stage_id: "",
-      round_name: form.round,
-      round_code: "",
-      season: form.season,
-      kickoff_datetime,
-      match_status: "scheduled",
-      venue_id: matchesStore.allVenues.find(venue => venue.venue_name == form.venue_name && venue.venue_type == form.venue_type).venue_id,
-      referee_id: refereesStore.allRefrees.find(ref => ref.name == form.referee).referee_id,
-      game_code: form.game_code,
-      grade: form.grade,
-      ruleset: "",
-      half_length_sec: form.half_length,
-      et_half_length_sec: form.et_length,
-      extra_time_possible: form.extra_time,
-      penalty_shootout_possible: form.penalty_shootout_flag,
-      neutral_flag: form.neutral_flag,
-      team_a_id: teamsStore.allTeams.find(team => team.team_name == form.teamA).team_id,
-      team_b_id: teamsStore.allTeams.find(team => team.team_name == form.teamB).team_id,
-      video_source: form.videoSrc,
-    }
+    // ===================== DEBUG LOGS ======================
 
-    // matchesStore.createMatch(newMatch)
-    setOpen(false)
+
+console.log("form.venue_name:", form.venue_name);
+console.log("form.venue_type:", form.surface_type );
+
+
+// ===================== FIND OPERATIONS ======================
+console.log("============== FIND RESULTS ==============");
+
+const venueObj = matchesStore.allVenues.find(
+  v => v.venue_name === form.venue_name && v.surface_type === form.surface_type
+);
+
+
+
+
+console.log("venueObj:", venueObj);
+const refereeObj = refereesStore.allRefrees.find(
+  r => r.name === form.referee
+);
+
+const teamAObj = teamsStore.allTeams.find(
+  t => t.team_name === form.teamA
+);
+
+const teamBObj = teamsStore.allTeams.find(
+  t => t.team_name === form.teamB
+);
+
+// ===================== FINAL MATCH OBJECT ======================
+const newMatch = {
+  match_id: id,                  // Laravel expects match_id
+  round_id: form.round,          // use your round value
+  comp_season_id: comp_season_id,
+  group_stage_id: form.group_stage_id ?? null,  
+
+  round_name: form.round,
+  round_code: form.round,        // same as round (Laravel expects this)
+
+  season: form.season,
+  kickoff_datetime,              // already created timestamp
+  match_status: "scheduled",
+
+  venue_id: form.venue_id,
+  referee_id: refereeObj?.referee_id ?? null,
+
+  game_code: form.game_code,
+  grade: form.grade,
+
+  ruleset: form.ruleset ?? "default", // Laravel requires ruleset field
+
+  half_length_sec: Number(form.half_length || 0),
+  et_half_length_sec: Number(form.et_length || 0),
+
+  extra_time_possible: form.extra_time ? 1 : 0,
+  penalty_shootout_possible: form.penalty_shootout_flag ? 1 : 0,
+  neutral_flag: form.neutral_flag ? 1 : 0,
+
+  team_a_id: teamAObj?.team_id ?? null,
+  team_b_id: teamBObj?.team_id ?? null,
+
+  video_source: form.videoSrc,
+};
+
+console.log("============== FINAL newMatch OBJECT ==============");
+console.log(newMatch);
+
+matchesStore.createMatch(newMatch);
+setOpen(false);
   }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -379,30 +420,24 @@ function CreateMatchDialog({ onCreate }) {
             </Select>
           </div>
           {/* venue name  */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="round">Venue Name</Label>
-            <Select value={form.venue_name} onValueChange={(val) => setForm((f) => ({ ...f, venue_name: val }))}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a venue" />
-              </SelectTrigger>
-              <SelectContent>
-                {matchesStore.allVenues && matchesStore.allVenues.map((venue) => { return <SelectItem key={venue.venue_id} value={venue.venue_name}>{venue.venue_name}</SelectItem> })}
-              </SelectContent>
-            </Select>
-          </div>
-          {/* venue type  */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="round">Venue Type</Label>
-            <Select value={form.venue_type} onValueChange={(val) => setForm((f) => ({ ...f, venue_type: val }))}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select venue type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='grass'>Grass</SelectItem>
-                <SelectItem value='artificial'>Artificial</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+         <Select
+  value={form.venue_id}
+  onValueChange={(val) => setForm((f) => ({ ...f, venue_id: val }))}
+>
+  <SelectTrigger className="w-full">
+    <SelectValue placeholder="Select a venue" />
+  </SelectTrigger>
+
+  <SelectContent>
+    {matchesStore.allVenues.map(v => (
+      <SelectItem key={v.venue_id} value={v.venue_id}>
+        {v.venue_name}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+
           {/* date  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="date">Date</Label>
@@ -566,9 +601,17 @@ function CreateMatchDialog({ onCreate }) {
           </div>
           {/* half-length  */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="half-length">Half length (In minute)</Label>
-            <Input id="half-length" name="half_length" value={form.half_length} onChange={handleChange} placeholder="Enter half length" />
-          </div>
+  <Label htmlFor="et-length">Extra Time Half Length (In minute)</Label>
+  <Input
+    id="et-length"
+    name="et_length"
+    type="number"
+    value={form.et_length}
+    onChange={handleChange}
+    placeholder="Enter ET half length"
+  />
+</div>
+
           {/* video source  */}
           <div className="flex flex-col gap-2">
             <Label htmlFor="video">Video Source</Label>

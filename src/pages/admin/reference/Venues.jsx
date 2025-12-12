@@ -87,6 +87,7 @@ const VenuesPage = () => {
       // Add new venue
       const newVenue = {
         id: `Venue_${nanoid(6)}`,
+        venue_id: `Venue_${nanoid(6)}`,
         name: data.name,
         type: data.type,
         location: data.location,

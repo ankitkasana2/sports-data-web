@@ -26,6 +26,7 @@ class MatchesStore {
             axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${season}`)
                 .then(response => {
                     this.matches = response.data;
+                     console.log("Seasion created:", response.data);
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);
@@ -55,6 +56,9 @@ class MatchesStore {
             axios.get(`${apiUrl.VITE_BACKEND_PATH}venue`)
                 .then(response => {
                     this.allVenues = response.data;
+                       console.log("VENUE API RESPONSE =", response.data);  // 🔥🔥
+              
+                console.log("THIS.ALLVENUES =", this.allVenues);
                 })
                 .catch(error => {
                     console.error("There was an error fetching users!", error);
@@ -81,7 +85,7 @@ class MatchesStore {
     // create a new match 
     createMatch(match) {
         setTimeout(() => {
-            axios.post(`${apiUrl.VITE_BACKEND_PATH}match`, match)
+            axios.post(`${apiUrl.VITE_BACKEND_PATH}api/match`, match)
                 .then(response => {
                     console.log("Match created:", response.data);
                 })

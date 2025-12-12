@@ -122,7 +122,7 @@
 // }
 
 
-import { useState } from "react"
+import { useState , useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../stores/StoresProvider"
 import { Button } from "../ui/button"
@@ -136,6 +136,7 @@ export const TopBar = observer(function TopBar() {
   const store = liveMatchStore
   const [openSetTime, setOpenSetTime] = useState(false)
   const [timeText, setTimeText] = useState("00:00")
+  const [isReady, setIsReady] = useState(false);
 
   // ⏱ Adjust clock by a few seconds (add/subtract)
   const setByDelta = (delta) => {
@@ -143,6 +144,19 @@ export const TopBar = observer(function TopBar() {
     const next = Math.max(0, store.clock.seconds + delta)
     store.setTime(next)
   }
+
+useEffect(() => {
+  if (!store.loading && store.team_a_name) {
+    setIsReady(true);
+    console.log("LIVE MATCH STORE =", store);
+    console.log("TEAM A NAME =", store.team_a_name);
+  }
+}, [store.loading, store.team_a_name]);
+
+// before ready = show nothing
+if (!isReady) return null;
+
+
 
   // ✅ Manual set time
   const applySetTime = () => {
@@ -173,9 +187,9 @@ export const TopBar = observer(function TopBar() {
  
   return (
     <div className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-3 py-2">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-1 px-3 py-2">
         {/* 🧭 Left side: Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {/* Period Label */}
           <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
 
@@ -260,18 +274,18 @@ export const TopBar = observer(function TopBar() {
         </div>
 
         {/* 🧮 Scoreboard */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+         <span className="text-[15px]">{store.team_a_name}</span> 
           <ScoreBox
-            label="Team A"
+         
             g={store.score.home.goals}
             p={store.score.home.points}
             total={store.totalHome}
           />
 
           <span className="text-muted-foreground">—</span>
-
+          <span className="text-[15px]">{store.team_b_name} </span>
           <ScoreBox
-            label="Team B"
             g={store.score.away.goals}
             p={store.score.away.points}
             total={store.totalAway}

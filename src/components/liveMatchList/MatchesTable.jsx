@@ -12,13 +12,14 @@ import { useStores } from "../../stores/StoresProvider"
 
 
 function formatDateTime(iso) {
-  const d = new Date(iso)
-  return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+    const d = new Date(iso)
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
 }
 
 
 function MatchesTable({ rows, selected, setSelected }) {
     const visibleIds = rows.map((r) => r.match_id)
+  
     const allSelected = visibleIds.length > 0 && visibleIds.every((id) => selected.has(id))
     const someSelected = visibleIds.some((id) => selected.has(id)) && !allSelected
     const headerChecked = allSelected ? true : someSelected ? "indeterminate" : false
@@ -66,6 +67,7 @@ function MatchesTable({ rows, selected, setSelected }) {
                         <TableRow>
                             <TableCell colSpan={8} className="text-center text-sm text-muted-foreground">
                                 No matches found.
+                            
                             </TableCell>
                         </TableRow>
                     ) : (
@@ -104,13 +106,21 @@ function MatchesTable({ rows, selected, setSelected }) {
                                     <TableCell>{m.referee_name}</TableCell>
                                     <TableCell className="capitalize">{m.match_status.replace("-", " ")}</TableCell>
                                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                                        {m.match_status === "Scheduled" || m.match_status === "InProgress" ? (
-                                            <Button asChild size="sm">
-                                                <Link to={`/live/${m.match_id}`}>{m.match_status == "Scheduled" ? "Start" : "Resume"}</Link>
-                                            </Button>
-                                        ) : (
-                                            <span className="text-sm text-muted-foreground">—</span>
-                                        )}
+                                        {(() => {
+                                            const status = m.match_status?.toLowerCase();
+
+                                            if (status === "scheduled" || status === "inprogress") {
+                                                return (
+                                                    <Button asChild size="sm">
+                                                        <Link to={`/live/${m.match_id}`}>
+                                                            {status === "scheduled" ? "Start" : "Resume"}
+                                                        </Link>
+                                                    </Button>
+                                                );
+                                            }
+
+                                            return <span className="text-sm text-muted-foreground">—</span>;
+                                        })()}
                                     </TableCell>
                                 </TableRow>
                             )
