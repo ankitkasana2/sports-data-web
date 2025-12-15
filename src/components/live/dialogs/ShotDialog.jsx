@@ -263,9 +263,13 @@ export const ShotDialog = observer(function ShotDialog() {
 
           {/* Controls Section */}
           <div className="space-y-3">
-            <SelectGroup label="Team" value={team} onChange={setTeam}>
-              <SelectItem value="home">Home</SelectItem>
-              <SelectItem value="away">Away</SelectItem>
+             <SelectGroup label="Team" value={team} onChange={setTeam}>
+              <SelectItem value="home">
+                {store.team_a_name || "Home"}
+              </SelectItem>
+              <SelectItem value="away">
+                {store.team_b_name || "Away"}
+              </SelectItem>
             </SelectGroup>
 
             <SelectGroup label="Result" value={result} onChange={setResult}>

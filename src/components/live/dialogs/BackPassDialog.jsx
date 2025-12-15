@@ -2,8 +2,20 @@ import { useState, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { useStores } from "../../../stores/StoresProvider";
 import { Button } from "../../ui/button";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "../../ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/select";
 import { toast } from "sonner";
 import { CircleAlert } from "lucide-react";
 import { secondsToHHMMSS } from "../LiveUtils";
@@ -11,31 +23,28 @@ import { secondsToHHMMSS } from "../LiveUtils";
 export const BackPassDialog = observer(function BackPassDialog() {
   const { liveMatchStore } = useStores();
   const store = liveMatchStore;
-  const open = !!store.ui.currentBackPass.open;
+  const open = Boolean(store.ui.currentBackPass.open);
 
-  const [team, setTeam] = useState("");
+  // ✅ ONLY TEAM NAME (STRING)
+  const [teamName, setTeamName] = useState("");
   const [outcome, setOutcome] = useState("");
 
-  // Reset dropdown every time dialog opens
   useEffect(() => {
     if (open) {
-      setTeam("");
+      setTeamName("");
       setOutcome("");
     }
   }, [open]);
 
-  // 🚀 MOST IMPORTANT FIX:
-  // Render nothing until team names are loaded
-  if (!store.team_a_name || !store.team_b_name) {
-    return null;
-  }
+  const teamsReady =
+    !!store.team_a_name && !!store.team_b_name;
 
   const onSave = () => {
-    if (!team) {
+    if (!teamName) {
       toast(
         <div className="flex gap-2 items-center">
           <CircleAlert className="text-red-500 h-4 w-4" />
-          <span>Please select a team.</span>
+          <span>Please select a team</span>
         </div>
       );
       return;
@@ -45,30 +54,24 @@ export const BackPassDialog = observer(function BackPassDialog() {
       toast(
         <div className="flex gap-2 items-center">
           <CircleAlert className="text-red-500 h-4 w-4" />
-          <span>Please select outcome.</span>
+          <span>Please select outcome</span>
         </div>
       );
       return;
     }
 
-    // Save event
+    // ✅ SEND ONLY TEAM NAME
     store.addEvent({
       event_type: "Back",
       free_type: "ordinary",
       free_outcome: outcome,
-      awarded_team_id: team, // This is the team_id
-      team_id: team,
+      team_id: teamName,
+      outcome_restart: outcome,        // 👈 STRING ONLY
+      awarded_team_id: teamName // 👈 STRING ONLY (optional)
     });
 
-    toast.success("Data successfully saved!");
+    toast.success("Data successfully saved");
     store.closeDialogs();
-
-    // Open Shot dialog if needed
-    if (outcome === "set_shot") {
-      setTimeout(() => {
-        store.openDialog("shot", "ordinary");
-      }, 500);
-    }
   };
 
   return (
@@ -78,10 +81,10 @@ export const BackPassDialog = observer(function BackPassDialog() {
           <DialogTitle className="flex gap-3 items-center">
             <span>Back Pass To GK Violation</span>
             <span className="flex gap-2">
-              <span className="text-xs font-medium px-2 py-1 rounded bg-muted">
+              <span className="text-xs px-2 py-1 rounded bg-muted">
                 {store.clock.period}
               </span>
-              <span className="font-mono tabular-nums text-sm">
+              <span className="font-mono text-sm">
                 {secondsToHHMMSS(store.clock.seconds)}
               </span>
             </span>
@@ -89,35 +92,39 @@ export const BackPassDialog = observer(function BackPassDialog() {
         </DialogHeader>
 
         <div className="grid gap-3">
-          {/* TEAM SELECT */}
+          {/* TEAM SELECT (STRING ONLY) */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Offending Team</label>
+
             <Select
-              value={team === "" ? undefined : String(team)}
-              onValueChange={v => setTeam(v)}
+              disabled={!teamsReady}
+              value={teamName || undefined}
+              onValueChange={setTeamName}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a team" />
+                <SelectValue
+                  placeholder={teamsReady ? "Select team" : "Loading teams..."}
+                />
               </SelectTrigger>
 
               <SelectContent>
-                <SelectItem value={String(store.team_a_id)}>
+                <SelectItem value={store.team_a_name}>
                   {store.team_a_name}
                 </SelectItem>
 
-                <SelectItem value={String(store.team_b_id)}>
+                <SelectItem value={store.team_b_name}>
                   {store.team_b_name}
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          {/* OUTCOME SELECT */}
+          {/* OUTCOME */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Outcome</label>
             <Select value={outcome} onValueChange={setOutcome}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an outcome" />
+                <SelectValue placeholder="Select outcome" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="play_on">Play On</SelectItem>
@@ -128,7 +135,7 @@ export const BackPassDialog = observer(function BackPassDialog() {
         </div>
 
         <DialogFooter>
-          <Button onClick={() => store.closeDialogs()} variant="outline">
+          <Button variant="outline" onClick={() => store.closeDialogs()}>
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>

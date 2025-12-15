@@ -156,6 +156,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover"
 import { Separator } from "../ui/separator"
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
+
+
 export const EventFeed = observer(function EventFeed() {
   const { liveMatchStore } = useStores()
   const store = liveMatchStore
@@ -255,8 +257,7 @@ const id = segments[2];
                     : ""
                 }`}
               >
-                <TableCell className="tabular-nums">{e.period
-                  }
+                <TableCell className="tabular-nums">   {secondsToHHMMSS(e.ts ?? e.timestamp_sec ?? 0)}
                 </TableCell>
                 
                 <TableCell className="capitalize">

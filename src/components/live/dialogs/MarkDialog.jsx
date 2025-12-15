@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState , useEffect } from "react"
 import { observer } from "mobx-react-lite"
 import { useStores } from "../../../stores/StoresProvider"
 import { Button } from "../../ui/button"
@@ -16,6 +16,16 @@ export const MarkDialog = observer(function MarkDialog() {
   const [awardedTeam, setAwardedTeam] = useState("Team_A")
   const [option, setOption] = useState("")
   const [player, setPlayer] = useState("")
+
+ useEffect(() => {
+    if (open) {
+      setAwardedTeam("");
+    
+    }
+  }, [open]);
+
+  const teamsReady =
+    !!store.team_a_name && !!store.team_b_name;
 
   const onSave = () => {
   try {
@@ -75,13 +85,25 @@ export const MarkDialog = observer(function MarkDialog() {
         <div className="grid gap-3">
           <div className="grid gap-1">
             <label className="text-sm font-medium">Awarded To</label>
-            <Select value={awardedTeam} onValueChange={(v) => setAwardedTeam(v)}>
-              <SelectTrigger>
-                <SelectValue />
+             <Select
+              disabled={!teamsReady}
+              value={awardedTeam || undefined}
+              onValueChange={setAwardedTeam}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue
+                  placeholder={teamsReady ? "Select team" : "Loading teams..."}
+                />
               </SelectTrigger>
+
               <SelectContent>
-                <SelectItem value="Team_A">Team A</SelectItem>
-                <SelectItem value="Team_B">Team B</SelectItem>
+                <SelectItem value={store.team_a_name}>
+                  {store.team_a_name}
+                </SelectItem>
+
+                <SelectItem value={store.team_b_name}>
+                  {store.team_b_name}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +112,7 @@ export const MarkDialog = observer(function MarkDialog() {
           <div className="grid gap-1">
             <label className="text-sm font-medium">Catcher</label>
             <Select value={player} onValueChange={(v) => setPlayer(v)}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full  ">
                 <SelectValue placeholder="Select a player" />
               </SelectTrigger>
               <SelectContent>
@@ -104,7 +126,7 @@ export const MarkDialog = observer(function MarkDialog() {
           <div className="grid gap-1">
             <label className="text-sm font-medium">Option</label>
             <Select value={option} onValueChange={(v) => setOption(v)}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full" >
                 <SelectValue placeholder="select an option" />
               </SelectTrigger>
               <SelectContent>

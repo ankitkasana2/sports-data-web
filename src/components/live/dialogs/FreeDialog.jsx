@@ -264,7 +264,7 @@ export const FreeDialog = observer(function FreeDialog() {
   const open = !!store.ui.currentFree.open
   const xy = store.ui.currentFree.xy ?? null
 
-  const [awardedTeam, setAwardedTeam] = useState("home")
+  const [awardedTeam, setAwardedTeam] = useState("")
   const [awardedPlayer, setAwardedPlayer] = useState("")
   const [foulingPlayer, setFoulingPlayer] = useState("")
   const [foulCategory, setFoulCategory] = useState("")
@@ -277,6 +277,16 @@ export const FreeDialog = observer(function FreeDialog() {
     lane_sector: "none",
     arc_status: "none",
   })
+
+  // team name and outcome reset  
+   useEffect(() => {
+    if (open) {
+      setAwardedTeam("");
+     
+    }
+  }, [open]);
+
+ 
 
   // ⚙️ Auto-calc distance, band, arc
   useEffect(() => {
@@ -422,10 +432,20 @@ export const FreeDialog = observer(function FreeDialog() {
           </div>
 
           <div className="space-y-3">
-            <SelectGroup label="Awarded to" value={awardedTeam} onChange={setAwardedTeam}>
-              <SelectItem value="home">Home</SelectItem>
-              <SelectItem value="away">Away</SelectItem>
-            </SelectGroup>
+           <SelectGroup
+  label="Awarded to"
+  value={awardedTeam || undefined}
+  onChange={setAwardedTeam}
+>
+  <SelectItem value={store.team_a_name}>
+    {store.team_a_name}
+  </SelectItem>
+
+  <SelectItem value={store.team_b_name}>
+    {store.team_b_name}
+  </SelectItem>
+</SelectGroup>
+
 
             <SelectGroup label="Foul Category" value={foulCategory} onChange={setFoulCategory}>
               <SelectItem value="Dissent">Dissent</SelectItem>
@@ -490,7 +510,7 @@ function SelectGroup({ label, value, onChange, children }) {
     <div className="grid gap-1">
       <label className="text-sm font-medium">{label}</label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
+        <SelectTrigger className="w-full">
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>{children}</SelectContent>
