@@ -41,7 +41,7 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
   };
 
   // Local state
-  const [team, setTeam] = useState("teamA");
+  const [team, setTeam] = useState("");
   const [entryPoint, setEntryPoint] = useState("free");
   const [offenderType, setOffenderType] = useState("none");
   const [offenderPlayerId, setOffenderPlayerId] = useState("");
@@ -190,21 +190,28 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
         <div className="grid gap-4">
           {/* TEAM */}
           <div className="grid gap-1">
-            <label>Team</label>
-            <Select value={team} onValueChange={setTeam}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="teamA">Team A</SelectItem>
-                <SelectItem value="teamB">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+           <SelectGroup
+             label="Team"
+             value={team || undefined}
+             onChange={setTeam}
+           >
+             <SelectItem value={store.team_a_name}>
+               {store.team_a_name}
+             </SelectItem>
+           
+             <SelectItem value={store.team_b_name}>
+               {store.team_b_name}
+             </SelectItem>
+           </SelectGroup>
+           
+           
           </div>
 
           {/* ENTRY POINT */}
           <div className="grid gap-1">
             <label>Entry Point</label>
             <Select value={entryPoint} onValueChange={setEntryPoint}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className={"w-full"}><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="free">Free</SelectItem>
                 <SelectItem value="kickout">Kick-out</SelectItem>
@@ -221,7 +228,7 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
           <div className="grid gap-1">
             <label>Offender</label>
             <Select value={offenderType} onValueChange={setOffenderType}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger className={"w-full"}><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">None</SelectItem>
                 <SelectItem value="player">Player</SelectItem>
@@ -238,7 +245,7 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
                 value={offenderPlayerId}
                 onValueChange={setOffenderPlayerId}
               >
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className={"w-full"}><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {playersForTeam.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
@@ -276,3 +283,16 @@ export const Advance50mDialog = observer(function Advance50mDialog() {
   );
 });
 
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

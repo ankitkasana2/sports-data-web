@@ -13,7 +13,7 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
   const store = liveMatchStore
   const open = !!store.ui.currentSubstitution.open
 
-  const [team, setTeam] = useState("Team_A")
+  const [team, setTeam] = useState("")
   const [playerOut, setPlayerOut] = useState("")
   const [playerIn, setPlayerIn] = useState("")
 
@@ -82,20 +82,27 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Team</label>
-            <Select value={team} onValueChange={setTeam}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Team_A">Team A</SelectItem>
-                <SelectItem value="Team_B">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+           <SelectGroup
+             label="Team"
+             value={team || undefined}
+             onChange={setTeam}
+           >
+             <SelectItem value={store.team_a_name}>
+               {store.team_a_name}
+             </SelectItem>
+           
+             <SelectItem value={store.team_b_name}>
+               {store.team_b_name}
+             </SelectItem>
+           </SelectGroup>
+           
+           
           </div>
 
           <div className="grid gap-1">
             <label className="text-sm font-medium">Player OUT (On Pitch)</label>
             <Select value={playerOut} onValueChange={setPlayerOut}>
-              <SelectTrigger><SelectValue placeholder="Select player OUT" /></SelectTrigger>
+              <SelectTrigger className={"w-full"}><SelectValue placeholder="Select player OUT" /></SelectTrigger>
               <SelectContent>
                 {onPitchPlayers.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.jersey} — {p.name}</SelectItem>
@@ -107,7 +114,8 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
           <div className="grid gap-1">
             <label className="text-sm font-medium">Player IN (Bench)</label>
             <Select value={playerIn} onValueChange={setPlayerIn}>
-              <SelectTrigger><SelectValue placeholder="Select player IN" /></SelectTrigger>
+              <SelectTrigger
+              className={"w-full"}><SelectValue placeholder="Select player IN" /></SelectTrigger>
               <SelectContent>
                 {benchPlayers.map(p => (
                   <SelectItem key={p.id} value={p.id}>{p.jersey} — {p.name}</SelectItem>
@@ -125,3 +133,18 @@ export const SubstitutionDialog = observer(function SubstitutionDialog() {
     </Dialog>
   )
 })
+
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

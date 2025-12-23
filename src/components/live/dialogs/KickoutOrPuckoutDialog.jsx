@@ -285,11 +285,11 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
   const open = !!store.ui.currentKickoutOrPuckout.open
 
   const [length, setLength] = useState("short")
-  const [executingTeam, setExecutingTeam] = useState("home")
+  const [executingTeam, setExecutingTeam] = useState("")
   const [outcome, setOutcome] = useState('')
   const [line, setLine] = useState('')
   const [side, setSide] = useState('')
-  const [wonTeam, setWonTeam] = useState('Home')
+  const [wonTeam, setWonTeam] = useState("")
   const [winnerPlayer, setWinnerPlayer] = useState('')
   const [mark, setMark] = useState('none')
   const [retained, setRetained] = useState('false')
@@ -383,16 +383,20 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
 
           {/* team  */}
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Taking team</label>
-            <Select value={executingTeam} onValueChange={(v) => (setExecutingTeam(v), v==wonTeam?setRetained('true'):setRetained('false'))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="home">Home</SelectItem>
-                <SelectItem value="away">Away</SelectItem>
-              </SelectContent>
-            </Select>
+        
+           <SelectGroup
+             label="Taking Team"
+             value={executingTeam || undefined}
+             onChange={setExecutingTeam }
+           >
+             <SelectItem value={store.team_a_name}>
+               {store.team_a_name}
+             </SelectItem>
+           
+             <SelectItem value={store.team_b_name}>
+               {store.team_b_name}
+             </SelectItem>
+           </SelectGroup>
           </div>
 
           {/* outcome  */}
@@ -493,16 +497,19 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
 
           {/* won by  */}
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => (setWonTeam(v), v==executingTeam?setRetained('true'):setRetained('false'))}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="home">Home</SelectItem>
-                <SelectItem value="away">Away</SelectItem>
-              </SelectContent>
-            </Select>
+               <SelectGroup
+             label="Won By "
+             value={ wonTeam || undefined}
+             onChange={setWonTeam }
+           >
+             <SelectItem value={store.team_a_name}>
+               {store.team_a_name}
+             </SelectItem>
+           
+             <SelectItem value={store.team_b_name}>
+               {store.team_b_name}
+             </SelectItem>
+           </SelectGroup>
           </div>
 
           {/* winner  */}
@@ -556,3 +563,18 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
     </Dialog>
   )
 })
+
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

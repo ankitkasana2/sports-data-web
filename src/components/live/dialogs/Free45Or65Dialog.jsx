@@ -73,23 +73,27 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Awarded to</label>
-            <Select value={awardedTeam} onValueChange={(v) => setAwardedTeam(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Team_A">Team A</SelectItem>
-                <SelectItem value="Team_B">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+             <SelectGroup
+             label="Awarded To"
+             value={awardedTeam || undefined}
+             onChange={setAwardedTeam}
+           >
+             <SelectItem value={store.team_a_name}>
+               {store.team_a_name}
+             </SelectItem>
+           
+             <SelectItem value={store.team_b_name}>
+               {store.team_b_name}
+             </SelectItem>
+           </SelectGroup>
+           
           </div>
 
           {/* outcome  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Outcome</label>
             <Select value={outcome} onValueChange={(v) => setOutcome(v)}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full" >
                 <SelectValue placeholder="select an outcome" />
               </SelectTrigger>
               <SelectContent>
@@ -110,3 +114,18 @@ export const Free45Or65Dialog = observer(function Free45Or65Dialog() {
     </Dialog>
   )
 })
+
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

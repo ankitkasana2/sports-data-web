@@ -15,7 +15,7 @@ export const SidelineDialog = observer(function SidelineDialog() {
   const open = !!store.ui.currentSideline.open
 
 
-  const [awardedTeam, setAwardedTeam] = useState("Team_A")
+  const [awardedTeam, setAwardedTeam] = useState("")
   const [outcome, setOutcome] = useState("")
   const [position, setPosition] = useState(null)
 
@@ -62,62 +62,65 @@ export const SidelineDialog = observer(function SidelineDialog() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
+   <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-           <DialogTitle className="flex gap-3 items-center">
-                      <span>Sideline</span>
-                      <span className="flex gap-2">
-                        <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
-                        <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
-                      </span>
-                    </DialogTitle>
+          <DialogTitle className="flex gap-3 items-center">
+            <span>Sideline</span>
+            <span className="flex gap-2">
+              <span className="text-xs font-medium px-2 py-1 rounded bg-muted">
+                {store.clock.period}
+              </span>
+              <span className="font-mono tabular-nums text-sm">
+                {secondsToHHMMSS(store.clock.seconds)}
+              </span>
+            </span>
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-3 sm:grid-cols-2">
-          {/* mini pitch  */}
+        {/* MAIN BODY */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          {/* LEFT */}
           <div className="space-y-3">
             <MiniPitch
               code={store.code}
               mode="select"
               value={position}
-              onChange={(xy) => (setPosition(xy))}
+              onChange={setPosition}
             />
-            <div className="text-xs text-muted-foreground">Click pitch to set XY.</div>
+            <p className="text-xs text-muted-foreground">
+              Click pitch to set XY.
+            </p>
           </div>
 
-          <div className="grid gap-3">
-            <div className="grid gap-1">
-              <label className="text-sm font-medium">Awarded to</label>
-              <Select value={awardedTeam} onValueChange={(v) => setAwardedTeam(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Team_A">Team A</SelectItem>
-                  <SelectItem value="Team_B">Team B</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          {/* RIGHT */}
+          <div className="flex flex-col gap-3">
+            <SelectGroup
+              label="Awarded to"
+              value={awardedTeam || undefined}
+              onChange={setAwardedTeam}
+            >
+              <SelectItem value={store.team_a_name}>
+                {store.team_a_name}
+              </SelectItem>
+              <SelectItem value={store.team_b_name}>
+                {store.team_b_name}
+              </SelectItem>
+            </SelectGroup>
 
-            {/* outcome  */}
-            <div className="grid gap-1">
-              <label className="text-sm font-medium">Outcome</label>
-              <Select value={outcome} onValueChange={(v) => setOutcome(v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="select an outcome" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="play_on">Play On</SelectItem>
-                  <SelectItem value="set_shot">Set Shot Now</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <SelectGroup
+              label="Outcome"
+              value={outcome || undefined}
+              onChange={setOutcome}
+            >
+              <SelectItem value="play_on">Play On</SelectItem>
+              <SelectItem value="set_shot">Set Shot Now</SelectItem>
+            </SelectGroup>
           </div>
         </div>
 
         <DialogFooter>
-          <Button onClick={() => store.closeDialogs()} variant="outline">
+          <Button variant="outline" onClick={() => store.closeDialogs()}>
             Cancel
           </Button>
           <Button onClick={onSave}>Save</Button>
@@ -126,3 +129,17 @@ export const SidelineDialog = observer(function SidelineDialog() {
     </Dialog>
   )
 })
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

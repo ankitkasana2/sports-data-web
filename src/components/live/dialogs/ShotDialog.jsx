@@ -332,7 +332,7 @@ function SelectGroup({ label, value, onChange, children }) {
     <div className="grid gap-1">
       <label className="text-sm font-medium">{label}</label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger>
+        <SelectTrigger className={"w-full"}>
           <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
         </SelectTrigger>
         <SelectContent>{children}</SelectContent>

@@ -12,7 +12,7 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
   const store = liveMatchStore
   const open = !!store.ui.currentThrowIn.open
 
-  const [wonTeam, setWonTeam] = useState('Team_A')
+  const [wonTeam, setWonTeam] = useState("")
 
   const onSave = () => {
     try {
@@ -55,16 +55,20 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Won By</label>
-            <Select value={wonTeam} onValueChange={(v) => setWonTeam(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Team_A">Team A</SelectItem>
-                <SelectItem value="Team_B">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+              <SelectGroup
+              label="Won By"
+              value={wonTeam || undefined}
+              onChange={setWonTeam}
+            >
+              <SelectItem value={store.team_a_name}>
+                {store.team_a_name}
+              </SelectItem>
+            
+              <SelectItem value={store.team_b_name}>
+                {store.team_b_name}
+              </SelectItem>
+            </SelectGroup>
+            
           </div>
         </div>
 
@@ -78,3 +82,17 @@ export const ThrowInDialog = observer(function ThrowInDialog() {
     </Dialog>
   )
 })
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

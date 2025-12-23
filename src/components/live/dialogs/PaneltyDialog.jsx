@@ -12,7 +12,7 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
   const store = liveMatchStore
   const open = !!store.ui.currentPanelty.open
 
-  const [awardedTeam, setAwardedTeam] = useState("Team_A")
+  const [awardedTeam, setAwardedTeam] = useState("")
   const [fouledPlayer, setFouledPlayer] = useState("")
   const [takeNow, setTakeNow] = useState("set_shot")
 
@@ -73,23 +73,28 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
 
         <div className="grid gap-3">
           <div className="grid gap-1">
-            <label className="text-sm font-medium">Awarded to</label>
-            <Select value={awardedTeam} onValueChange={(v) => setAwardedTeam(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Team_A">Team A</SelectItem>
-                <SelectItem value="Team_B">Team B</SelectItem>
-              </SelectContent>
-            </Select>
+          <SelectGroup
+            label="Awarded to"
+            value={awardedTeam || undefined}
+            onChange={setAwardedTeam}
+          >
+            <SelectItem value={store.team_a_name}>
+              {store.team_a_name}
+            </SelectItem>
+          
+            <SelectItem value={store.team_b_name}>
+              {store.team_b_name}
+            </SelectItem>
+          </SelectGroup>
+          
+          
           </div>
 
           {/* foules player  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Fouled Player</label>
             <Select value={fouledPlayer} onValueChange={(v) => setFouledPlayer(v)}>
-              <SelectTrigger>
+              <SelectTrigger className={"w-full"}>
                 <SelectValue placeholder="Select fouled player" />
               </SelectTrigger>
               <SelectContent>
@@ -103,7 +108,7 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
           <div className="grid gap-1">
             <label className="text-sm font-medium">Take Now ?</label>
             <Select value={takeNow} onValueChange={(v) => setTakeNow(v)}>
-              <SelectTrigger>
+              <SelectTrigger className={"w-full"}>
                 <SelectValue placeholder="select an outcome" />
               </SelectTrigger>
               <SelectContent>
@@ -124,3 +129,17 @@ export const PaneltyDialog = observer(function PaneltyDialog() {
     </Dialog>
   )
 })
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}

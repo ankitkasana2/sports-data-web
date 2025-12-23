@@ -20,7 +20,7 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
   const open = !!store.ui.currentTurnover.open
 
   const [position, setPosition] = useState(null)
-  const [awardedTeam, setAwardedPlayer] = useState("home")
+  const [awardedTeam, setAwardedPlayer] = useState("")
   const [mechanism, setMechanism] = useState('')
   const [player, setPlayer] = useState({
     wonBy: '',
@@ -216,16 +216,20 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
           <div className="grid gap-2 grid-cols-1 sm:grid-cols-2">
             {/* team  */}
             <div className="grid gap-1">
-              <label className="text-sm font-medium">Gaining team</label>
-              <Select value={awardedTeam} onValueChange={(v) => setAwardedPlayer(v)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="home">Home</SelectItem>
-                  <SelectItem value="away">Away</SelectItem>
-                </SelectContent>
-              </Select>
+           
+              <SelectGroup
+               label="Gaining team"
+               value={awardedTeam || undefined}
+               onChange={setAwardedPlayer}
+             >
+               <SelectItem value={store.team_a_name}>
+                 {store.team_a_name}
+               </SelectItem>
+             
+               <SelectItem value={store.team_b_name}>
+                 {store.team_b_name}
+               </SelectItem>
+             </SelectGroup>
             </div>
 
             {/* mechanissm  */}
@@ -336,3 +340,18 @@ export const TurnoverDialog = observer(function TurnoverDialog() {
     </Dialog>
   )
 })
+
+
+function SelectGroup({ label, value, onChange, children }) {
+  return (
+    <div className="grid gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={`Select ${label.toLowerCase()}`} />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </div>
+  )
+}
