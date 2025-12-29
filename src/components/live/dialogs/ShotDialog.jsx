@@ -138,11 +138,13 @@ export const ShotDialog = observer(function ShotDialog() {
       return
     }
 
+    const teamName = team === "home" ? store.team_a_name : store.team_b_name;
+
     // build event
     const evt = {
       event_type: "shot",
-      awarded_team_id: team,
-      team_id:team,
+      awarded_team_id: teamName,
+      team_id:teamName,
       shooter_player_id: shooter,
       assist_player_id: assist || null,
       shot_type: shotType,

@@ -240,17 +240,24 @@ team_b_name = "";
 
       // NORMALIZE TEAM ID
       const team = (evt.team_id || evt.team || "").trim().toLowerCase();
+
+      // Match against actual team names as well
+      const teamAName = (this.team_a_name || "").trim().toLowerCase();
+      const teamBName = (this.team_b_name || "").trim().toLowerCase();
+
       const isHome =
         team === "team_a".toLowerCase() ||
         team === "home" ||
         team === "a" ||
-        team === "team a";
+        team === "team a" ||
+        team === teamAName;
 
       const isAway =
         team === "team_b".toLowerCase() ||
         team === "away" ||
         team === "b" ||
-        team === "team b";
+        team === "team b" ||
+        team === teamBName;
 
       if (evt.shot_result === "goal") {
         if (isHome) home.goals++;
