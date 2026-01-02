@@ -31,10 +31,14 @@ export const ShotDialog = observer(function ShotDialog() {
   const [shotType, setShotType] = useState("")
   const [shooter, setShooter] = useState("")
   const [assist, setAssist] = useState("")
+  const [blocker, setBlocker] = useState("")
+  const [goalkeeper, setGoalkeeper] = useState("")
   const [pressure, setPressure] = useState("")
   const [position, setPosition] = useState(null)
   const [openShooter, setOpenShooter] = useState(false)
   const [openAssist, setOpenAssist] = useState(false)
+  const [openBlocker, setOpenBlocker] = useState(false)
+  const [openGoalkeeper, setOpenGoalkeeper] = useState(false)
 
   const [calc, setCalc] = useState({
     distance_m: "—",
@@ -147,6 +151,8 @@ export const ShotDialog = observer(function ShotDialog() {
       team_id:teamName,
       shooter_player_id: shooter,
       assist_player_id: assist || null,
+      blocker_player_id: blocker || null,
+      goalkeeper_player_id: goalkeeper || null,
       shot_type: shotType,
       shot_result: result,
       pressure: pressure || "None",
@@ -231,6 +237,8 @@ export const ShotDialog = observer(function ShotDialog() {
     setShotType("")
     setShooter("")
     setAssist("")
+    setBlocker("")
+    setGoalkeeper("")
     setPressure("")
     setPosition(null)
   }
@@ -299,6 +307,8 @@ export const ShotDialog = observer(function ShotDialog() {
             {/* Shooter & Assist */}
             <PlayerSelector label="Shooter" value={shooter} onChange={setShooter} open={openShooter} setOpen={setOpenShooter} />
             <PlayerSelector label="Assist" value={assist} onChange={setAssist} open={openAssist} setOpen={setOpenAssist} />
+            <PlayerSelector label="Blocker" value={blocker} onChange={setBlocker} open={openBlocker} setOpen={setOpenBlocker} />
+            <PlayerSelector label="Goal-keeper" value={goalkeeper} onChange={setGoalkeeper} open={openGoalkeeper} setOpen={setOpenGoalkeeper} />
 
             <SelectGroup label="Pressure" value={pressure} onChange={setPressure}>
               <SelectItem value="None">None</SelectItem>

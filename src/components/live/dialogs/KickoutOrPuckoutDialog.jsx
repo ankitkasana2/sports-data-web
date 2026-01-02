@@ -291,6 +291,8 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
   const [side, setSide] = useState('')
   const [wonTeam, setWonTeam] = useState("")
   const [winnerPlayer, setWinnerPlayer] = useState('')
+  const [targetzone, setTargetzone] = useState('')
+  const [firstReceiverPlayer, setFirstReceiverPlayer] = useState('')
   const [mark, setMark] = useState('none')
   const [retained, setRetained] = useState('false')
 
@@ -336,7 +338,9 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
       team_id:executingTeam,
       won_by_team_id:wonTeam,
       start_cause: 'restart',
-      outcome_restart: outcome, 
+      outcome_restart: outcome,
+      target_zone: targetzone,
+      first_receiver_player_id: firstReceiverPlayer,
       restart_type: store.code === "football" ? "kickout" : "puckout",
       retained: retained === 'false' ? false : true, 
        side: side,
@@ -415,6 +419,7 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
 
           {/* length  */}
           <div className="grid gap-1 col-span-2">
+            <label className="text-sm font-medium">Length Band</label>
             <RadioGroup
               value={length}
               onValueChange={setLength}
@@ -459,6 +464,39 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
                 </label>
               </div>
             </RadioGroup>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1 col-span-2">
+            {/* target zone  */}
+            <div className="grid gap-1">
+              <label className="text-sm font-medium">Target Zone</label>
+              <Select value={targetzone} onValueChange={(v) => setTargetzone(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder='Select target zone' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Left post">Left post</SelectItem>
+                  <SelectItem value="Centre post">Centre post</SelectItem>
+                  <SelectItem value="Right post">Right post</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* first receiver player  */}
+            <div className="grid gap-1">
+              <label className="text-sm font-medium">First Receiver Player</label>
+              <Select value={firstReceiverPlayer} onValueChange={(v) => setFirstReceiverPlayer(v)}>
+                <SelectTrigger>
+                  <SelectValue placeholder='Select a player' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="player1">Player1</SelectItem>
+                  <SelectItem value="player2">Player2</SelectItem>
+                  <SelectItem value="player3">Player3</SelectItem>
+                  <SelectItem value="player4">Player4</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Destination */}
