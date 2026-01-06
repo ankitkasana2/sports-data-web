@@ -173,22 +173,22 @@ function PlayersPage() {
       toast(<div className="flex gap-3">
         <Check className="text-green-800" /><span>Player has been created Successfully.</span>
       </div>)
-      setOpenAdd(false)
-      navigate(0)
+
+      setAddForm({
+        name: '',
+        team: { name: '', id: '' },
+        position: '',
+        dominant_side: '',
+      })
+      
+      setShowAdd(false)
+      playersStore.getAllPlayers();
+      // navigate(0)
     } else {
       toast(<div className="flex gap-3">
         <Ban className="text-red-700" /><span>Player not created.</span>
       </div>)
     }
-
-
-    setAddForm({
-      name: '',
-      team: { name: '', id: '' },
-      position: '',
-      dominant_side: '',
-    })
-
   }
 
   function handleImportPlayers(newPlayers) {
@@ -270,7 +270,7 @@ function PlayersPage() {
 
           <form className="grid grid-cols-2 gap-4" onSubmit={handleAddPlayer}>
             <div className="grid gap-2 col-span-2">
-              <Label htmlFor="name">Team name</Label>
+              <Label htmlFor="name">Player name</Label>
               <Input
                 id="name"
                 value={addForm.name}
@@ -288,7 +288,7 @@ function PlayersPage() {
                   team: { ...f.team, name: v, id: teamsStore.allTeams.find(team => team.team_name == v).team_id }
                 }))
               }>
-                <SelectTrigger aria-label="team">
+                <SelectTrigger className='mt-1 w-full' aria-label="team">
                   <SelectValue placeholder="Select team" />
                 </SelectTrigger>
                 <SelectContent>
@@ -300,7 +300,7 @@ function PlayersPage() {
             <div className="grid gap-2">
               <Label>Preferred position</Label>
               <Select value={addForm.position} onValueChange={(v) => setAddForm((f) => ({ ...f, position: v }))}>
-                <SelectTrigger aria-label="">
+                <SelectTrigger className='mt-1 w-full' aria-label="">
                   <SelectValue placeholder="Select player position" />
                 </SelectTrigger>
                 <SelectContent>
@@ -325,7 +325,7 @@ function PlayersPage() {
             <div className="grid gap-2">
               <Label>Dominant side</Label>
               <Select value={addForm.dominant_side} onValueChange={(v) => setAddForm((f) => ({ ...f, dominant_side: v }))}>
-                <SelectTrigger aria-label="dominant_side">
+                <SelectTrigger className='mt-1 w-full' aria-label="dominant_side">
                   <SelectValue placeholder="Select dominant side" />
                 </SelectTrigger>
                 <SelectContent>
@@ -390,7 +390,7 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
               Team
             </Label>
             <Select value={team} onValueChange={(v) => setTeam(v)}>
-              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+              <SelectTrigger className='mt-1 w-full' aria-label="team-filter" >
                 <SelectValue className='' placeholder='Filter by team' />
               </SelectTrigger>
               <SelectContent>
@@ -404,7 +404,7 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
               Status
             </Label>
             <Select value={active} onValueChange={(v) => setActive(v)}>
-              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+              <SelectTrigger className='mt-1 w-full' aria-label="team-filter" >
                 <SelectValue className='' placeholder='Filter by team' />
               </SelectTrigger>
               <SelectContent>
@@ -419,7 +419,7 @@ function SearchAndFilters({ query, setQuery, team, setTeam, teams, active, setAc
               Code
             </Label>
             <Select value={code} onValueChange={(v) => setCode(v)}>
-              <SelectTrigger className='mt-1 max-w-full' aria-label="team-filter" >
+              <SelectTrigger className='mt-1 w-full' aria-label="team-filter" >
                 <SelectValue className='' placeholder='Filter by code' />
               </SelectTrigger>
               <SelectContent>
