@@ -116,8 +116,8 @@ function MatchesFiltersBar({
             <SelectContent>
               <SelectItem value="all">All</SelectItem>
               {teams.map((t) => (
-                <SelectItem key={t} value={t}>
-                  {t}
+                <SelectItem key={t} value={t.id}>
+                  {t.name}
                 </SelectItem>
               ))}
             </SelectContent>

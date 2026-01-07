@@ -72,17 +72,36 @@ function MatchesPage() {
 
 
   // Derived options
-  const competitions = useMemo(() => Array.from(new Set(matches.map((m) => m.competition_name))).sort(), [matches])
+  const competitions = useMemo(() => Array.from(new Set(matches.map((m) => m.round_code))).sort(), [matches])
   const grades = useMemo(() => Array.from(new Set(matches.map((m) => m.grade))).sort(), [matches])
   const currentYears = new Date().getFullYear();
   const seasons = Array.from({ length: currentYears - 2000 + 1 }, (_, i) => currentYears - i);
 
-  const teams = useMemo(() => Array.from(new Set(matches.flatMap((m) => [m.team_a_id, m.team_b_id]))).sort(), [matches])
+  const teams = useMemo(() => {
+    const teamMap = new Map() // Use Map to avoid duplicates (key = id)
+
+    matches.forEach((m) => {
+      // Team A
+      if (m.team_a_id && m.team_a) {
+        teamMap.set(m.team_a_id, m.team_a) // or m.team_a_name if that's the field
+      }
+      // Team B
+      if (m.team_b_id && m.team_b) {
+        teamMap.set(m.team_b_id, m.team_b) // or m.team_b_name
+      }
+    })
+
+    // Convert to sorted array of { id, name }
+    return Array.from(teamMap.entries())
+      .map(([id, name]) => ({ id, name }))
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }, [matches])
+  // const teams = useMemo(() => Array.from(new Set(matches.flatMap((m) => [m.team_a_id, m.team_b_id]))).sort(), [matches])
 
   // Filtering
   const filtered = useMemo(() => {
     return matches.filter((m) => {
-      const text = `${m.team_a_id} ${m.team_b_id} ${m.competition_name} ${m.venue_name} ${m.referee_name}`.toLowerCase()
+      const text = `${m.team_a} ${m.team_b} ${m.round_code} ${m.venue_id} ${m.referee_name}`.toLowerCase()
       const q = search.trim().toLowerCase()
       if (q && !text.includes(q)) return false
 
@@ -95,7 +114,7 @@ function MatchesPage() {
         to.setHours(23, 59, 59, 999)
         if (new Date(m.kickoff_datetime) > to) return false
       }
-      if (competition !== "all" && m.competition_name !== competition) return false
+      if (competition !== "all" && m.round_code !== competition) return false
       if (grade !== "all" && m.grade !== grade) return false
       if (season && m.season.toString() !== season.toString()) return false
       if (team !== "all" && !(m.team_a_id === team || m.team_b_id === team)) return false
