@@ -102,7 +102,7 @@ function MatchesTable({ rows, selected, setSelected }) {
                                             <span className="text-xs text-muted-foreground">{m.round_name}</span>
                                         </div>
                                     </TableCell>
-                                    <TableCell>{m.venue_name}</TableCell>
+                                    <TableCell>{m.venue_id}</TableCell>
                                     <TableCell>{m.referee_name}</TableCell>
                                     <TableCell className="capitalize">{m.match_status.replace("-", " ")}</TableCell>
                                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
