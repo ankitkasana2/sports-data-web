@@ -61,6 +61,12 @@ function MatchesPage() {
     return () => disposer();
   }, []);
 
+  useEffect(() => {
+  if (!season) return
+    matchesStore.getAllMatchBySeason(season)
+
+  }, [season])
+
 
   useEffect(() => {
     console.log(toJS(allmatch))

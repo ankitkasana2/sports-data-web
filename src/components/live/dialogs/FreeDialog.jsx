@@ -466,12 +466,12 @@ export const FreeDialog = observer(function FreeDialog() {
               </div>
             )}
 
-            <SelectGroup label="Foul Won By" value={awardedPlayer} onChange={setAwardedPlayer}>
+            <SelectGroup label="Free Taker Player" value={awardedPlayer} onChange={setAwardedPlayer}>
               <SelectItem value="player1">Player 1</SelectItem>
               <SelectItem value="player2">Player 2</SelectItem>
             </SelectGroup>
 
-            <SelectGroup label="Fouling Player" value={foulingPlayer} onChange={setFoulingPlayer}>
+            <SelectGroup label="Fouled Player" value={foulingPlayer} onChange={setFoulingPlayer}>
               <SelectItem value="player3">Player 3</SelectItem>
               <SelectItem value="player4">Player 4</SelectItem>
             </SelectGroup>
