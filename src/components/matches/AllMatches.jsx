@@ -891,19 +891,32 @@ function MatchesPage() {
   const [selected, setSelected] = useState(new Set())
 
 
-  useEffect(() => {
-    // 1. Fetch matches from MobX store
-    matchesStore.getAllMatchBySeason(new Date().getFullYear());
+  // useEffect(() => {
+  //   // 1. Fetch matches from MobX store
+  //   matchesStore.getAllMatchBySeason(new Date().getFullYear());
 
-    // 2. Sync store.matches → local state
-    // reaction will run whenever matchesStore.matches changes
+  //   // 2. Sync store.matches → local state
+  //   // reaction will run whenever matchesStore.matches changes
+  //   const disposer = autorun(() => {
+  //     setMatches([...matchesStore.matches]);
+  //   });
+
+  //   // cleanup on unmount
+  //   return () => disposer();
+  // }, []);
+
+  useEffect(() => {
+    if (!season) return
+    matchesStore.getAllMatchBySeason(season)
+
     const disposer = autorun(() => {
       setMatches([...matchesStore.matches]);
     });
 
     // cleanup on unmount
     return () => disposer();
-  }, []);
+
+  }, [season])
 
 
 

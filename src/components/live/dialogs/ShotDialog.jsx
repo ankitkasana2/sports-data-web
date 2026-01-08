@@ -282,32 +282,34 @@ export const ShotDialog = observer(function ShotDialog() {
               </SelectItem>
             </SelectGroup>
 
-            <SelectGroup label="Result" value={result} onChange={setResult}>
-              <SelectItem value="goal">Goal (3)</SelectItem>
-              <SelectItem value="point">Point (1)</SelectItem>
-              {store.code === "football" && <SelectItem value="two_point">2-Point (Arc)</SelectItem>}
-              <SelectItem value="wide">Wide</SelectItem>
-              <SelectItem value="saved">Saved</SelectItem>
-              <SelectItem value="blocked">Blocked</SelectItem>
-              <SelectItem value="dropped_short">Dropped Short</SelectItem>
-              <SelectItem value="post">Off Post</SelectItem>
-            </SelectGroup>
+            <div className="grid grid-cols-2 gap-2">
+              <SelectGroup label="Result" value={result} onChange={setResult}>
+                <SelectItem value="goal">Goal (3)</SelectItem>
+                <SelectItem value="point">Point (1)</SelectItem>
+                {store.code === "football" && <SelectItem value="two_point">2-Point (Arc)</SelectItem>}
+                <SelectItem value="wide">Wide</SelectItem>
+                <SelectItem value="saved">Saved</SelectItem>
+                <SelectItem value="blocked">Blocked</SelectItem>
+                <SelectItem value="dropped_short">Dropped Short</SelectItem>
+                <SelectItem value="post">Off Post</SelectItem>
+              </SelectGroup>
 
-            <SelectGroup label="Shot Type" value={shotType} onChange={setShotType}>
-              <SelectItem value="from_play">Open Play</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-              <SelectItem value={store.code === "football" ? "45" : "65"}>
-                {store.code === "football" ? "45" : "65"}
-              </SelectItem>
-              <SelectItem value="penalty">Penalty</SelectItem>
-              <SelectItem value="sideline">Sideline</SelectItem>
-              {store.code === "football" && <SelectItem value="mark">Mark</SelectItem>}
-            </SelectGroup>
+              <SelectGroup label="Shot Type" value={shotType} onChange={setShotType}>
+                <SelectItem value="from_play">Open Play</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+                <SelectItem value={store.code === "football" ? "45" : "65"}>
+                  {store.code === "football" ? "45" : "65"}
+                </SelectItem>
+                <SelectItem value="penalty">Penalty</SelectItem>
+                <SelectItem value="sideline">Sideline</SelectItem>
+                {store.code === "football" && <SelectItem value="mark">Mark</SelectItem>}
+              </SelectGroup>
+            </div>
 
             {/* Shooter & Assist */}
-            <PlayerSelector label="Shooter" value={shooter} onChange={setShooter} open={openShooter} setOpen={setOpenShooter} />
-            <PlayerSelector label="Assist" value={assist} onChange={setAssist} open={openAssist} setOpen={setOpenAssist} />
-            <PlayerSelector label="Blocker" value={blocker} onChange={setBlocker} open={openBlocker} setOpen={setOpenBlocker} />
+            <PlayerSelector label="Shooter Player" value={shooter} onChange={setShooter} open={openShooter} setOpen={setOpenShooter} />
+            <PlayerSelector label="Assist Player" value={assist} onChange={setAssist} open={openAssist} setOpen={setOpenAssist} />
+            <PlayerSelector label="Blocker Player" value={blocker} onChange={setBlocker} open={openBlocker} setOpen={setOpenBlocker} />
             <PlayerSelector label="Goal-keeper" value={goalkeeper} onChange={setGoalkeeper} open={openGoalkeeper} setOpen={setOpenGoalkeeper} />
 
             <SelectGroup label="Pressure" value={pressure} onChange={setPressure}>

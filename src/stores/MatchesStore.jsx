@@ -23,7 +23,7 @@ class MatchesStore {
 
     getAllMatchBySeason(season) {
         setTimeout(() => {
-            axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${2025}`)
+            axios.get(`${apiUrl.VITE_BACKEND_PATH}matches/season/${season}`)
                 .then(response => {
                     this.matches = response.data;
                      console.log("Seasion created:", response.data);
