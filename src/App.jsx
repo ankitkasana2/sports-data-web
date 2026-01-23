@@ -7,6 +7,7 @@ import Home from "./pages/Home"
 import HomePage from "./pages/Home"
 import Players from "./pages/players/Players"
 import TeamsPage from "./pages/teams/Teams"
+import TeamDetailPage from "./pages/teams/TeamDetail"
 import Matches from "./pages/matches/Matches"
 import LiveMatchesList from "./pages/live/LiveMatchesList"
 import MatchTagging from "./pages/live/MatchTagging"
@@ -26,12 +27,13 @@ import PredictionPage from "./pages/analytics/Prediction"
 function App() {
 
 
-  
+
   return (
     <div className="min-h-screen ">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/teams" element={<TeamsPage />} />
+        <Route path="/teams/:teamId" element={<TeamDetailPage />} />
         <Route path="/matches" element={<Matches />} />
         <Route path="/live" element={<LiveMatchesList />} />
         <Route path="/live/:matchId" element={<MatchTagging />} />
