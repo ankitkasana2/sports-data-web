@@ -27,37 +27,38 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
   const [firstReceiverPlayer, setFirstReceiverPlayer] = useState('')
   const [restartTaker, setRestartTaker] = useState('')
   const [mark, setMark] = useState('none')
-  const [retained, setRetained] = useState('false')
+  const [retained, setRetained] = useState(false)
   const [bubble50m, setBubble50m] = useState(false)
+  const [crossed40, setCrossed40] = useState(false)
 
 
   // handle preset 
   const handlePreset = (val) => {
+    const otherTeam = liveMatchStore.team_a_name === executingTeam ? liveMatchStore.team_b_name : liveMatchStore.team_a_name;
     switch (val) {
       case 1:
+        setOutcome('Clean Own')
         setWonTeam(executingTeam)
-        setRetained('true')
-        setOutcome('clean')
+        setRetained(true)
         break;
 
       case 2:
-        setOutcome('from_break')
+        setOutcome('Break Own')
         setWonTeam(executingTeam)
-        setRetained('true')
+        setRetained(true)
         break;
 
       case 3:
-        setOutcome('clean')
-        setWonTeam(executingTeam)
-        setRetained('false')
+        setOutcome('Clean Opp')
+        setWonTeam(otherTeam)
+        setRetained(false)
         break;
 
       case 4:
-        setOutcome('from_break')
-        setWonTeam(executingTeam)
-        setRetained('false')
+        setOutcome('Break Opp')
+        setWonTeam(otherTeam)
+        setRetained(false)
         break;
-
 
       default:
         break;
@@ -65,7 +66,7 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
   }
 
   // Validation for Save button
-  const isValid = length && outcome && targetzone;
+  const isValid = executingTeam && length && outcome && targetzone;
 
   const onSave = async () => {
     try {
@@ -80,13 +81,14 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
         first_receiver_player_id: firstReceiverPlayer || null,
         restart_taker_player_id: restartTaker || null,
         restart_type: store.code === "football" ? "kickout" : "puckout",
-        retained: retained === 'false' ? false : true,
+        retained: retained,
         side: side,
         line: line,
         // Boolean mapping
         kickout_mark: mark !== 'none',
         mark_play_on: mark === 'play_on',
         bubble_50m: bubble50m,
+        crossed_40: crossed40,
       }
 
       // store event
@@ -162,13 +164,25 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
           {/* outcome  */}
           <div className="grid gap-1">
             <label className="text-sm font-medium">Outcome</label>
-            <Select value={outcome} onValueChange={(v) => setOutcome(v)}>
+            <Select value={outcome} onValueChange={(v) => {
+              setOutcome(v)
+              if (v.includes('Own')) {
+                setWonTeam(executingTeam)
+                setRetained(true)
+              } else if (v.includes('Opp')) {
+                const otherTeam = liveMatchStore.team_a_name === executingTeam ? liveMatchStore.team_b_name : liveMatchStore.team_a_name;
+                setWonTeam(otherTeam)
+                setRetained(false)
+              }
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder='Select outcome' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="clean">clean</SelectItem>
-                <SelectItem value="from_break">from_break</SelectItem>
+                <SelectItem value="Clean Own">Clean Own</SelectItem>
+                <SelectItem value="Break Own">Break Own</SelectItem>
+                <SelectItem value="Clean Opp">Clean Opp</SelectItem>
+                <SelectItem value="Break Opp">Break Opp</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -323,18 +337,18 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
           {/* 40m crossed  */}
           {store.code == 'football' && <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <Checkbox id="terms" checked={retained === 'true'} onCheckedChange={(c) => setRetained(c ? 'true' : 'false')} />
-              <Label htmlFor="terms">Crossed 40m?</Label>
+              <Checkbox id="crossed40" checked={crossed40} onCheckedChange={(c) => setCrossed40(!!c)} />
+              <Label htmlFor="crossed40">Crossed 40m?</Label>
             </div>
 
             <div className="flex items-center gap-3">
-              <Checkbox id="bubble50" checked={bubble50m} onCheckedChange={setBubble50m} />
+              <Checkbox id="bubble50" checked={bubble50m} onCheckedChange={(c) => setBubble50m(!!c)} />
               <Label htmlFor="bubble50">Bubble 50m?</Label>
             </div>
 
-            <div>
-              <Label>Retained</Label>
-              <Badge>{retained}</Badge>
+            <div className="flex items-center gap-3">
+              <Checkbox id="retained" checked={retained} onCheckedChange={(c) => setRetained(!!c)} />
+              <Label htmlFor="retained">Retained?</Label>
             </div>
           </div>}
 
