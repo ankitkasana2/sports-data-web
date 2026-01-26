@@ -245,9 +245,9 @@ export const KickoutOrPuckoutDialog = observer(function KickoutOrPuckoutDialog()
                   <SelectValue placeholder='Select target zone' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Left post">Left post</SelectItem>
-                  <SelectItem value="Centre post">Centre post</SelectItem>
-                  <SelectItem value="Right post">Right post</SelectItem>
+                  <SelectItem value="L">Left (L)</SelectItem>
+                  <SelectItem value="C">Centre (C)</SelectItem>
+                  <SelectItem value="R">Right (R)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

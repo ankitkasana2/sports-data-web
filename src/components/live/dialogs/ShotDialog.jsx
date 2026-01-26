@@ -76,20 +76,20 @@ export const ShotDialog = observer(function ShotDialog() {
     const arc =
       store.code === "football"
         ? distance < 39
-          ? "inside_40"
+          ? "inside40"
           : distance >= 39 && distance <= 41
-          ? "on_40"
-          : "outside_40"
+            ? "on40"
+            : "outside40"
         : "n/a"
 
     const band =
       distance <= 20
         ? "0–20"
         : distance <= 35
-        ? "21–35"
-        : distance <= 55
-        ? "36–55"
-        : "56+"
+          ? "21–35"
+          : distance <= 55
+            ? "36–55"
+            : "56+"
 
     // sector: left / center / right (dy negative = left side assuming origin top-left)
     const sector = position.y < 33.33 ? "L" : position.y > 66.66 ? "R" : "C"
@@ -148,7 +148,7 @@ export const ShotDialog = observer(function ShotDialog() {
     const evt = {
       event_type: "shot",
       awarded_team_id: teamName,
-      team_id:teamName,
+      team_id: teamName,
       shooter_player_id: shooter,
       assist_player_id: assist || null,
       blocker_player_id: blocker || null,
@@ -173,14 +173,16 @@ export const ShotDialog = observer(function ShotDialog() {
     const points_awarded =
       result === "goal"
         ? 3
-        : store.code === "football" &&
-          result === "point" &&
-          (shotType === "from_play" || shotType === "free" || shotType === "mark") &&
-          (calc.arc_status === "on_40" || calc.arc_status === "outside_40")
-        ? 2
-        : result === "point"
-        ? 1
-        : 0
+        : result === "point2"
+          ? 2
+          : store.code === "football" &&
+            result === "point" &&
+            (shotType === "from_play" || shotType === "free" || shotType === "mark") &&
+            (calc.arc_status === "on40" || calc.arc_status === "outside40")
+            ? 2
+            : result === "point"
+              ? 1
+              : 0
 
     evt.points_awarded = points_awarded
 
@@ -231,7 +233,7 @@ export const ShotDialog = observer(function ShotDialog() {
       toast.success("Data saved successfully!")
       store.closeDialogs()
     }
- 
+
     // reset dialog local state
     setResult("")
     setShotType("")
@@ -246,13 +248,13 @@ export const ShotDialog = observer(function ShotDialog() {
     <Dialog open={open} onOpenChange={(o) => !o && store.closeDialogs()}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-         <DialogTitle className="flex gap-3 items-center">
-                     <span>Shot / Score</span>
-                     <span className="flex gap-2">
-                       <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
-                       <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
-                     </span>
-                   </DialogTitle>
+          <DialogTitle className="flex gap-3 items-center">
+            <span>Shot / Score</span>
+            <span className="flex gap-2">
+              <span className="text-xs font-medium px-2 py-1 rounded bg-muted">{store.clock.period}</span>
+              <span className="font-mono tabular-nums text-sm">{secondsToHHMMSS(store.clock.seconds)}</span>
+            </span>
+          </DialogTitle>
         </DialogHeader>
 
         <div className="grid gap-3 sm:grid-cols-2">
@@ -273,7 +275,7 @@ export const ShotDialog = observer(function ShotDialog() {
 
           {/* Controls Section */}
           <div className="space-y-3">
-             <SelectGroup label="Team" value={team} onChange={setTeam}>
+            <SelectGroup label="Team" value={team} onChange={setTeam}>
               <SelectItem value="home">
                 {store.team_a_name || "Home"}
               </SelectItem>
@@ -286,7 +288,7 @@ export const ShotDialog = observer(function ShotDialog() {
               <SelectGroup label="Result" value={result} onChange={setResult}>
                 <SelectItem value="goal">Goal (3)</SelectItem>
                 <SelectItem value="point">Point (1)</SelectItem>
-                {store.code === "football" && <SelectItem value="two_point">2-Point (Arc)</SelectItem>}
+                {store.code === "football" && <SelectItem value="point2">2-Point (Arc)</SelectItem>}
                 <SelectItem value="wide">Wide</SelectItem>
                 <SelectItem value="saved">Saved</SelectItem>
                 <SelectItem value="blocked">Blocked</SelectItem>

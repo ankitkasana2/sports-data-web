@@ -277,16 +277,17 @@ export const FreeDialog = observer(function FreeDialog() {
     lane_sector: "none",
     arc_status: "none",
   })
+  const [twoPointChoice, setTwoPointChoice] = useState("")
 
   // team name and outcome reset  
-   useEffect(() => {
+  useEffect(() => {
     if (open) {
       setAwardedTeam("");
-     
+
     }
   }, [open]);
 
- 
+
 
   // ⚙️ Auto-calc distance, band, arc
   useEffect(() => {
@@ -299,21 +300,21 @@ export const FreeDialog = observer(function FreeDialog() {
         distance = Math.round(Math.sqrt((position.x - 2) ** 2 + (position.y - 49) ** 2))
         arc =
           position.x < 30
-            ? "inside_40"
+            ? "inside40"
             : position.x >= 30 && position.x <= 32
-              ? "on_40"
+              ? "on40"
               : position.x > 32
-                ? "outside_40"
+                ? "outside40"
                 : "none"
       } else {
         distance = Math.round(Math.sqrt((position.x - 95) ** 2 + (position.y - 49) ** 2))
         arc =
           position.x > 68.5
-            ? "inside_40"
+            ? "inside40"
             : position.x <= 68.5 && position.x >= 67.5
-              ? "on_40"
+              ? "on40"
               : position.x < 67.5
-                ? "outside_40"
+                ? "outside40"
                 : "none"
       }
 
@@ -361,19 +362,19 @@ export const FreeDialog = observer(function FreeDialog() {
       const evt = {
         event_type: "free",
         awarded_team_id: awardedTeam,
-        team_id:awardedTeam,
+        team_id: awardedTeam,
         awarded_player_id: awardedPlayer,
         fouling_player_id: foulingPlayer || null,
         foul_category: foulCategory || null,
         ts: store.clock.seconds,
         period: store.clock.period,
         free_type:
-    nextAction === "place_kick" ? "place" :
-    nextAction === "play_short" ? "short" :
-    nextAction === "solo_go" ? "solo_go" :
-    nextAction === "turnover" ? "turnover" :
-    nextAction === "advantage" ? "advantage" :
-    null,
+          nextAction === "place_kick" ? "place" :
+            nextAction === "play_short" ? "short" :
+              nextAction === "solo_go" ? "solo_go" :
+                nextAction === "turnover" ? "turnover" :
+                  nextAction === "advantage" ? "advantage" :
+                    null,
         xy: position,
         free_distance_m: calculation.free_distance_m,
         free_distance_band: calculation.free_distance_band,
@@ -383,10 +384,11 @@ export const FreeDialog = observer(function FreeDialog() {
         next_action: nextAction || null,
         two_point_option:
           store.code === "football" &&
-          is50 &&
-          (calculation.arc_status === "on_40" || calculation.arc_status === "inside_40"),
+            is50 &&
+            (calculation.arc_status === "on40" || calculation.arc_status === "inside40")
+            ? twoPointChoice : null,
 
-     
+
       }
 
       await store.addEvent(evt)
@@ -432,19 +434,19 @@ export const FreeDialog = observer(function FreeDialog() {
           </div>
 
           <div className="space-y-3">
-           <SelectGroup
-  label="Awarded to"
-  value={awardedTeam || undefined}
-  onChange={setAwardedTeam}
->
-  <SelectItem value={store.team_a_name}>
-    {store.team_a_name}
-  </SelectItem>
+            <SelectGroup
+              label="Awarded to"
+              value={awardedTeam || undefined}
+              onChange={setAwardedTeam}
+            >
+              <SelectItem value={store.team_a_name}>
+                {store.team_a_name}
+              </SelectItem>
 
-  <SelectItem value={store.team_b_name}>
-    {store.team_b_name}
-  </SelectItem>
-</SelectGroup>
+              <SelectItem value={store.team_b_name}>
+                {store.team_b_name}
+              </SelectItem>
+            </SelectGroup>
 
 
             <SelectGroup label="Foul Category" value={foulCategory} onChange={setFoulCategory}>
@@ -464,6 +466,17 @@ export const FreeDialog = observer(function FreeDialog() {
                 <Label htmlFor="is50">50m Advance</Label>
                 <Switch id="is50" checked={is50} onCheckedChange={handle50m} />
               </div>
+            )}
+
+            {store.code === "football" && is50 && (calculation.arc_status === "on40" || calculation.arc_status === "inside40") && (
+              <SelectGroup
+                label="2-Point Choice"
+                value={twoPointChoice}
+                onChange={setTwoPointChoice}
+              >
+                <SelectItem value="nearer">Nearer</SelectItem>
+                <SelectItem value="on_40">On 40</SelectItem>
+              </SelectGroup>
             )}
 
             <SelectGroup label="Free Taker Player" value={awardedPlayer} onChange={setAwardedPlayer}>
